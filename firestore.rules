@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      function userIsAdmin(projectId)
+      {
+        return get(/databases/$(database)/documents/projects/$(projectId)/contributors/$(request.auth.uid)).data.permission == 'admin'
+      }
+      function userIsContributor(projectId)
+      {
+        return get(/databases/$(database)/documents/projects/$(projectId)/contributors/$(request.auth.uid)).data.permission == 'contributor'
+      }
+      match /projects/{projectId} {
+        allow read, write: if userIsAdmin(projectId);
+        match /contributors/{uid} {
+          allow read, write: if userIsAdmin(projectId);
+        }
+        match /invites/{uid} {
+          allow read: if userIsAdmin(projectId) || request.auth.token.email == resource.data.email;
+          allow write: if userIsAdmin(projectId);
+        }
+        match /budgets/{uid} {
+          allow read, write: if userIsAdmin(projectId);
+        }
+        match /transactions/{uid} {
+          allow create: if userIsContributor(projectId);
+          allow read, write: if userIsAdmin(projectId);
+        }
+      }
+      match /users/{uid} {
+        allow read, write: if uid == request.auth.uid;
+      }
+    }
+    match /{path=**}/contributors/{uid} {
+      allow read: if resource.data.uid == request.auth.uid;
+    }
+  }
+}
