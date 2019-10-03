@@ -1,12 +1,5 @@
 <template>
   <q-page padding>
-    <q-page-sticky position="bottom-right" :offset="[18, 18]" style="z-index:100">
-      <q-btn fab icon="add" color="primary" >
-        <q-tooltip content-class="bg-accent text-grey-10">
-          Add Transation
-        </q-tooltip>
-      </q-btn>
-    </q-page-sticky>
     <q-table
       :data="transactionsFiltered"
       :columns="columns"
@@ -14,7 +7,8 @@
       row-key="name"
       :visible-columns="visibleColumns"
       :filter="filter"
-      rows-per-page-label="TRANSACTIONS PER PAGE"
+      rows-per-page-label="Transactions per page:"
+      :pagination.sync="pagination"
     >
       <template v-slot:top="props">
         <div class="col-2 q-table__title"> Transactions</div>
@@ -24,7 +18,7 @@
         <!-- <div v-if="$q.screen.gt.xs" class="col">
           <q-toggle v-for="column in columns" v-model="visibleColumns" :val="column.name" :label="column.label" :key="column.name" />
         </div>
- -->        <q-select
+ -->    <q-select
           v-model="visibleColumns"
           multiple
           borderless
@@ -54,10 +48,41 @@
       <template v-slot:body="props">
         <q-tr :props="props">
           <q-td key="icon" :props="props">
-            <q-icon v-if="props.row.type === 'Cheque'" name="mdi-checkbook" size="md" />
-            <q-icon v-if="props.row.type === 'Cash'" name="mdi-cash" size="md" />
-            <q-icon v-if="props.row.type === 'Internet Transfer'" name="mdi-bank-transfer" size="md" />
-            <q-icon v-if="props.row.type === 'Bank Card'" name="mdi-credit-card" size="md" />
+            <q-icon v-if="props.row.type === 'Cheque'" name="mdi-checkbook" size="md">
+              <q-tooltip>
+                Cheque
+              </q-tooltip>
+            </q-icon>
+            <q-icon v-if="props.row.type === 'Cash'" name="mdi-cash" size="md">
+              <q-tooltip>
+                Cash
+              </q-tooltip>
+            </q-icon>
+            <q-icon v-if="props.row.type === 'Internet Transfer'" name="mdi-bank-transfer" size="md">
+              <q-tooltip>
+                Internet Transfer
+              </q-tooltip>
+            </q-icon>
+            <q-icon v-if="props.row.type === 'Bank Card'" name="mdi-credit-card" size="md">
+              <q-tooltip>
+                Bank Card
+              </q-tooltip>
+            </q-icon>
+          </q-td>
+          <q-td key="category" :props="props">
+            <!-- {{props.row.category}} -->
+            <!-- {{budgets[props.row.category].category}} -->
+            {{ getCategoryById(props.row.category) }}
+            <q-popup-edit v-model="props.row.category">
+              <q-select v-model="props.row.category" dense autofocus label="Category" :options="budgets" option-label="category" option-value="category" />
+            </q-popup-edit>
+          </q-td>
+          <q-td key="desc" :props="props">
+            <!-- {{ props.row.desc }} -->
+            {{ budgets[props.row.category] ? budgets[props.row.category].label : '' }}
+            <q-popup-edit v-model="props.row.desc">
+              <q-input v-model="props.row.desc" dense autofocus label="Description" />
+            </q-popup-edit>
           </q-td>
           <q-td key="number" :props="props">
             <!-- {{props.row.type}} -->
@@ -78,9 +103,6 @@
               />
             </q-popup-edit>
           </q-td>
-          <q-td key="international" :props="props">
-            <q-checkbox :value="props.row.currency !== 'AUD'" disabled/>
-          </q-td>
           <q-td key="amountAUD" :props="props">
             {{ props.row.amountAUD }}
             <q-popup-edit v-model="props.row.amountAUD">
@@ -92,6 +114,9 @@
             <q-popup-edit v-model="props.row.GST">
               <q-input v-model="props.row.GST" dense autofocus label="GST" />
             </q-popup-edit>
+          </q-td>
+          <q-td key="international" :props="props">
+            <q-checkbox :value="props.row.currency !== 'AUD'" disabled/>
           </q-td>
           <q-td key="currency" :props="props">
             {{ props.row.currency }}
@@ -113,28 +138,16 @@
               <q-input v-model="props.row.amountInt" dense autofocus label="Amount (Int)" />
             </q-popup-edit>
           </q-td>
-          <q-td key="type" :props="props">
+          <!-- <q-td key="type" :props="props">
             {{ props.row.type }}
             <q-popup-edit v-model="props.row.type">
               <q-select v-model="props.row.type" :options="typeOptions" dense autofocu label="Type" />
             </q-popup-edit>
-          </q-td>
-          <q-td key="category" :props="props">
-            {{ props.row.category }}
-            <q-popup-edit v-model="props.row.category">
-              <q-select v-model="props.row.category" dense autofocus label="Category" :options="budgets" option-label="category" option-value="category" />
-            </q-popup-edit>
-          </q-td>
+          </q-td> -->
           <q-td key="cheque" :props="props">
             {{ props.row.cheque }}
             <q-popup-edit v-model="props.row.cheque">
               <q-input v-model="props.row.cheque" dense autofocus label="Cheque #" />
-            </q-popup-edit>
-          </q-td>
-          <q-td key="desc" :props="props">
-            {{ props.row.desc }}
-            <q-popup-edit v-model="props.row.desc">
-              <q-input v-model="props.row.desc" dense autofocus label="Description" />
             </q-popup-edit>
           </q-td>
           <q-td key="deleted" :props="props">
@@ -146,6 +159,13 @@
         </q-tr>
       </template>
     </q-table>
+    <q-page-sticky position="bottom-left" :offset="[18, 18]" style="z-index:100">
+      <q-btn fab icon="add" color="primary" >
+        <q-tooltip content-class="bg-accent text-grey-10">
+          Add Transation
+        </q-tooltip>
+      </q-btn>
+    </q-page-sticky>
   </q-page>
 </template>
 
@@ -156,18 +176,18 @@
 import { mapGetters } from 'vuex'
 
 const columns = [
-  { name: 'icon', label: '', field: 'icon', align: 'center' },
+  { name: 'icon', label: 'Type', field: 'icon', align: 'center' },
+  { name: 'category', label: 'Budget Category', field: 'category', align: 'center', sortable: true },
+  { name: 'desc', label: 'Description', field: 'desc', align: 'center', sortable: true },
   { name: 'number', label: 'Transaction Number', field: 'number', align: 'center', sortable: true },
   { name: 'date', label: 'Date', field: 'date', align: 'center', sortable: true },
-  { name: 'international', label: 'International?', field: 'international', align: 'center', sortable: true },
   { name: 'amountAUD', label: 'Amount (AUD)', field: 'amountAUD', align: 'center', sortable: true },
   { name: 'GST', label: 'GST (AUD)', field: 'GST', align: 'center', sortable: true },
+  { name: 'international', label: 'International?', field: 'international', align: 'center', sortable: true },
   { name: 'currency', label: 'Currency', field: 'currency', align: 'center', sortable: true },
   { name: 'amountInt', label: 'Amount (Int)', field: 'amountInt', align: 'center', sortable: true },
-  { name: 'type', label: 'Type', field: 'type', align: 'center', sortable: true },
-  { name: 'category', label: 'Budget Category', field: 'category', align: 'center', sortable: true },
+  // { name: 'type', label: 'Type', field: 'type', align: 'center', sortable: true },
   { name: 'cheque', label: 'Cheque #', field: 'cheque', align: 'center', sortable: true },
-  { name: 'desc', label: 'Description', field: 'desc', align: 'center', sortable: true },
   { name: 'deleted', label: 'Deleted', field: 'deleted', align: 'center', sortable: true },
   { name: 'receipt', label: 'Receipt', field: 'receipt', align: 'center' }
 ]
@@ -180,23 +200,15 @@ export default {
       columns,
       filter: '',
       ccOptions: [],
-      visibleColumns: ['icon', 'number', 'date', 'amountAUD', 'GST', 'type', 'category', 'cheque', 'desc', 'receipt'],
-      typeOptions: [{
-        label: 'Cash',
-        value: 'cash'
-      },
-      {
-        label: 'Cheque',
-        value: 'cheque'
-      },
-      {
-        label: 'Internet Transfer',
-        value: 'internet'
-      },
-      {
-        label: 'Bank Card',
-        value: 'bankcard'
-      }]
+      visibleColumns: ['icon', 'number', 'date', 'amountAUD', 'GST', 'type', 'category', 'desc', 'receipt'],
+      typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card'],
+      pagination: {
+        sortBy: 'date',
+        descending: true,
+        page: 1,
+        rowsPerPage: 10
+        // rowsNumber: xx if getting data from a server
+      }
     }
   },
   created () {
@@ -216,19 +228,27 @@ export default {
         const needle = val.toLowerCase()
         this.ccOptions = cc.codes().filter(v => v.toLowerCase().indexOf(needle) > -1)
       })
+    },
+    getCategoryById (id) {
+      if (this.budgets[id]) {
+        return this.budgetCategories[this.budgets[id].category].category
+      } else {
+        return this.budgetCategories[id].category
+      }
     }
   },
   computed: {
     ...mapGetters([
       'transactions',
-      'budgets'
+      'budgets',
+      'budgetCategories'
     ]),
     transactionsFiltered () {
       if (this.$route.params.budgetCategory) {
         let transactions = []
-        console.log(this.transactions)
+        // console.log(this.transactions)
         for (var key in this.transactions) {
-          console.log(this.$route.params.budgetCategory, '===', this.transactions, key)
+          // console.log(this.$route.params.budgetCategory, '===', this.transactions[key].category)
           if (this.$route.params.budgetCategory === this.transactions[key].category) {
             transactions.push(this.transactions[key])
           }

@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import firebase from '../scripts/firebase'
 import auth from './modules/auth.js'
+import petty from './modules/petty'
 import projects from './modules/projects'
 import transactions from './modules/transactions'
 import budgets from './modules/budgets'
@@ -19,6 +20,7 @@ export default function (/* { ssrContext } */) {
   const Store = new Vuex.Store({
     modules: {
       auth,
+      petty,
       projects,
       transactions,
       budgets

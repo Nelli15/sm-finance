@@ -201,6 +201,7 @@ export default {
   created () {
     this.$store.dispatch('fetchProject', this.$route.params.id)
     this.$store.dispatch('fetchTransactions', this.$route.params.id)
+    this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
     this.$store.dispatch('fetchBudgets', this.$route.params.id)
   },
   computed: {

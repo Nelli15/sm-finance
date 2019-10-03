@@ -13,6 +13,7 @@ const routes = [
     children: [
       { path: 'summary', name: 'summary', component: () => import('pages/summaryPage.vue') },
       { path: 'budget', name: 'budget', component: () => import('pages/budgetPage.vue') },
+      { path: 'budget/:budgetCategory', component: () => import('pages/budgetPage.vue') },
       { path: 'petty', name: 'petty', component: () => import('pages/pettyCashPage.vue') },
       { path: 'transactions', name: 'transactions', component: () => import('pages/transactionsPage.vue') },
       { path: 'transactions/:budgetCategory', component: () => import('pages/transactionsPage.vue') }
