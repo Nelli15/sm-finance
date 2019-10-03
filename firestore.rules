@@ -32,7 +32,7 @@ service cloud.firestore {
       }
     }
     match /{path=**}/contributors/{uid} {
-      allow read: if resource.data.uid == request.auth.uid;
+      allow list: if request.auth.uid == resource.data.uid;
     }
   }
 }

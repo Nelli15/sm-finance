@@ -53,12 +53,15 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td key="number" :props="props">
-            <!-- {{props.row.type}} -->
+          <q-td key="icon" :props="props">
             <q-icon v-if="props.row.type === 'Cheque'" name="mdi-checkbook" size="md" />
             <q-icon v-if="props.row.type === 'Cash'" name="mdi-cash" size="md" />
             <q-icon v-if="props.row.type === 'Internet Transfer'" name="mdi-bank-transfer" size="md" />
             <q-icon v-if="props.row.type === 'Bank Card'" name="mdi-credit-card" size="md" />
+          </q-td>
+          <q-td key="number" :props="props">
+            <!-- {{props.row.type}} -->
+
             {{ props.row.number }}
             <q-popup-edit v-model="props.row.number">
               <q-input v-model="props.row.number" dense autofocus counter label="Transaction Number" />
@@ -153,6 +156,7 @@
 import { mapGetters } from 'vuex'
 
 const columns = [
+  { name: 'icon', label: '', field: 'icon', align: 'center' },
   { name: 'number', label: 'Transaction Number', field: 'number', align: 'center', sortable: true },
   { name: 'date', label: 'Date', field: 'date', align: 'center', sortable: true },
   { name: 'international', label: 'International?', field: 'international', align: 'center', sortable: true },
@@ -176,7 +180,7 @@ export default {
       columns,
       filter: '',
       ccOptions: [],
-      visibleColumns: ['number', 'date', 'amountAUD', 'GST', 'type', 'category', 'cheque', 'desc', 'receipt'],
+      visibleColumns: ['icon', 'number', 'date', 'amountAUD', 'GST', 'type', 'category', 'cheque', 'desc', 'receipt'],
       typeOptions: [{
         label: 'Cash',
         value: 'cash'

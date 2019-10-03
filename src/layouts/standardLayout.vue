@@ -173,7 +173,7 @@
       <q-tabs align="left">
         <q-route-tab to="/dashboard" label="Dashboard" />
         <q-route-tab :to="{ name: 'summary' }" label="Summary" />
-        <q-route-tab :to="{ name: 'budget' }" label="Budget" />
+        <q-route-tab :to="{ name: 'budget' }" label="Budgets" />
         <q-route-tab :to="{ name: 'transactions' }" label="Transactions" />
         <q-route-tab :to="{ name: 'petty' }" label="Petty Cash" />
       </q-tabs>
