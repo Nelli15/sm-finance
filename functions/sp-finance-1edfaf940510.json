@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "sp-finance",
+  "private_key_id": "1edfaf940510f4e45c46e3fd0bccb47cbb0a1f5d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC0xQrpfeGqK94y\nqSF6NRJeIg09r85rfrascv00v8buawxA9FBc4O10A6vAPN3WwbvrcmfAMDRb0zKT\n9nZdqhNUAL4/tbkmxjx+UbjgGoXwVU7LLEkn2sfT5BFx31JR9bwPH3/A+fuzULo/\nvNJFEOE4Ni9q6wIUz/IJYGmQ8I7EdhVwPLW8DlLtu9pjN7V29AK8nzZX3hwONaUR\nFIZ8vW6W0zG2+o3i6pRoYVBUeQr4PqM1me6CW6yMiLky8YUzTYz4YtxxX1D+fe0e\nzLW8UOCC+OhQBxM5kwX0QfDkVtlonJqn2JK02tL64zQKUAIR06l3z3cLc7jUP0sA\nAe6vxnGTAgMBAAECggEADtbuImTXFaUsRHRl7yZUL64T8DByfZiVXmrCJoZnykK3\nas2jmzxLwe5bNxjIDU0yJA3sPna2laMsz8C3ztCbbZXyCEDexjQX2zbSOnNy81vN\ncBhemQr4xIhAdlyi4V+O5J7tWeYrp3jFEV5q1IiiNH8ePWS1cwfvEp37jI5y6eW0\nYlVlgpBGxBKQj1DeKsC/V0UolmtmiwqgMYcUh9+iVx6+OWSC7ULv2su+WXkdxb8Z\nv2XUBFzDHoI2nvQsF8bjUfcLTHjhyuiKCVC8Z6HzOBpkr2xyKdeixsDbqUOOjwLh\nSi46JSYqnsE7ykig6dR4Ovuk4u/BTDNOCOY9Lqww4QKBgQDZ0Db6f2thT5ymv6jM\nNrX9WKKV5VdzJVLzHEXjYbR9jkpyFAIs7ywEZYrPl9Ya2IXwJKzezjt9n27/zlin\nnvQ3N6SpBmOiZ/vR5qSpZ3HoY5wSHLsrnGCc9k+je7GJVE8JxJW1Ar9Zha5ixaaH\n5Ky2yaVng/wPUJ1vZihT+hezdQKBgQDUdkEfi4pT0E6Qn35IDjxmFGc4i3XdU2rS\nHZLGLUyYZY5lB+hgGz7LgNvHGk53IA+EH/uN+0YVpXilu6MwYKBfa1xPChgf2NL0\nHM6CUkjZkj982NVw7T39uE0q23Rnv7naHbeGjVug0DF17jruWpOH7b308yqQxdcL\njjoBQbQX5wKBgEBFKhPcSUkbfrPNVfd8JVMuNjtYwucdGk7WBuFDUUjDFcB3mvS7\nVheuBrmeqfSd81ea2s+btv4ob05YCtzbEGDCsHmXgwrG+A1Fq0y5U2kpC0Jk6+3A\nZNmr7G/m7coB8JiHQ014FBJMWdqXS75JgZUmBwJ2dYfnV60pTbkJ0LiJAoGBAJIZ\n28CgiXgHV+917jYIrBoaT7z/kgan1V41/fePsQtfUuNA49grBCyXKQsqmOisQF9A\nSxEgyNob1vJJLPgYik/zmR+1Nk+4H6DEqnHNudD8E/J7fZNRYX63HUGqdcreeiR2\nqPy6+laEtG5/a0D7QlaH80edbBjwI2gL3vF8SCbjAoGAWCuSATr3vRXBvZs0U3Vn\n1LWrW0M+HifiCi1zrEfD2vnMq3Mas5cr4FbfzR/PXQZqkMjU0VrTe9VxD2pnr8LK\n1Hm3P/6ruWmouYlxd3IelRLzxTUWeVZ1vps3Dff+05CSeMwF7PDpzphskV+43Mpr\ndldbETapKL+cewXLrusoUUM=\n-----END PRIVATE KEY-----\n",
+  "client_email": "sp-finance@appspot.gserviceaccount.com",
+  "client_id": "117605591912230499840",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/sp-finance%40appspot.gserviceaccount.com"
+}

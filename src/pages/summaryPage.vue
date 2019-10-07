@@ -106,7 +106,7 @@ const columns = [
   { name: 'budgeted', align: 'center', label: 'Budgeted (AUD)', field: 'budgeted', sortable: true },
   { name: 'spent', label: 'Spent (AUD)', field: 'spent', sortable: true },
   { name: 'remaining', label: 'Remaining (AUD)', field: 'remaining', sortable: true },
-  { name: 'budgets', label: 'Budgets', field: 'category' }
+  { name: 'budgets', label: '', field: 'category' }
 ]
 
 export default {

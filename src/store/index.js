@@ -37,6 +37,13 @@ export default function (/* { ssrContext } */) {
       const { displayName, email, uid, photoURL } = user
       const cleanedUser = { displayName, email, photoURL, uid }
       Store.commit('setUser', cleanedUser)
+      firebase.auth().currentUser.getIdToken(/* forceRefresh */ true)
+        .then((idToken) => {
+          Store.commit('setIdToken', idToken)
+          if (Store.state.projects.project) {
+            Store.dispatch('fetchTransactions', Store.state.projects.project.id)
+          }
+        })
     } else {
       Store.commit('setUser', {})
       // state.user =

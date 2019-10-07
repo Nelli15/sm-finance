@@ -26,6 +26,10 @@ service cloud.firestore {
           allow create: if userIsContributor(projectId);
           allow read, write: if userIsAdmin(projectId);
         }
+        match /petty/{uid} {
+          allow create: if userIsContributor(projectId);
+          allow read, write: if userIsAdmin(projectId);
+        }
       }
       match /users/{uid} {
         allow read, write: if uid == request.auth.uid;

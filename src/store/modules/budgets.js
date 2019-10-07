@@ -12,7 +12,15 @@ const state = {
 export const getters = {
   budgetCategories: state => state.budgetCategories,
   budgets: state => state.budgets,
-  tableKey: state => state.tableKey
+  tableKey: state => state.tableKey,
+  budgetOptions: state => {
+    let result = {}, budgetOptions = []
+    Object.assign(result, state.budgetCategories, state.budgets)
+    for (var key in result) {
+      budgetOptions.push(result[key])
+    }
+    return budgetOptions.sort((a, b) => (a.label > b.label) ? 1 : -1)
+  }
 }
 
 export const mutations = {
@@ -88,6 +96,7 @@ export const actions = {
         let promises = budgetsSnap.docs.map(doc => {
           budget = doc.data()
           budget.id = doc.id
+          budget.label = budget.category
           // console.log(budget)
           budgets[budget.id] = budget
         })
@@ -100,7 +109,7 @@ export const actions = {
   fetchBudgets ({ commit, dispatch }, payload) {
     firebase.firestore().doc(`/projects/${payload}`).collection('/budgets').where('sub', '==', true)
       .onSnapshot(async budgetsSnap => {
-        let budgets = [], budget = {}
+        let budgets = {}, budget = {}
         let promises = budgetsSnap.docs.map(doc => {
           budget = doc.data()
           budget.id = doc.id

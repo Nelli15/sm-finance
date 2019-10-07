@@ -7,7 +7,8 @@ const state = {
     // notChecked: true
   },
   users: [],
-  contributors: []
+  contributors: [],
+  idToken: ''
 }
 
 export const getters = {
@@ -21,7 +22,8 @@ export const getters = {
     }
     return admins
   },
-  contributors: state => state.contributors
+  contributors: state => state.contributors,
+  idToken: state => state.idToken
 }
 
 export const mutations = {
@@ -31,12 +33,16 @@ export const mutations = {
   },
   setContributors (state, payload) {
     state.contributors = payload
+  },
+  setIdToken (state, payload) {
+    // console.log(payload)
+    state.idToken = payload
   }
 }
 
 export const actions = {
   fetchContributors ({ commit }, payload) {
-    firebase.firestore().doc(`/projects/${payload}/admins`).onSnapshot(async adminsSnap => {
+    firebase.firestore().doc(`/projects/${payload}/contributors`).onSnapshot(async adminsSnap => {
       let contributors = []
       let promises = adminsSnap.docs.map(doc => {
         contributors.push(doc.data())

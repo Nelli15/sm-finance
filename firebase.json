@@ -12,7 +12,11 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ]
+    ],
+  "rewrites": [ {
+    "source": "/receipt",
+    "function": "getReceipt"
+  }]
   },
   "storage": {
     "rules": "storage.rules"

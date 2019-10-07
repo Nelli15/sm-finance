@@ -1,0 +1,91 @@
+<template>
+  <q-btn label="Receipt" @click="showDialog = !showDialog" v-show="!disabled" :loading="loading">
+    <!-- {{props.row.showDialogReceipt}} -->
+    <q-dialog v-model="showDialog">
+      <q-card style="max-width:100%" dark class="bg-black no-scroll">
+        <q-card-section class="text-h6">
+          Transaction {{ label }} receipt
+        </q-card-section>
+        <q-card-section class="no-scroll">
+          <!-- {{src}} -->
+          <img :src="url" alt="No Receipt" style="height: 80vh;" />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+  </q-btn>
+  <!-- <q-inner-loading :showDialoging="loading">
+    <q-spinner size="50px" color="primary" />
+  </q-inner-loading> -->
+</template>
+
+<script>
+// import firebase from 'firebase/app'
+// require('firebase/auth')
+// require('firebase/firestore')
+
+import { mapGetters } from 'vuex'
+// import { dom } from 'quasar'
+// const { height } = dom
+
+export default {
+  props: {
+    id: String,
+    label: String,
+    loading: Boolean,
+    url: String
+  },
+  data () {
+    return {
+      // src: '',
+      showDialog: false
+      // disabled: false
+    }
+  },
+  created () {
+    // this.getReceipt()
+  },
+  methods: {
+    // async getReceipt () {
+    //   // return firebase.auth().onAuthStateChanged(async (user) => {
+    //   // console.log(this.idToken)
+    //   if (this.idToken > '' && this.id > '') {
+    //     const src = `/receipt?projectId=${this.project.id}&id=${this.id}`
+    //     const options = {
+    //       headers: {
+    //         Authorization: `Bearer ${this.idToken}`
+    //       }
+    //     }
+
+    //     let res = await fetch(src, options)
+    //     // console.log(this.id)
+    //     // console.log(res.status)
+    //     let url = await res.text()
+    //     // console.log(url)
+    //     this.src = (res.status === 200) ? url : ''
+    //     this.loading = false
+    //     this.disabled = !(res.status === 200)
+    //   }
+    //   // })
+    // }
+  },
+  computed: {
+    ...mapGetters([
+      'project',
+      'idToken'
+    ]),
+    disabled () {
+      return (this.url <= '')
+    }
+    // imgHeight () {
+    //   // console.log(height(window), height(window) * 0.8)
+    //   return height(window) * 0.8
+    // },
+    // imgWidth () {
+    //   // console.log((height(window) * 0.8) / 9 * 16)
+    //   return (height(window) * 0.8) / 9 * 16
+    // }
+  },
+  components: {
+  }
+}
+</script>

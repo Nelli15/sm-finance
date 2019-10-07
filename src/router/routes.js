@@ -28,6 +28,10 @@ const routes = [
     path: '/logout',
     name: 'logout',
     component: () => import('pages/logout.vue')
+  },
+  {
+    path: '/',
+    redirect: '/dashboard'
   }
   // { path: '*', redirect: '/summary' }
 ]

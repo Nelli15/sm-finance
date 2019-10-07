@@ -22,9 +22,12 @@ export const mutations = {
 
 export const actions = {
   fetchProject ({ commit }, payload) {
+    let project = {}
     firebase.firestore().doc(`/projects/${payload}`)
       .onSnapshot(async projectSnap => {
-        commit('setProject', projectSnap.data())
+        project = projectSnap.data()
+        project.id = projectSnap.id
+        commit('setProject', project)
       })
   },
   fetchProjects ({ commit }, payload) {
