@@ -1,5 +1,5 @@
 <template>
-  <q-btn label="Receipt" @click="showDialog = !showDialog" v-show="!disabled" :loading="loading">
+  <q-btn label="Receipt" @click="showDialog = !showDialog" v-show="disabled" :loading="loading">
     <!-- {{props.row.showDialogReceipt}} -->
     <q-dialog v-model="showDialog">
       <q-card style="max-width:100%" dark class="bg-black no-scroll">
@@ -74,7 +74,7 @@ export default {
       'idToken'
     ]),
     disabled () {
-      return (this.url <= '')
+      return (this.url < '')
     }
     // imgHeight () {
     //   // console.log(height(window), height(window) * 0.8)

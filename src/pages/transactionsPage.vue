@@ -161,6 +161,7 @@
             </q-popup-edit>
           </q-td>
           <q-td key="deleted" :props="props">
+            <!-- {{props.row.deleted}} -->
             <q-checkbox v-model="props.row.deleted"/>
           </q-td>
           <q-td key="receipt" :props="props">
@@ -211,6 +212,13 @@
               <q-item-section>
               <!-- <q-popup-edit v-model="props.row.category"> -->
                 <q-select v-model="newTrans.type" dense label="Type" :options="typeOptions" />
+                <!-- </q-popup-edit> -->
+              </q-item-section>
+            </q-item>
+            <q-item v-show="newTrans.type === 'Cheque'">
+              <q-item-section>
+              <!-- <q-popup-edit v-model="props.row.category"> -->
+                <q-input v-model="newTrans.cheque" dense label="Cheque #" />
                 <!-- </q-popup-edit> -->
               </q-item-section>
             </q-item>
@@ -290,7 +298,8 @@ export default {
         type: 'Cash',
         date: '',
         amountAUD: '',
-        GST: ''
+        GST: '',
+        cheque: ''
       }
     }
   },

@@ -47,6 +47,8 @@ export const actions = {
         let promises = transactionsSnap.docs.map(async doc => {
           let transaction = doc.data()
           transaction.id = doc.id
+          transaction.currency = transaction.currency > '' ? transaction.currency : 'AUD'
+          transaction.deleted = transaction.deleted ? transaction.deleted : false
           transaction.receiptURL = await getReceipt(rootState.projects.project.id, rootState.auth.idToken, transaction.id)
           return transactions.push(transaction)
         })
