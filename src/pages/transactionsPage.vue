@@ -2,7 +2,7 @@
   <q-page padding>
 
     <!-- <q-card> -->
-      {{ getText() }}
+      <!-- {{ getText() }} -->
       <!-- {{visionData.fullTextAnnotation.pages[0].blocks[0]}} -->
 
     <!-- </q-card> -->
