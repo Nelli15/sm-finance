@@ -84,10 +84,11 @@
       </template>
     </q-table>
     <q-page-sticky position="bottom-left" :offset="[18, 18]" style="z-index:100">
-      <q-btn fab icon="add" color="primary" >
+      <q-btn fab icon="add" color="primary" direction="up">
         <q-tooltip content-class="bg-accent text-grey-10">
           Add Budget
         </q-tooltip>
+        <sp-budget-form :projectId="$route.params.id" />
       </q-btn>
     </q-page-sticky>
   </q-page>
@@ -178,6 +179,9 @@ export default {
         return budgets
       }
     }
+  },
+  components: {
+    'sp-budget-form': () => import('./../components/sp-budget-form.vue')
   }
 }
 </script>

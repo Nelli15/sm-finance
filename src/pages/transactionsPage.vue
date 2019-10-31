@@ -19,7 +19,7 @@
       :pagination.sync="pagination"
     >
       <template v-slot:top="props">
-        <div class="col-2 q-table__title"> Transactions</div>
+        <div class="col-4 q-table__title"> Transactions{{ pageLabel > '' ? ' for ' + pageLabel : ''}} </div>
 
         <q-space />
 
@@ -175,77 +175,84 @@
     <q-page-sticky position="bottom-left" :offset="[18, 18]" style="z-index:100">
       <q-btn fab icon="add" color="primary">
         <q-tooltip content-class="bg-accent text-grey-10">
-          Add Transation
+          Add Transaction
         </q-tooltip>
         <q-menu>
-          <q-list style="min-width: 100px">
-            <q-item>
-              <q-item-section>
-                Add Transaction
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-              <!-- <q-popup-edit v-model="props.row.category"> -->
-                <!-- <q-date v-model="newTrans.date" dense  /> -->
-                <q-input v-model="newTrans.date" mask="date" label="Date" :rules="['date']" dense>
-                  <template v-slot:append>
-                    <q-icon name="event" class="cursor-pointer">
-                      <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
-                        <q-date v-model="newTrans.date" @input="() => $refs.qDateProxy.hide()" />
-                      </q-popup-proxy>
-                    </q-icon>
-                  </template>
-                </q-input>
+          <q-form
+              @reset="onReset"
+              @submit="onSubmit">
+            <q-list style="min-width: 100px">
+              <q-item>
+                <!-- <q-item-section> -->
+                  Add Transaction
+                <!-- </q-item-section> -->
+              </q-item>
+              <q-item>
+                <!-- <q-item-section> -->
+                  <!-- <q-popup-edit v-model="props.row.category"> -->
+                  <!-- <q-date v-model="newTrans.date" dense  /> -->
+                  <q-input v-model="newTrans.date" mask="date" label="Date" :rules="['date']" dense>
+                    <template v-slot:append>
+                      <q-icon name="event" class="cursor-pointer">
+                        <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                          <q-date v-model="newTrans.date" @input="() => $refs.qDateProxy.hide()" />
+                        </q-popup-proxy>
+                      </q-icon>
+                    </template>
+                  </q-input>
+                  <!-- </q-popup-edit> -->
+                <!-- </q-item-section> -->
+              </q-item>
+              <q-item>
+                <!-- <q-item-section> -->
+                <!-- <q-popup-edit v-model="props.row.category"> -->
+                  <q-select :value="newTrans.category > '' ? budgets[newTrans.category] ? budgets[newTrans.category].label : budgetCategories[newTrans.category].label: ''" dense label="Category" :options="budgetOptions" option-label="label" :option-value="(item) => item === null ? null : item.id" @input="newTrans.category = $event.id" style="width:100%"/>
                 <!-- </q-popup-edit> -->
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section>
-              <!-- <q-popup-edit v-model="props.row.category"> -->
-                <q-select v-model="newTrans.category" dense label="Category" :options="budgetOptions" option-label="label" :option-value="(item) => item === null ? null : item.id" />
-                <!-- </q-popup-edit> -->
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-              <!-- <q-popup-edit v-model="props.row.category"> -->
-                <q-select v-model="newTrans.type" dense label="Type" :options="typeOptions" />
-                <!-- </q-popup-edit> -->
-              </q-item-section>
-            </q-item>
-            <q-item v-show="newTrans.type === 'Cheque'">
-              <q-item-section>
-              <!-- <q-popup-edit v-model="props.row.category"> -->
-                <q-input v-model="newTrans.cheque" dense label="Cheque #" />
-                <!-- </q-popup-edit> -->
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-              <!-- <q-popup-edit v-model="props.row.category"> -->
-                <q-input v-model="newTrans.amountAUD" dense label="Amount (AUD)" />
-                <!-- </q-popup-edit> -->
-              </q-item-section>
-              <q-item-section>
-              <!-- <q-popup-edit v-model="props.row.category"> -->
-                <q-input v-model="newTrans.GST" dense label="GST (AUD)" />
-                <!-- </q-popup-edit> -->
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-                <q-firebase-uploader
-                  :metadata="{customMetadata: {projectId: project.id, type: newTrans.type, category: newTrans.category.id, amountAUD: newTrans.amountAUD, GST: newTrans.GST, date: newTrans.date}}"
-                  color="teal"
-                  flat
-                  bordered
-                  style="max-width: 300px"
-                />
-              </q-item-section>
-            </q-item>
-          </q-list>
+                <!-- </q-item-section> -->
+              </q-item>
+              <q-item>
+                <!-- <q-item-section> -->
+                  <!-- <q-popup-edit v-model="props.row.category"> -->
+                    <q-select v-model="newTrans.type" dense label="Type" :options="typeOptions" />
+                  <!-- </q-popup-edit> -->
+                <!-- </q-item-section> -->
+              </q-item>
+              <q-item v-show="newTrans.type === 'Cheque'">
+                <!-- <q-item-section> -->
+                  <!-- <q-popup-edit v-model="props.row.category"> -->
+                    <q-input v-model="newTrans.cheque" dense label="Cheque #" />
+                  <!-- </q-popup-edit> -->
+                <!-- </q-item-section> -->
+              </q-item>
+              <q-item>
+                <!-- <q-item-section> -->
+                  <!-- <q-popup-edit v-model="props.row.category"> -->
+                    <q-input v-model="newTrans.amountAUD" dense label="Amount (AUD)" />
+                  <!-- </q-popup-edit> -->
+                <!-- </q-item-section> -->
+                <!-- <q-item-section> -->
+                  <!-- <q-popup-edit v-model="props.row.category"> -->
+                    <q-input v-model="newTrans.GST" dense label="GST (AUD)" />
+                  <!-- </q-popup-edit> -->
+                <!-- </q-item-section> -->
+              </q-item>
+              <q-item>
+                <!-- <q-item-section> -->
+                  <q-firebase-uploader
+                    :metadata="{customMetadata: {projectId: project.id, type: newTrans.type, category: newTrans.category.id, amountAUD: newTrans.amountAUD, GST: newTrans.GST, date: newTrans.date}}"
+                    color="teal"
+                    flat
+                    bordered
+                    style="max-width: 300px"
+                  />
+                <!-- </q-item-section> -->
+              </q-item>
+              <q-item>
+                  <q-btn label="Submit" type="submit" color="teal" />
+                  <q-btn label="Clear" type="reset" color="teal" flat class="q-ml-sm"/>
+              </q-item>
+            </q-list>
+          </q-form>
         </q-menu>
       </q-btn>
     </q-page-sticky>
@@ -368,6 +375,23 @@ export default {
           }
         }
       }
+    },
+    onSubmit () {
+      this.$q.notify({
+        color: 'green-4',
+        textColor: 'white',
+        icon: 'cloud_done',
+        message: 'Submitted'
+      })
+      console.log(this.newTrans.amountAUD)
+      this.$store.dispatch('updateTransactions', this.newTrans)
+    },
+    onReset () {
+      this.newTrans.category = ''
+      this.newTrans.type = 'Cash'
+      this.newTrans.date = ''
+      this.newTrans.amountAUD = ''
+      this.newTrans.GST = ''
     }
     // async getReceipt (id) {
     //   // return firebase.auth().onAuthStateChanged(async (user) => {
@@ -417,6 +441,16 @@ export default {
       } else {
         return this.transactions
       }
+    },
+    pageLabel () {
+      let category = this.$route.params.budgetCategory
+      return category > '' ? this.budgets[category] ? this.budgets[category].label : this.budgetCategories[category].label : ''
+    }
+  },
+  mutations: {
+    updateTransactions (state, value) {
+      console.log(value)
+      this.transactions.push(value)
     }
   },
   components: {
