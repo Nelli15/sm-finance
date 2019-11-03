@@ -1,17 +1,9 @@
 <template>
   <q-page padding>
-<!--     <q-uploader
-      :metadata="{customMetadata: {projectId: project.id, type: 'receipt'}}"
-      color="teal"
-      flat
-      bordered
-      style="max-width: 300px"
-      auto-upload
-    /> -->
     <q-table
       :data="transactionsFiltered"
       :columns="columns"
-      :rows-per-page-options="[5,10,15,20]"
+      :rows-per-page-options="[5,10,15,20,50,100,200]"
       row-key="name"
       :visible-columns="visibleColumns"
       :filter="filter"
@@ -40,7 +32,7 @@
           style="min-width: 150px"
         />
 
-        <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+        <q-input borderless dense v-model="filter" placeholder="Search">
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -55,7 +47,11 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
+          <q-td key="number" :props="props">
+            {{ props.row.id }}
+          </q-td>
           <q-td key="icon" :props="props">
+            <!-- {{props.row.type}} -->
             <q-icon v-if="props.row.type === 'Cheque'" name="mdi-checkbook" size="md">
               <q-tooltip>
                 Cheque
@@ -76,59 +72,57 @@
                 Bank Card
               </q-tooltip>
             </q-icon>
+            <q-popup-edit v-model="props.row.type">
+              <q-select :value="props.row.type" dense label="Type" :options="typeOptions" @input="updateTransaction(props.row.id, 'type', $event)" />
+            </q-popup-edit>
           </q-td>
           <q-td key="category" :props="props">
             <!-- {{props.row.category}} -->
             <!-- {{budgets[props.row.category].category}} -->
+            <!-- {{ props.row.id }} -->
             {{ getCategoryById(props.row.category) }}
-            <q-popup-edit v-model="props.row.category">
+            <!-- <q-popup-edit v-model="props.row.category">
               <q-select v-model="props.row.category" dense autofocus label="Category" :options="budgets" option-label="category" option-value="category" />
-            </q-popup-edit>
+            </q-popup-edit> -->
           </q-td>
-          <q-td key="desc" :props="props">
+          <q-td key="budget" :props="props">
             <!-- {{ props.row.text }} -->
             {{ budgets[props.row.category] ? budgets[props.row.category].label : '' }}
             <!-- <q-popup-edit v-model="props.row.desc">
               <q-input v-model="props.row.desc" dense autofocus label="Description" />
             </q-popup-edit> -->
           </q-td>
-          <q-td key="number" :props="props">
-            <!-- {{props.row.type}} -->
-
-            {{ props.row.id }}
-            <q-popup-edit v-model="props.row.number">
-              <q-input v-model="props.row.number" dense autofocus counter label="Transaction Number" />
-            </q-popup-edit>
-          </q-td>
           <q-td key="date" :props="props">
             {{ props.row.date }}
-            <q-popup-edit v-model="props.row.date" title="Date">
-              <q-date
+            <q-popup-edit v-model="props.row.date">
+              <!-- <q-date
                 v-model="props.row.date"
                 dense
                 minimal
                 label="Date"
-              />
+              /> -->
+              <q-date :value="props.row.date" @input="updateTransaction(props.row.id, 'date', $event)"  mask="DD/MM/YYYY" />
             </q-popup-edit>
           </q-td>
-          <q-td key="amountAUD" :props="props">
+          <q-td key="amount" :props="props">
             <!-- {{ getAmount(props.row.text) }} -->
-            {{ props.row.amountAUD }}
-            <q-popup-edit v-model="props.row.amountAUD">
-              <q-input v-model="props.row.amountAUD" dense autofocus label="Amount (AUD)" />
+            <!-- {{props.row}} -->
+            {{ props.row.amount }}
+            <q-popup-edit v-model="props.row.amount">
+              <q-input :value="props.row.amount" @input="updateTransaction(props.row.id, 'amount', $event)" dense autofocus :label="'Amount ('+project.currency+')'" />
             </q-popup-edit>
           </q-td>
           <q-td key="GST" :props="props">
             <!-- {{ getGST(props.row.text) }} -->
             {{ props.row.GST }}
             <q-popup-edit v-model="props.row.GST">
-              <q-input v-model="props.row.GST" dense autofocus label="GST" />
+              <q-input :value="props.row.GST" @input="updateTransaction(props.row.id, 'GST', $event)" dense autofocus label="GST" />
             </q-popup-edit>
           </q-td>
-          <q-td key="international" :props="props">
+<!--           <q-td key="international" :props="props">
             <q-checkbox :value="props.row.currency !== 'AUD'" disabled/>
-          </q-td>
-          <q-td key="currency" :props="props">
+          </q-td> -->
+<!--           <q-td key="currency" :props="props">
             {{ props.row.currency }}
             <q-popup-edit v-model="props.row.currency">
               <q-select v-model="props.row.currency" :options="ccOptions" dense autofocus use-input @filter="filterFn" label="Currency">
@@ -141,33 +135,46 @@
                 </template>
               </q-select>
             </q-popup-edit>
-          </q-td>
-          <q-td key="amountInt" :props="props">
+          </q-td> -->
+<!--           <q-td key="amountInt" :props="props">
             {{ props.row.amountInt }}
             <q-popup-edit v-model="props.row.amountInt">
               <q-input v-model="props.row.amountInt" dense autofocus label="Amount (Int)" />
             </q-popup-edit>
-          </q-td>
+          </q-td> -->
           <!-- <q-td key="type" :props="props">
             {{ props.row.type }}
             <q-popup-edit v-model="props.row.type">
               <q-select v-model="props.row.type" :options="typeOptions" dense autofocu label="Type" />
             </q-popup-edit>
           </q-td> -->
+          <q-td key="desc" :props="props">
+            <!-- {{ props.row.text }} -->
+            {{ props.row.desc }}
+            <q-popup-edit v-model="props.row.desc">
+              <q-input :value="props.row.desc" @input="updateTransaction(props.row.id, 'desc', $event)"  dense autofocus label="Description" />
+            </q-popup-edit>
+          </q-td>
           <q-td key="cheque" :props="props">
             {{ props.row.cheque }}
             <q-popup-edit v-model="props.row.cheque">
-              <q-input v-model="props.row.cheque" dense autofocus label="Cheque #" />
+              <q-input :value="props.row.cheque" @input="updateTransaction(props.row.id, 'cheque', $event)" dense autofocus label="Cheque #" />
             </q-popup-edit>
           </q-td>
-          <q-td key="deleted" :props="props">
+          <q-td key="reviewed" :props="props">
             <!-- {{props.row.deleted}} -->
-            <q-checkbox v-model="props.row.deleted"/>
+            <q-btn icon="check" round :color="props.row.reviewed ? 'positive' : ''" @click="updateTransaction(props.row.id, 'reviewed', !props.row.reviewed)" outline dense/>
+            <!-- <q-checkbox :value="props.row.reviewed" @input="updateTransaction(props.row.id, 'reviewed', $event)" /> -->
           </q-td>
           <q-td key="receipt" :props="props">
             <!-- <a :href="props.row.receipt">Receipt</a> -->
             <!-- {{getReceipt('the-speaker-grill-small')}} -->
             <sp-receipt :id="props.row.id" :label="props.row.number" :url="props.row.receiptURL" />
+          </q-td>
+          <q-td key="delete" :props="props">
+            <!-- {{props.row.deleted}} -->
+            <!-- <q-checkbox v-model="props.row.reviewed"/> -->
+            <q-btn icon="delete" color="negative" dense :disabled="true" />
           </q-td>
         </q-tr>
       </template>
@@ -178,81 +185,9 @@
           Add Transaction
         </q-tooltip>
         <q-menu>
-          <q-form
-              @reset="onReset"
-              @submit="onSubmit">
-            <q-list style="min-width: 100px">
-              <q-item>
-                <!-- <q-item-section> -->
-                  Add Transaction
-                <!-- </q-item-section> -->
-              </q-item>
-              <q-item>
-                <!-- <q-item-section> -->
-                  <!-- <q-popup-edit v-model="props.row.category"> -->
-                  <!-- <q-date v-model="newTrans.date" dense  /> -->
-                  <q-input v-model="newTrans.date" mask="date" label="Date" :rules="['date']" dense>
-                    <template v-slot:append>
-                      <q-icon name="event" class="cursor-pointer">
-                        <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
-                          <q-date v-model="newTrans.date" @input="() => $refs.qDateProxy.hide()" />
-                        </q-popup-proxy>
-                      </q-icon>
-                    </template>
-                  </q-input>
-                  <!-- </q-popup-edit> -->
-                <!-- </q-item-section> -->
-              </q-item>
-              <q-item>
-                <!-- <q-item-section> -->
-                <!-- <q-popup-edit v-model="props.row.category"> -->
-                  <q-select :value="newTrans.category > '' ? budgets[newTrans.category] ? budgets[newTrans.category].label : budgetCategories[newTrans.category].label: ''" dense label="Category" :options="budgetOptions" option-label="label" :option-value="(item) => item === null ? null : item.id" @input="newTrans.category = $event.id" style="width:100%"/>
-                <!-- </q-popup-edit> -->
-                <!-- </q-item-section> -->
-              </q-item>
-              <q-item>
-                <!-- <q-item-section> -->
-                  <!-- <q-popup-edit v-model="props.row.category"> -->
-                    <q-select v-model="newTrans.type" dense label="Type" :options="typeOptions" />
-                  <!-- </q-popup-edit> -->
-                <!-- </q-item-section> -->
-              </q-item>
-              <q-item v-show="newTrans.type === 'Cheque'">
-                <!-- <q-item-section> -->
-                  <!-- <q-popup-edit v-model="props.row.category"> -->
-                    <q-input v-model="newTrans.cheque" dense label="Cheque #" />
-                  <!-- </q-popup-edit> -->
-                <!-- </q-item-section> -->
-              </q-item>
-              <q-item>
-                <!-- <q-item-section> -->
-                  <!-- <q-popup-edit v-model="props.row.category"> -->
-                    <q-input v-model="newTrans.amountAUD" dense label="Amount (AUD)" />
-                  <!-- </q-popup-edit> -->
-                <!-- </q-item-section> -->
-                <!-- <q-item-section> -->
-                  <!-- <q-popup-edit v-model="props.row.category"> -->
-                    <q-input v-model="newTrans.GST" dense label="GST (AUD)" />
-                  <!-- </q-popup-edit> -->
-                <!-- </q-item-section> -->
-              </q-item>
-              <q-item>
-                <!-- <q-item-section> -->
-                  <q-firebase-uploader
-                    :metadata="{customMetadata: {projectId: project.id, type: newTrans.type, category: newTrans.category.id, amountAUD: newTrans.amountAUD, GST: newTrans.GST, date: newTrans.date}}"
-                    color="teal"
-                    flat
-                    bordered
-                    style="max-width: 300px"
-                  />
-                <!-- </q-item-section> -->
-              </q-item>
-              <q-item>
-                  <q-btn label="Submit" type="submit" color="teal" />
-                  <q-btn label="Clear" type="reset" color="teal" flat class="q-ml-sm"/>
-              </q-item>
-            </q-list>
-          </q-form>
+          <!-- <q-scroll-area> -->
+          <sp-trans-form :projectId="project.id" />
+          <!-- </q-scroll-area> -->
         </q-menu>
       </q-btn>
     </q-page-sticky>
@@ -260,39 +195,35 @@
 </template>
 
 <script>
-// import firebase from 'firebase/app'
-// require('firebase/auth')
-// require('firebase/firestore')
+import { debounce } from 'quasar'
+import firebase from 'firebase/app'
+require('firebase/auth')
+require('firebase/firestore')
 
-import { mapGetters } from 'vuex'
-
-const columns = [
-  { name: 'icon', label: 'Type', field: 'icon', align: 'center' },
-  { name: 'category', label: 'Budget Category', field: 'category', align: 'center', sortable: true },
-  { name: 'desc', label: 'Description', field: 'desc', align: 'center', sortable: true },
-  { name: 'number', label: 'Transaction ID', field: 'number', align: 'center', sortable: true },
-  { name: 'date', label: 'Date', field: 'date', align: 'center', sortable: true },
-  { name: 'amountAUD', label: 'Amount (AUD)', field: 'amountAUD', align: 'center', sortable: true },
-  { name: 'GST', label: 'GST (AUD)', field: 'GST', align: 'center', sortable: true },
-  { name: 'international', label: 'International?', field: 'international', align: 'center', sortable: true },
-  { name: 'currency', label: 'Currency', field: 'currency', align: 'center', sortable: true },
-  { name: 'amountInt', label: 'Amount (Int)', field: 'amountInt', align: 'center', sortable: true },
-  // { name: 'type', label: 'Type', field: 'type', align: 'center', sortable: true },
-  { name: 'cheque', label: 'Cheque #', field: 'cheque', align: 'center', sortable: true },
-  { name: 'deleted', label: 'Deleted', field: 'deleted', align: 'center', sortable: true },
-  { name: 'receipt', label: '', field: 'receipt', align: 'center' }
-]
+import { mapGetters, mapActions } from 'vuex'
 
 var cc = require('currency-codes')
 
 export default {
   data () {
     return {
-      columns,
+      columns: [
+        { name: 'number', label: 'Transaction ID', field: 'number', align: 'center', sortable: true },
+        { name: 'icon', label: 'Type', field: 'icon', align: 'center' },
+        { name: 'category', label: 'Budget Category', field: 'category', align: 'center', sortable: true },
+        { name: 'budget', label: 'Budget', field: 'budget', align: 'center', sortable: true },
+        { name: 'date', label: 'Date', field: 'date', align: 'center', sortable: true },
+        { name: 'amount', label: `Amount (currency)`, field: 'amount', align: 'center', sortable: true },
+        { name: 'GST', label: `GST (currency)`, field: 'GST', align: 'center', sortable: true },
+        { name: 'desc', label: 'Description', field: 'desc', align: 'center', sortable: true },
+        { name: 'cheque', label: 'Cheque #', field: 'cheque', align: 'center', sortable: true },
+        { name: 'reviewed', label: 'Reviewed', field: 'reviewed', align: 'center', sortable: true },
+        { name: 'receipt', label: 'Receipt', field: 'receipt', align: 'center' },
+        { name: 'delete', label: 'Delete', field: 'delete', align: 'center' }
+      ],
       filter: '',
       ccOptions: [],
-      visibleColumns: ['icon', 'date', 'amountAUD', 'GST', 'type', 'category', 'desc', 'receipt'],
-      typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card'],
+      visibleColumns: ['icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'reviewed', 'receipt'],
       pagination: {
         sortBy: 'date',
         descending: true,
@@ -300,21 +231,27 @@ export default {
         rowsPerPage: 10
         // rowsNumber: xx if getting data from a server
       },
-      newTrans: {
-        category: '',
-        type: 'Cash',
-        date: '',
-        amountAUD: '',
-        GST: '',
-        cheque: ''
-      }
+      typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
     }
   },
   created () {
+    console.log(this.project.currency)
+    if (this.project.currency) {
+      for (var key in this.columns) {
+        if (this.columns[key].label.search('(currency)') !== -1) {
+          this.columns[key].label = this.columns[key].label.replace('(currency)', `(${this.project.currency})`)
+        }
+      }
+    }
+
+    this.updateTransaction = debounce(this.updateTransaction, 1000)
     // this.$store.dispatch('fetchTransactions', this.$route.params.id)
     // this.$store.dispatch('fetchBudgets', this.$route.params.id)
   },
   methods: {
+    ...mapActions([
+      'updateTransactionByKey'
+    ]),
     filterFn (val, update) {
       if (val === '') {
         update(() => {
@@ -376,22 +313,22 @@ export default {
         }
       }
     },
-    onSubmit () {
-      this.$q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'cloud_done',
-        message: 'Submitted'
-      })
-      console.log(this.newTrans.amountAUD)
-      this.$store.dispatch('updateTransactions', this.newTrans)
-    },
-    onReset () {
-      this.newTrans.category = ''
-      this.newTrans.type = 'Cash'
-      this.newTrans.date = ''
-      this.newTrans.amountAUD = ''
-      this.newTrans.GST = ''
+    updateTransaction (trans, key, val) {
+      console.log(trans, key, val)
+      this.updateTransactionByKey({ trans, key, val })
+      firebase.firestore().collection(`/projects/${this.project.id}/transactions`).doc(trans)
+        .update({ [key]: val })
+        .then(() => {
+          console.log('updated')
+          this.$q.notify({
+            color: 'positive',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'Transaction Updated'
+          })
+        }).catch(err => {
+          console.log(err)
+        })
     }
     // async getReceipt (id) {
     //   // return firebase.auth().onAuthStateChanged(async (user) => {
@@ -407,7 +344,7 @@ export default {
     //     let res = await fetch(src, options)
     //     console.log(id, res)
     //     let url = await res.text()
-    //     console.log(url)
+    //     console.log('url', url)
     //     return url
     //   }
     //   // })
@@ -447,14 +384,18 @@ export default {
       return category > '' ? this.budgets[category] ? this.budgets[category].label : this.budgetCategories[category].label : ''
     }
   },
-  mutations: {
-    updateTransactions (state, value) {
-      console.log(value)
-      this.transactions.push(value)
+  watch: {
+    project (oldVal, newVal) {
+      console.log(this.project.currency)
+      for (var key in this.columns) {
+        if (this.columns[key].label.search('(currency)') !== -1) {
+          this.columns[key].label = this.columns[key].label.replace('(currency)', `(${this.project.currency})`)
+        }
+      }
     }
   },
   components: {
-    'q-firebase-uploader': () => import('../components/q-firebase-uploader-base.vue'),
+    'sp-trans-form': () => import('../components/sp-trans-form.vue'),
     'sp-receipt': () => import('../components/sp-receipt.vue')
   }
 }

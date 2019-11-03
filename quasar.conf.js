@@ -75,7 +75,8 @@ module.exports = function (ctx) {
         'QTable',
         'QTr',
         'QTd',
-        'QImg'
+        'QImg',
+        'QScrollArea'
         // 'QFirebaseUploader'
         ],
       directives: [],

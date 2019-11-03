@@ -34,6 +34,9 @@ export const getters = {
 export const mutations = {
   setTransactions (state, payload) {
     state.transactions = payload
+  },
+  setTransactionKey (state, payload) {
+    state.transactions[state.transactions.findIndex(x => x.id === payload.trans)][payload.key] = payload.val
   }
 }
 
@@ -58,6 +61,9 @@ export const actions = {
         dispatch('fetchPopulateBudgets')
         // return true
       })
+  },
+  updateTransactionByKey ({ commit }, payload) {
+    commit('setTransactionKey', payload)
   }
 }
 
