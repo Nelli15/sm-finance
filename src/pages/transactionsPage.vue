@@ -1,5 +1,6 @@
 <template>
   <q-page padding>
+    <!-- {{budgetCategories}} -->
     <q-table
       :data="transactionsFiltered"
       :columns="columns"
@@ -365,13 +366,27 @@ export default {
       //     this.transactions[key].receiptURL
       //   }
       // }
+
       if (this.$route.params.budgetCategory) {
+        let budgets = []
+        // if (this.budgets[this.$route.params.budgetCategory].sub === false) {
+        for (var key in this.budgets) {
+          if ((this.budgets[key].category)) {
+            // console.log('Pushing', key)
+            budgets.push(key)
+          }
+        }
+        // console.log(budgets)
+        // }
         let transactions = []
         // console.log(this.transactions)
-        for (var key in this.transactions) {
+        for (var transKey in this.transactions) {
           // console.log(this.$route.params.budgetCategory, '===', this.transactions[key].category)
-          if (this.$route.params.budgetCategory === this.transactions[key].category) {
-            transactions.push(this.transactions[key])
+          for (var budgetKey in budgets) {
+            if ((budgets[budgetKey] === this.transactions[transKey].category)) {
+              // console.log(budgets[budgetKey], this.transactions[transKey].category)
+              transactions.push(this.transactions[transKey])
+            }
           }
         }
         return transactions

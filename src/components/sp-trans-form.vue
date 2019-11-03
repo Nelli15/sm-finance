@@ -51,7 +51,7 @@
       <q-item>
         <!-- <q-item-section> -->
         <!-- <q-popup-edit v-model="props.row.category"> -->
-        <q-select :value="newTrans.category > '' ? budgets[newTrans.category] ? budgets[newTrans.category].label : budgetCategories[newTrans.category].label: ''" dense label="Category" :options="budgetOptions" option-label="label" :option-value="(item) => item === null ? null : item.id" @input="newTrans.category = $event.id" style="width:100%"/>
+        <q-select :value="newTrans.category > '' ? budgets[newTrans.category] ? budgets[newTrans.category].label : budgetCategories[newTrans.category].label: ''" dense label="Category" :options="isAdmin ? budgetOptions : contributorBudgets" option-label="label" :option-value="(item) => item === null ? null : item.id" @input="newTrans.category = $event.id" style="width:100%"/>
         <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
       </q-item>
@@ -197,7 +197,9 @@ export default {
       'project',
       'budgets',
       'budgetCategories',
-      'budgetOptions'
+      'budgetOptions',
+      'isAdmin',
+      'contributorBudgets'
     ])
   },
   components: {

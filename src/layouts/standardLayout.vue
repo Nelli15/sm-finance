@@ -172,15 +172,24 @@
 
       <q-tabs align="left">
         <q-route-tab to="/dashboard" label="Dashboard" />
-        <q-route-tab :to="{ name: 'summary' }" label="Summary" />
-        <q-route-tab :to="{ name: 'budget' }" label="Budgets" />
-        <q-route-tab :to="{ name: 'transactions' }" label="Transactions" />
-        <q-route-tab :to="{ name: 'petty' }" label="Petty Cash" />
+        <q-route-tab :to="{ name: 'summary' }" label="Summary" v-if="isAdmin" />
+        <q-route-tab :to="{ name: 'budget' }" label="Budgets" v-if="isAdmin" />
+        <q-route-tab :to="{ name: 'transactions' }" label="Transactions" v-if="isAdmin" />
+        <q-route-tab :to="{ name: 'petty' }" label="Petty Cash" v-if="isAdmin" />
       </q-tabs>
     </q-header>
 
-    <q-page-container>
+    <q-page-container v-if="isAdmin || $route.name ==='addTrans'">
       <router-view />
+    </q-page-container>
+    <q-page-container v-else>
+      <q-page>
+        <q-banner>
+          <div class="text-h6">
+            403 Unauthorised! You are not Authorised to be here.
+          </div>
+        </q-banner>
+      </q-page>
     </q-page-container>
 
   </q-layout>
@@ -199,7 +208,8 @@ export default {
     }
   },
   created () {
-    this.$store.dispatch('fetchProject', this.$route.params.id)
+    console.log(this.$route.name)
+    this.$store.dispatch('fetchProject', { projectId: this.$route.params.id, uid: this.user.uid })
     this.$store.dispatch('fetchTransactions', this.$route.params.id)
     this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
     this.$store.dispatch('fetchBudgets', this.$route.params.id)
@@ -209,7 +219,8 @@ export default {
       'project',
       'user',
       'admins',
-      'contributors'
+      'contributors',
+      'isAdmin'
     ])
   }
 }

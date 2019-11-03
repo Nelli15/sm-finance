@@ -42,7 +42,7 @@
             Project Currency ({{ props.row.currency }})
           </q-td>
           <q-td key="export" :props="props">
-            <q-btn icon="view_list" label="Open" @click="$router.push(`/project/${props.row.id}/summary`)">
+            <q-btn icon="view_list" label="Open" @click="onProjectOpen(props.row.id, props.row.permission)">
               <q-tooltip>
                 Open the Project
               </q-tooltip>
@@ -57,7 +57,7 @@
       </template>
       <template v-slot:item="props">
         <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3 grid-style-transition">
-          <q-card class="bg-secondary text-white" @click="$router.push(`/project/${props.row.id}/summary`)">
+          <q-card class="bg-secondary text-white" @click="onProjectOpen(props.row.id, props.row.permission)">
             <q-card-section>
               <q-item>
                 <q-item-section>
@@ -130,6 +130,15 @@ export default {
   },
   created () {
     // this.$store.dispatch('fetchProjects', this.$route.params.id)
+  },
+  methods: {
+    onProjectOpen (projectId, permission) {
+      if (permission === 'contributor') {
+        this.$router.push(`/project/${projectId}/addTransaction`)
+      } else {
+        this.$router.push(`/project/${projectId}/summary`)
+      }
+    }
   },
   computed: {
     ...mapGetters([

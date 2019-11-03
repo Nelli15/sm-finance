@@ -17,7 +17,7 @@ const routes = [
       { path: 'petty', name: 'petty', component: () => import('pages/pettyCashPage.vue') },
       { path: 'transactions', name: 'transactions', component: () => import('pages/transactionsPage.vue') },
       { path: 'transactions/:budgetCategory', component: () => import('pages/transactionsPage.vue') },
-      { path: 'addTransaction', component: () => import('components/sp-trans-form.vue') }
+      { path: 'addTransaction', name: 'addTrans', component: () => import('components/sp-trans-form.vue') }
     ]
   },
   {

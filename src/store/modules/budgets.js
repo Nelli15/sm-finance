@@ -42,7 +42,7 @@ export const mutations = {
       for (var transKey in rootState.transactions.transactions) {
         transaction = rootState.transactions.transactions[transKey]
         if (!transaction.deleted && transaction.category === budget.id) {
-          total += parseInt(transaction.amountAUD) ? parseInt(transaction.amountAUD) : 0
+          total += parseInt(transaction.amount) ? parseInt(transaction.amount) : 0
         }
       }
       budget.spent = total
@@ -63,7 +63,7 @@ export const mutations = {
       for (transKey in rootState.transactions.transactions) {
         transaction = rootState.transactions.transactions[transKey]
         if (!transaction.deleted && transaction.category === budgetCategory.id) {
-          total += parseInt(transaction.amountAUD) ? parseInt(transaction.amountAUD) : 0
+          total += parseInt(transaction.amount) ? parseInt(transaction.amount) : 0
         }
       }
       for (var budgetKey in state.budgets) {
