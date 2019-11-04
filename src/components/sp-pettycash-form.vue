@@ -1,24 +1,24 @@
 <template>
-  <q-menu>
-    <q-form
-    @reset="onReset"
-    @submit="onSubmit">
-      <q-list style="min-width: 100px">
-        <q-item>
-        <!-- <q-item-section> -->
-        Add Pettty Cash
-        <!-- </q-item-section> -->
-        </q-item>
-        <q-item>
-          <q-btn label="Submit" type="submit" color="teal"/>
-          <q-btn label="Clear" type="reset" color="teal" flat class="q-ml-sm"/>
-        </q-item>
-      </q-list>
-    </q-form>
-    <q-inner-loading :showing="loading">
-      <q-spinner size="50px" color="primary" />
-    </q-inner-loading>
-  </q-menu>
+	<q-menu>
+		<q-form
+		@reset="onReset"
+		@submit="onSubmit">
+			<q-list style="min-width: 100px">
+				<q-item>
+				<!-- <q-item-section> -->
+				Add Pettty Cash
+				<!-- </q-item-section> -->
+				</q-item>
+				<q-item>
+					<q-btn label="Submit" type="submit" color="teal"/>
+					<q-btn label="Clear" type="reset" color="teal" flat class="q-ml-sm"/>
+				</q-item>
+			</q-list>
+		</q-form>
+		<q-inner-loading :showing="loading">
+			<q-spinner size="50px" color="primary" />
+		</q-inner-loading>
+	</q-menu>
 </template>
 
 <script>
