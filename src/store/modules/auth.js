@@ -16,13 +16,21 @@ export const getters = {
   admins: state => {
     let admins = []
     for (var contributor in state.contributors) {
-      if (contributor.permission === 'admin') {
-        admins.push(contributor)
+      if (state.contributors[contributor].permission === 'admin') {
+        admins.push(state.contributors[contributor])
       }
     }
     return admins
   },
-  contributors: state => state.contributors,
+  contributors: state => {
+    let contributors = []
+    for (var contributor in state.contributors) {
+      if (state.contributors[contributor].permission === 'contributor') {
+        contributors.push(state.contributors[contributor])
+      }
+    }
+    return contributors
+  },
   idToken: state => state.idToken
 }
 
@@ -42,9 +50,11 @@ export const mutations = {
 
 export const actions = {
   fetchContributors ({ commit }, payload) {
-    firebase.firestore().doc(`/projects/${payload}/contributors`).onSnapshot(async adminsSnap => {
+    // console.log('fetching contributors')
+    firebase.firestore().collection(`/projects/${payload}/contributors`).onSnapshot(async adminsSnap => {
       let contributors = []
       let promises = adminsSnap.docs.map(doc => {
+        // console.log('contributor ', doc.data())
         contributors.push(doc.data())
       })
       await Promise.all(promises)

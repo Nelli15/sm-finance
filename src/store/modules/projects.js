@@ -24,7 +24,7 @@ export const getters = {
   isAdmin: state => {
     if (state.project) {
       if (state.project.permissions) {
-        console.log('admin?', state.project.permissions.permission)
+        // console.log('admin?', state.project.permissions.permission)
         return state.project.permissions.permission === 'admin'
       }
     }
@@ -33,7 +33,7 @@ export const getters = {
   isContributor: state => {
     if (state.project) {
       if (state.project.permissions) {
-        console.log('contributor?', state.project.permissions.permission)
+        // console.log('contributor?', state.project.permissions.permission)
         return state.project.permissions.permission === 'contributor'
       }
     }
@@ -110,7 +110,7 @@ export const actions = {
       })
   },
   fetchPermissions ({ commit }, payload) {
-    console.log(payload)
+    // console.log(payload)
     firebase.firestore().doc(`/projects/${payload.projectId}/contributors/${payload.uid}`)
       .onSnapshot(async contributorSnap => {
         commit('setPermissions', contributorSnap.data())

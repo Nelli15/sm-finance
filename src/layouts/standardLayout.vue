@@ -9,129 +9,169 @@
           </q-avatar>
  -->          SP Finances - {{ project.name }}
         </q-toolbar-title>
-            <q-btn flat icon="people" label="Share">
-      <q-tooltip content-class="bg-accent text-grey-10">
-        Who can see this?
-      </q-tooltip>
-    </q-btn>
-    <q-dialog>
-      <!-- <div v-if="userRoles.superEditor"> -->
-      <q-card class="q-pl-md q-pr-lg" style="min-width:800px">
-        <q-btn flat dense title="Close" icon="close" style="position:absolute;top:10px;right:10px;z-index:5;" />
-          <q-card-section>
-            <q-list>
-              <q-item>
-                <q-item-section class="text-h5">
-                  Sharing settings
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card-section>
-          <!-- <q-card-section>
-            <q-input v-model="newInvitation.email" placeholder="Email" type="email">
-              <template v-slot:before>
+        <q-btn flat icon="people" label="Share" @click="share = !share" v-if="isAdmin">
+          <q-tooltip content-class="bg-accent text-grey-10">
+            Who can see this?
+          </q-tooltip>
+        </q-btn>
+        <q-dialog v-model="share" v-if="isAdmin">
+          <!-- <div v-if="userRoles.superEditor"> -->
+          <q-card class="q-pl-md q-pr-lg" style="min-width:800px">
+            <q-btn flat dense title="Close" icon="close" style="position:absolute;top:10px;right:10px;z-index:5;" @click="share = false" />
+              <q-card-section>
+                <q-list>
+                  <q-item>
+                    <q-item-section class="text-h5">
+                      Sharing settings
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-card-section>
+              <q-card-section>
                 <div class="text-subtitle2">Invite People</div>
-              </template>
-              <template v-slot:append>
-              <q-select v-if="superEditor && !owner" v-model="newInvitation.role" placeholder="Role" :options="['viewer','editor','super editor']" />
-              <q-select v-if="owner" v-model="newInvitation.role" placeholder="Role" :options="['viewer','editor','super editor', 'owner']" />
-            </template>
-            <template v-slot:after>
-              <q-btn dense @click="sendInvite" title="Send Invitation" icon="send" color="positive" />
-            </template>
-            </q-input>
-          </q-card-section>
-          <q-separator /> -->
-          <q-card-section v-if="admins.length > 0">
-            <div class="text-subtitle2">Pending Requests for access</div>
-          </q-card-section>
-          <q-card-section style="max-height: 40vh" class="scroll">
-            <q-list separator v-if="admins.length > 0">
-              <q-item v-for="member in admins" :key="member.id" class="shadow-1 rounded-borders">
-                <q-item-section avatar>
-                  <q-avatar>
-                    <img :src="member.photoUrl" />
-                  </q-avatar>
-                </q-item-section>
-                <q-item-section>
-                  {{ member.name }}
-                </q-item-section>
-                <q-item-section style="min-width:250px">
-                  {{ member.email }}
-                </q-item-section>
-                <q-item-section>
-                  {{ member.role }}
-                  <q-popup-edit :value="member.role" dense v-if="superEditor">
-                    <q-select v-if="superEditor && !owner" :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRequest(member, $event)" />
-                    <q-select v-if="owner" :value="member.role" :options="['viewer','editor','super editor', 'owner']" dense autofocus counter @input="updateRequest(member, $event)" />
-                  </q-popup-edit>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn dense icon="delete" color="negative" @click="deleteRequest(member)" />
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card-section>
-          <!-- <q-separator v-if="requests.length > 0" />
-          <q-card-section>
-            <div class="text-subtitle2">Who has access</div>
-          </q-card-section>
-          <q-card-section style="max-height: 40vh;" class="scroll">
-            <q-list separator>
-              <q-item v-for="member in admins" :key="member.id" class="shadow-1 rounded-borders">
-                <q-item-section avatar>
-                  <q-avatar>
-                    <img :src="member.photoUrl" />
-                  </q-avatar>
-                </q-item-section>
-                <q-item-section>
-                  {{ member.name }}
-                </q-item-section>
-                <q-item-section style="min-width:250px">
-                  {{ member.email }}
-                </q-item-section>
-                <q-item-section>
-                  {{ member.role }}
-                  <q-popup-edit :value="member.role" dense v-if="superEditor">
-                    <q-select v-if="superEditor && !owner" :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" />
-                    <q-select v-if="owner" :value="member.role" :options="['viewer','editor','super editor', 'owner']" dense autofocus counter @input="updateRole(member, $event)" />
-                  </q-popup-edit>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn dense icon="delete" color="negative" @click="deleteRole(member)" />
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card-section> -->
-          <!-- <q-separator v-if="invites.length > 0" />
-          <q-card-section v-if="invites.length > 0">
-            <div class="text-subtitle2">Pending Invites</div>
-          </q-card-section>
-          <q-card-section v-if="invites.length > 0" style="max-height: 40vh" class="scroll">
-            <q-list separator>
-              <q-item v-for="member in invites" :key="member.id" class="shadow-1 rounded-borders">
-                <q-item-section avatar>
-                  <q-avatar>
-                    <img :src="'http://tinygraphs.com/spaceinvaders/'+uuid()+'?theme=bythepool&numcolors=4&size=220&fmt=svg'" />
-                  </q-avatar>
-                </q-item-section>
-                <q-item-section>
-                  {{ member.name }}
-                </q-item-section>
-                <q-item-section style="min-width:250px">
-                  {{ member.email }}
-                </q-item-section>
-                <q-item-section>
-                  {{ member.role }}
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn dense icon="delete" color="negative" @click="deleteInvite(member)" />
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card-section> -->
-        </q-card>
-      </q-dialog>
+                <q-input v-model="newInvitation.email" type="email" label="Email" stack-label>
+                  <template v-slot:append>
+                  <q-select v-if="isAdmin" v-model="newInvitation.permission" placeholder="Permission" :options="['contributor','admin']"  label="Permission" stack-label style="min-width:100px" />
+                  <q-select v-if="isAdmin && newInvitation.permission === 'contributor'" value="" @input="addInviteBudget" :options="budgetOptions" label="Budgets" stack-label style="min-width:100px" />
+                </template>
+                <template v-slot:after>
+                  <q-btn dense title="Send Invitation" icon="send" color="positive" />
+                </template>
+                </q-input>
+                <div v-if="newInvitation.budgets.length > 0 && newInvitation.permission === 'contributor'">Accessible Budgets</div>
+                <div class="q-gutter-xs">
+                  <q-badge color="blue" v-for="budget in newInvitation.budgets" :key="'budget-'+budget">
+                    {{ budgets[budget] ? budgets[budget].label : budgetCategories[budget].label }}
+                    <q-btn flat dense rounded size="xs" icon="close" @click="removeInviteBudget(budget)" />
+                  </q-badge>
+                </div>
+              </q-card-section>
+              <q-separator />
+             <!--  <q-card-section v-if="admins.length > 0">
+                <div class="text-subtitle2">Pending Requests for access</div>
+              </q-card-section>
+              <q-card-section style="max-height: 40vh" class="scroll">
+                <q-list separator v-if="admins.length > 0">
+                  <q-item v-for="member in admins" :key="member.id" class="shadow-1 rounded-borders">
+                    <q-item-section avatar>
+                      <q-avatar>
+                        <img :src="member.photoUrl" />
+                      </q-avatar>
+                    </q-item-section>
+                    <q-item-section>
+                      {{ member.name }}
+                    </q-item-section>
+                    <q-item-section style="min-width:250px">
+                      {{ member.email }}
+                    </q-item-section>
+                    <q-item-section>
+                      {{ member.permission }}
+                      <q-popup-edit :value="member.role" dense v-if="superEditor">
+                        <q-select v-if="superEditor && !owner" :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRequest(member, $event)" />
+                        <q-select v-if="owner" :value="member.role" :options="['viewer','editor','super editor', 'owner']" dense autofocus counter @input="updateRequest(member, $event)" />
+                      </q-popup-edit>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-btn dense icon="delete" color="negative" @click="deleteRequest(member)" />
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-card-section> -->
+              <!-- <q-separator v-if="requests.length > 0" /> -->
+              <q-card-section>
+                <div class="text-subtitle2">Who has access</div>
+              </q-card-section>
+              <q-card-section style="max-height: 40vh;" class="scroll">
+                <q-list separator>
+                  <q-item v-for="member in admins" :key="member.id" class="shadow-1 rounded-borders">
+                    <q-item-section avatar>
+                      <q-avatar>
+                        <img :src="member.photoURL" />
+                      </q-avatar>
+                    </q-item-section>
+                    <q-item-section>
+                      {{ member.name }}
+                    </q-item-section>
+                    <q-item-section style="min-width:250px">
+                      {{ member.email }}
+                    </q-item-section>
+                    <q-item-section clickable>
+                      {{ member.permission }}
+                      <q-popup-edit :value="member.permission" dense>
+                        <!-- <q-select  :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" /> -->
+                        <q-select  :value="member.permission" :options="['contributor','admin']" dense autofocus counter />
+                      </q-popup-edit>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-btn dense icon="delete" color="negative" @click="deleteRole(member)" />
+                    </q-item-section>
+                  </q-item>
+                  <q-item v-for="member in contributors" :key="member.id" class="shadow-1 rounded-borders">
+                    <q-item-section avatar>
+                      <q-avatar>
+                        <img :src="member.photoURL" />
+                      </q-avatar>
+                    </q-item-section>
+                    <q-item-section>
+                      {{ member.name }}
+                    </q-item-section>
+                    <q-item-section style="min-width:250px">
+                      {{ member.email }}
+                    </q-item-section>
+                    <q-item-section clickable>
+                      {{ member.permission }}
+                      <q-popup-edit :value="member.permission" dense>
+                        <!-- <q-select :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" /> -->
+                        <q-select  :value="member.permission" :options="['contributor','admin']" dense autofocus counter />
+                      </q-popup-edit>
+                    </q-item-section>
+                    <q-item-section clickable>
+                      <div class="q-gutter-xs">
+                        <q-badge color="blue" v-for="budget in member.budgets" :key="'budget-'+budget">
+                          {{ budgets[budget] ? budgets[budget].label : budgetCategories[budget] ? budgetCategories[budget].label : ''}}
+                          <q-btn flat dense rounded size="xs" icon="close" />
+                        </q-badge>
+                      </div>
+                      <q-popup-edit :value="member.budgets" dense>
+                        <!-- <q-select  :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" /> -->
+                        <q-select  :value="member.budgets" :options="budgetOptions" dense autofocus counter />
+                      </q-popup-edit>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-btn dense icon="delete" color="negative" />
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-card-section>
+              <!-- <q-separator v-if="invites.length > 0" />
+              <q-card-section v-if="invites.length > 0">
+                <div class="text-subtitle2">Pending Invites</div>
+              </q-card-section>
+              <q-card-section v-if="invites.length > 0" style="max-height: 40vh" class="scroll">
+                <q-list separator>
+                  <q-item v-for="member in invites" :key="member.id" class="shadow-1 rounded-borders">
+                    <q-item-section avatar>
+                      <q-avatar>
+                        <img :src="'http://tinygraphs.com/spaceinvaders/'+uuid()+'?theme=bythepool&numcolors=4&size=220&fmt=svg'" />
+                      </q-avatar>
+                    </q-item-section>
+                    <q-item-section>
+                      {{ member.name }}
+                    </q-item-section>
+                    <q-item-section style="min-width:250px">
+                      {{ member.email }}
+                    </q-item-section>
+                    <q-item-section>
+                      {{ member.role }}
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-btn dense icon="delete" color="negative" @click="deleteInvite(member)" />
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-card-section> -->
+            </q-card>
+          </q-dialog>
 
         <q-btn
           flat
@@ -203,7 +243,17 @@ import { mapGetters } from 'vuex'
 export default {
   data () {
     return {
-      right: false
+      right: false,
+      share: false,
+      newInvitation: {
+        email: '',
+        permission: 'contributor',
+        accepted: false,
+        sent: false,
+        projectName: '',
+        fromName: '',
+        budgets: []
+      }
       // admins: []
     }
   },
@@ -213,6 +263,9 @@ export default {
     this.$store.dispatch('fetchTransactions', this.$route.params.id)
     this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
     this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    this.$store.dispatch('fetchContributors', this.$route.params.id)
+    this.newInvitation.fromName = this.user.displayName
+    this.newInvitation.projectName = this.project.name
   },
   computed: {
     ...mapGetters([
@@ -220,8 +273,38 @@ export default {
       'user',
       'admins',
       'contributors',
-      'isAdmin'
+      'isAdmin',
+      'budgetOptions',
+      'budgets',
+      'budgetCategories'
     ])
+  },
+  methods: {
+    addInviteBudget (event) {
+      // console.log(this.newInvitation.budgets.indexOf(event.id) !== -1)
+      if (this.newInvitation.budgets.indexOf(event.id) === -1) {
+        this.newInvitation.budgets.push(event.id)
+      }
+    },
+    removeInviteBudget (event) {
+      // var overrideStyleVal = this.overrideStyles[event].id
+      // console.log(overrideStyleVal)
+      var index = this.newInvitation.budgets.indexOf(event)
+      if (index > -1) {
+        this.newInvitation.budgets.splice(index, 1)
+      }
+    }
   }
+  // watch: {
+  //   newInvitation (oldVal, newVal) {
+  //     if (oldVal.permission !== newVal.permission) {
+  //       if (this.newInvitation.permission === 'contributor') {
+  //         this.newInvitation.budgets = []
+  //       } else {
+  //         this.newInvitation.budgets = ['all']
+  //       }
+  //     }
+  //   }
+  // }
 }
 </script>

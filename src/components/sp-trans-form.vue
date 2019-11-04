@@ -13,7 +13,7 @@
         <!-- <q-item-section> -->
         <q-firebase-uploader
           :metadata="{customMetadata: {projectId: projectId, transId: transRef.id, expiry: expiry(1) }}"
-          color="teal"
+          color="secondary"
           flat
           bordered
           style="max-width: 500px"
@@ -85,8 +85,8 @@
         <q-input v-model="newTrans.desc" dense label="Description" style="width:100%" />
       </q-item>
       <q-item>
-        <q-btn label="Submit" type="submit" color="teal" :disable="uploading" />
-        <q-btn label="Clear" type="reset" color="teal" flat class="q-ml-sm" :disable="uploading" />
+        <q-btn label="Submit" type="submit" color="secondary" :disable="uploading" />
+        <q-btn label="Clear" type="reset" color="secondary" flat class="q-ml-sm" :disable="uploading" />
       </q-item>
     </q-list>
   </q-form>

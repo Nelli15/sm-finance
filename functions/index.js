@@ -290,6 +290,7 @@ exports.onUserFirstSignIn = functions.auth.user().onCreate((user) => {
               name: userSanitized.name,
               permission: inviteSnap.data().permission,
               budgets: inviteSnap.data().budgets,
+              photoURL: userSanitized.photoURL
             })
             //delete the old invites
             batch.delete(inviteSnap.ref)
