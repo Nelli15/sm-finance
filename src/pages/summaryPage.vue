@@ -19,7 +19,7 @@
       :pagination.sync="pagination"
     >
       <template v-slot:top="props">
-        <div class="col-2 q-table__title">Budget Categories</div>
+        <div class="col-4 q-table__title">Budget Categories</div>
 
         <q-space />
 
@@ -63,13 +63,19 @@
           </q-td>
           <q-td key="budgeted" :props="props">
             ${{ props.row.budget }}
-            <q-popup-edit v-model="props.row.budget">
+            <q-popup-edit v-model="props.row.budget" v-if="props.row.calculated !== true">
               <q-input v-model="props.row.budget" dense autofocus label="Budgeted Amount">
                 <template v-slot:prepend>
                   $
                 </template>
               </q-input>
             </q-popup-edit>
+            <q-tooltip v-if="props.row.calculated === true">
+              Auto Calculated
+            </q-tooltip>
+            <q-tooltip v-else>
+              <q-icon name="edit" />
+            </q-tooltip>
           </q-td>
           <q-td key="spent" :props="props">
             ${{ props.row.spent }}
@@ -87,10 +93,11 @@
       </template>
     </q-table>
     <q-page-sticky position="bottom-left" :offset="[18, 18]" style="z-index:100">
-      <q-btn fab icon="add" color="primary" >
+      <q-btn fab icon="add" color="primary" direction="up">
         <q-tooltip content-class="bg-accent text-grey-10">
           Add Budget
         </q-tooltip>
+        <sp-budget-form :projectId="$route.params.id" />
       </q-btn>
     </q-page-sticky>
   </q-page>
@@ -146,6 +153,9 @@ export default {
       }
       return budgetCategories
     }
+  },
+  components: {
+    'sp-budget-form': () => import('./../components/sp-budget-form.vue')
   }
 }
 </script>

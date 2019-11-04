@@ -76,8 +76,11 @@ export const mutations = {
       }
       // console.log(total)
       budgetCategory.spent = total
-      if (found) {
+      if (found === true) {
+        budgetCategory.calculated = true
         budgetCategory.budget = budgeted
+      } else {
+        budgetCategory.calculated = false
       }
       state.budgetCategories[key] = budgetCategory
       // state.budgets[key] = { ...state.budgets[key], [key]: budget }
@@ -90,8 +93,10 @@ export const mutations = {
 
 export const actions = {
   fetchBudgetCategories ({ commit, dispatch }, payload) {
-    firebase.firestore().doc(`/projects/${payload}`).collection('/budgets').where('sub', '==', false)
+    // console.log('Fetch Budget Categories', payload)
+    firebase.firestore().collection(`/projects/${payload}/budgets`).where('sub', '==', false)
       .onSnapshot(async budgetsSnap => {
+        // console.log('Fetch Budget Categories')
         let budgets = {}, budget = {}
         let promises = budgetsSnap.docs.map(doc => {
           budget = doc.data()
@@ -107,8 +112,10 @@ export const actions = {
       })
   },
   fetchBudgets ({ commit, dispatch }, payload) {
-    firebase.firestore().doc(`/projects/${payload}`).collection('/budgets').where('sub', '==', true)
+    // console.log('Fetch Budgets', payload)
+    firebase.firestore().collection(`/projects/${payload}/budgets`).where('sub', '==', true)
       .onSnapshot(async budgetsSnap => {
+        // console.log('Fetch Budgets')
         let budgets = {}, budget = {}
         let promises = budgetsSnap.docs.map(doc => {
           budget = doc.data()
