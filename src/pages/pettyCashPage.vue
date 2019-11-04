@@ -340,7 +340,7 @@ export default {
     }
   },
   components: {
-    'sp-pettycash-form': () => import('./../components/sp-pettycash-form-form.vue')
+    'sp-pettycash-form': () => import('./../components/sp-pettycash-form.vue')
   }
 }
 </script>
