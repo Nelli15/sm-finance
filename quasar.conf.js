@@ -42,6 +42,19 @@ module.exports = function (ctx) {
       //            (not treeshaking Quasar; biggest bundle size; convenient)
       all: 'auto',
 
+      brand: {
+        primary: '#027BE3',
+        secondary: '#26A69A',
+        accent: '#abede9',
+
+        dark: '#1d1d1d',
+
+        positive: '#21BA45',
+        negative: '#C10015',
+        info: '#31CCEC',
+        warning: '#F2C037'
+      },
+
       components: [
         'QLayout',
         'QHeader',
@@ -76,7 +89,7 @@ module.exports = function (ctx) {
         'QTr',
         'QTd',
         'QImg',
-        'QScrollArea'
+        'QDialog'
         // 'QFirebaseUploader'
         ],
       directives: [],
@@ -84,7 +97,8 @@ module.exports = function (ctx) {
       // Quasar plugins
       plugins: [
         'Notify',
-        'Loading'
+        'Loading',
+        'ClosePopup'
       ],
       config: {
         loading: {}

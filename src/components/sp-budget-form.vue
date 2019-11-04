@@ -38,8 +38,8 @@
           <!-- </q-item-section> -->
         </q-item>
         <q-item>
-            <q-btn label="Submit" type="submit" color="teal"/>
-            <q-btn label="Clear" type="reset" color="teal" flat class="q-ml-sm"/>
+            <q-btn label="Submit" type="submit" color="secondary"/>
+            <q-btn label="Clear" type="reset" color="secondary" flat class="q-ml-sm"/>
         </q-item>
       </q-list>
     </q-form>
@@ -85,6 +85,9 @@ export default {
         this.$q.loading.hide()
       })
       // this.loading = false
+    },
+    onReset (event) {
+
     }
   },
   computed: {

@@ -24,15 +24,15 @@
           </q-card-section>
           <q-separator />
           <q-card-section class="q-gutter-md">
-            <q-input prefix="$100 x" :suffix="'$'+(dollars.hundreds * 100).toFixed(2)" color="teal" outlined v-model="dollars.hundreds" type="number" style="max-width:250px" dense>
+            <q-input prefix="$100 x" :suffix="'$'+(dollars.hundreds * 100).toFixed(2)" color="secondary" outlined v-model="dollars.hundreds" type="number" style="max-width:250px" dense>
             </q-input>
-            <q-input prefix="$50 x" :suffix="'$'+(dollars.fifties * 50).toFixed(2)" color="teal" outlined v-model="dollars.fifties" type="number" style="max-width:250px" dense>
+            <q-input prefix="$50 x" :suffix="'$'+(dollars.fifties * 50).toFixed(2)" color="secondary" outlined v-model="dollars.fifties" type="number" style="max-width:250px" dense>
             </q-input>
-            <q-input prefix="$20 x" :suffix="'$'+(dollars.twenties * 20).toFixed(2)" color="teal" outlined v-model="dollars.twenties" type="number" style="max-width:250px" dense>
+            <q-input prefix="$20 x" :suffix="'$'+(dollars.twenties * 20).toFixed(2)" color="secondary" outlined v-model="dollars.twenties" type="number" style="max-width:250px" dense>
             </q-input>
-            <q-input prefix="$10 x" :suffix="'$'+(dollars.tens * 10).toFixed(2)" color="teal" outlined v-model="dollars.tens" type="number" style="max-width:250px" dense>
+            <q-input prefix="$10 x" :suffix="'$'+(dollars.tens * 10).toFixed(2)" color="secondary" outlined v-model="dollars.tens" type="number" style="max-width:250px" dense>
             </q-input>
-            <q-input prefix="$5 x" :suffix="'$'+(dollars.fives * 5).toFixed(2)" color="teal" outlined v-model="dollars.fives" type="number" style="max-width:250px" dense>
+            <q-input prefix="$5 x" :suffix="'$'+(dollars.fives * 5).toFixed(2)" color="secondary" outlined v-model="dollars.fives" type="number" style="max-width:250px" dense>
             </q-input>
           </q-card-section>
         </q-card>
@@ -42,17 +42,17 @@
           </q-card-section>
           <q-separator />
           <q-card-section class="q-gutter-md">
-            <q-input prefix="$2 x" :suffix="'$'+(dollars.twos * 2).toFixed(2)" color="teal" outlined v-model="dollars.twos" type="number" style="max-width:250px" dense>
+            <q-input prefix="$2 x" :suffix="'$'+(dollars.twos * 2).toFixed(2)" color="secondary" outlined v-model="dollars.twos" type="number" style="max-width:250px" dense>
             </q-input>
-            <q-input prefix="$1 x" :suffix="'$'+(dollars.ones * 1).toFixed(2)" color="teal" outlined v-model="dollars.ones" type="number" style="max-width:250px" dense>
+            <q-input prefix="$1 x" :suffix="'$'+(dollars.ones * 1).toFixed(2)" color="secondary" outlined v-model="dollars.ones" type="number" style="max-width:250px" dense>
             </q-input>
-            <q-input prefix="50c x" :suffix="'$'+(cents.fifties * 0.50).toFixed(2)" color="teal" outlined v-model="cents.fifties" type="number" style="max-width:250px" dense>
+            <q-input prefix="50c x" :suffix="'$'+(cents.fifties * 0.50).toFixed(2)" color="secondary" outlined v-model="cents.fifties" type="number" style="max-width:250px" dense>
             </q-input>
-            <q-input prefix="20c x" :suffix="'$'+(cents.twenties * 0.20).toFixed(2)" color="teal" outlined v-model="cents.twenties" type="number" style="max-width:250px" dense>
+            <q-input prefix="20c x" :suffix="'$'+(cents.twenties * 0.20).toFixed(2)" color="secondary" outlined v-model="cents.twenties" type="number" style="max-width:250px" dense>
             </q-input>
-            <q-input prefix="10c x" :suffix="'$'+(cents.tens * 0.10).toFixed(2)" color="teal" outlined v-model="cents.tens" type="number" style="max-width:250px" dense>
+            <q-input prefix="10c x" :suffix="'$'+(cents.tens * 0.10).toFixed(2)" color="secondary" outlined v-model="cents.tens" type="number" style="max-width:250px" dense>
             </q-input>
-            <q-input prefix="5c x" :suffix="'$'+(cents.fives * 0.05).toFixed(2)" color="teal" outlined v-model="cents.fives" type="number" style="max-width:250px" dense>
+            <q-input prefix="5c x" :suffix="'$'+(cents.fives * 0.05).toFixed(2)" color="secondary" outlined v-model="cents.fives" type="number" style="max-width:250px" dense>
             </q-input>
           </q-card-section>
         </q-card>
