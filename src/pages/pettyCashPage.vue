@@ -205,6 +205,7 @@
         <q-tooltip content-class="bg-accent text-grey-10">
           Add to Petty Cash
         </q-tooltip>
+        <sp-pettycash-form :projectId="$route.params.id" />
       </q-btn>
     </q-page-sticky>
     <q-page-sticky position="bottom-right" :offset="[18, 18]" style="z-index:100">
@@ -337,6 +338,9 @@ export default {
         this.ccOptions = cc.codes().filter(v => v.toLowerCase().indexOf(needle) > -1)
       })
     }
+  },
+  components: {
+    'sp-pettycash-form': () => import('./../components/sp-pettycash-form-form.vue')
   }
 }
 </script>
