@@ -70,13 +70,13 @@
             </q-tooltip>
           </q-td>
           <q-td key="spent" :props="props">
-            ${{ props.row.spent ? props.row.spent : 0 }}
+            ${{ -props.row.expenses }}
             <q-tooltip>
               Auto Calculated
             </q-tooltip>
           </q-td>
           <q-td key="remaining" :props="props">
-            <q-badge :class="{ 'bg-green-8': (props.row.budget + (props.row.spent ? props.row.spent : 0)) > 0, 'bg-red-8': (props.row.budget + (props.row.spent ? props.row.spent : 0)) < 0, 'bg-black': (props.row.budget + (props.row.spent ? props.row.spent : 0)) == 0 }" :label="'$'+(props.row.budget + props.row.spent ? props.row.spent : 0)" />
+            <q-badge :class="{ 'bg-green-8': (props.row.income - props.row.expenses) > 0, 'bg-red-8': (props.row.income - props.row.expenses) < 0, 'bg-black': (props.row.income - props.row.expenses) == 0 }" :label="'$'+(props.row.income - props.row.expenses)" />
               <q-tooltip>
               Auto Calculated
             </q-tooltip>
@@ -110,7 +110,7 @@ const columns = [
   { name: 'label', align: 'left', label: 'Label', field: 'label', sortable: true },
   { name: 'budgeted', align: 'center', label: 'Budgeted (AUD)', field: 'budgeted', sortable: true },
   { name: 'spent', align: 'center', label: 'Spent (AUD)', field: 'spent', sortable: true },
-  { name: 'remaining', align: 'center', label: 'Remaining (AUD)', field: 'remaining', sortable: true },
+  { name: 'remaining', align: 'center', label: 'Cash in Hand (AUD)', field: 'remaining', sortable: true },
   { name: 'budgets', label: '', field: 'category' }
 ]
 

@@ -108,7 +108,7 @@ const columns = [
   { name: 'name', align: 'left', label: 'Name', field: 'label', sortable: true },
   { name: 'budgeted', align: 'center', label: 'Budgeted (AUD)', field: 'budgeted', sortable: true },
   { name: 'spent', align: 'center', label: 'Spent (AUD)', field: 'spent', sortable: true },
-  { name: 'remaining', align: 'center', label: 'Cash In Hand (AUD)', field: 'remaining', sortable: true },
+  { name: 'remaining', align: 'center', label: 'Cash in Hand (AUD)', field: 'remaining', sortable: true },
   { name: 'transactions', label: '', field: 'category' }
 ]
 
