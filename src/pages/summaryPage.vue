@@ -8,6 +8,7 @@
     </q-banner>
 
     <q-table
+      class="my-sticky-header-table"
       :data="budgetCategoriesFiltered"
       :columns="columns"
       title="Budget Categories"
@@ -17,9 +18,10 @@
       :filter="filter"
       rows-per-page-label="Budgets per page:"
       :pagination.sync="pagination"
+      dense
     >
       <template v-slot:top="props">
-        <div class="col-4 q-table__title">Budget Categories</div>
+        <div class="col-4 q-table__title">Categories</div>
 
         <q-space />
 
@@ -54,36 +56,32 @@
         />
       </template>
       <template v-slot:body="props">
-        <q-tr :props="props">
-          <q-td key="category" :props="props">
-            {{ props.row.category }}
+        <q-tr :props="props" class="text-bold">
+          <q-td key="label" :props="props">
+            {{ props.row.label }}
             <!-- <q-popup-edit v-model="props.row.category">
               <q-input v-model="props.row.category" dense autofocus counter label="Budget Category" />
             </q-popup-edit> -->
           </q-td>
           <q-td key="budgeted" :props="props">
             ${{ props.row.budget }}
-            <q-popup-edit v-model="props.row.budget" v-if="props.row.calculated !== true">
-              <q-input v-model="props.row.budget" dense autofocus label="Budgeted Amount">
-                <template v-slot:prepend>
-                  $
-                </template>
-              </q-input>
-            </q-popup-edit>
-            <q-tooltip v-if="props.row.calculated === true">
+            <q-tooltip>
               Auto Calculated
-            </q-tooltip>
-            <q-tooltip v-else>
-              <q-icon name="edit" />
             </q-tooltip>
           </q-td>
           <q-td key="spent" :props="props">
-            ${{ props.row.spent }}
+            ${{ props.row.spent ? props.row.spent : 0 }}
+            <q-tooltip>
+              Auto Calculated
+            </q-tooltip>
           </q-td>
           <q-td key="remaining" :props="props">
-            <q-badge v-if="props.row.budget - props.row.spent > 0" color="positive" :label="'$'+(props.row.budget - props.row.spent)" />
-            <q-badge v-else-if="props.row.budget - props.row.spent < 0" color="negative" :label="'-$'+(props.row.budget - props.row.spent)*-1" />
-            <q-badge v-else color="black" :label="'$'+(props.row.budget - props.row.spent)" />
+            <q-badge :class="{ 'bg-green-8': (props.row.budget + (props.row.spent ? props.row.spent : 0)) > 0, 'bg-red-8': (props.row.budget + (props.row.spent ? props.row.spent : 0)) < 0, 'bg-black': (props.row.budget + (props.row.spent ? props.row.spent : 0)) == 0 }" :label="'$'+(props.row.budget + props.row.spent ? props.row.spent : 0)" />
+              <q-tooltip>
+              Auto Calculated
+            </q-tooltip>
+            <!-- <q-badge v-else-if="props.row.budget + props.row.spent < 0" color="negative" :label="'-$'+(props.row.budget + props.row.spent)" /> -->
+            <!-- <q-badge v-else color="black" :label="'$'+(props.row.budget + props.row.spent)" /> -->
           </q-td>
           <q-td key="budgets" :props="props">
             <q-btn :to="'budget/'+props.row.id" flat>Budgets</q-btn>
@@ -109,10 +107,10 @@
 import { mapGetters } from 'vuex'
 
 const columns = [
-  { name: 'category', align: 'left', label: 'Category', field: 'category', sortable: true },
+  { name: 'label', align: 'left', label: 'Label', field: 'label', sortable: true },
   { name: 'budgeted', align: 'center', label: 'Budgeted (AUD)', field: 'budgeted', sortable: true },
-  { name: 'spent', label: 'Spent (AUD)', field: 'spent', sortable: true },
-  { name: 'remaining', label: 'Remaining (AUD)', field: 'remaining', sortable: true },
+  { name: 'spent', align: 'center', label: 'Spent (AUD)', field: 'spent', sortable: true },
+  { name: 'remaining', align: 'center', label: 'Remaining (AUD)', field: 'remaining', sortable: true },
   { name: 'budgets', label: '', field: 'category' }
 ]
 

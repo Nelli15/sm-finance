@@ -2,6 +2,7 @@
   <q-page padding>
     <!-- {{budgetCategories}} -->
     <q-table
+      class="my-sticky-header-table"
       :data="transactionsFiltered"
       :columns="columns"
       :rows-per-page-options="[5,10,15,20,50,100,200]"
@@ -10,6 +11,7 @@
       :filter="filter"
       rows-per-page-label="Transactions per page:"
       :pagination.sync="pagination"
+      dense
     >
       <template v-slot:top="props">
         <div class="col-4 q-table__title"> Transactions{{ pageLabel > '' ? ' for ' + pageLabel : ''}} </div>
@@ -47,7 +49,7 @@
         />
       </template>
       <template v-slot:body="props">
-        <q-tr :props="props">
+        <q-tr :props="props" class="text-bold">
           <q-td key="number" :props="props">
             {{ props.row.id }}
           </q-td>
@@ -81,14 +83,17 @@
             <!-- {{props.row.category}} -->
             <!-- {{budgets[props.row.category].category}} -->
             <!-- {{ props.row.id }} -->
-            {{ getCategoryById(props.row.category) }}
+            {{ props.row.category !== 'Journal' ? getCategoryById(props.row.budget) : '' }}
+            {{ props.row.category === 'Journal' ? getCategoryById(props.row.from) : ''}}
+            <q-icon name="arrow_forward" v-if="props.row.category === 'Journal'" />
+            {{ props.row.category === 'Journal' ? getCategoryById(props.row.to) : ''}}
             <!-- <q-popup-edit v-model="props.row.category">
               <q-select v-model="props.row.category" dense autofocus label="Category" :options="budgets" option-label="category" option-value="category" />
             </q-popup-edit> -->
           </q-td>
           <q-td key="budget" :props="props">
             <!-- {{ props.row.text }} -->
-            {{ budgets[props.row.category] ? budgets[props.row.category].label : '' }}
+            {{ budgets[props.row.budget] ? budgets[props.row.budget].label : '' }}
             <!-- <q-popup-edit v-model="props.row.desc">
               <q-input v-model="props.row.desc" dense autofocus label="Description" />
             </q-popup-edit> -->
@@ -105,7 +110,7 @@
               <q-date :value="props.row.date" @input="updateTransaction(props.row.id, 'date', $event)"  mask="DD/MM/YYYY" />
             </q-popup-edit>
           </q-td>
-          <q-td key="amount" :props="props">
+          <q-td key="amount" :props="props" :class="{ 'text-red-8': props.row.category === 'Expense', 'text-green-8': props.row.category === 'Income','text-blue-8': props.row.category === 'Journal', }">
             <!-- {{ getAmount(props.row.text) }} -->
             <!-- {{props.row}} -->
             {{ props.row.amount }}
@@ -267,10 +272,12 @@ export default {
       })
     },
     getCategoryById (id) {
-      if (this.budgets[id]) {
-        return this.budgetCategories[this.budgets[id].category].category
+      if (this.accounts[id]) {
+        return this.accounts[id].label
+      } else if (this.budgets[id]) {
+        return this.budgetCategories[this.budgets[id].category].label
       } else if (this.budgetCategories[id]) {
-        return this.budgetCategories[id].category
+        return this.budgetCategories[id].label
       } else {
         return ''
       }
@@ -356,6 +363,7 @@ export default {
       'project',
       'idToken',
       'transactions',
+      'accounts',
       'budgets',
       'budgetOptions',
       'budgetCategories'
@@ -372,7 +380,7 @@ export default {
         // if (this.budgets[this.$route.params.budgetCategory].sub === false) {
         for (var key in this.budgets) {
           if ((this.budgets[key].category)) {
-            // console.log('Pushing', key)
+            console.log('Pushing', key)
             budgets.push(key)
           }
         }
@@ -383,7 +391,7 @@ export default {
         for (var transKey in this.transactions) {
           // console.log(this.$route.params.budgetCategory, '===', this.transactions[key].category)
           for (var budgetKey in budgets) {
-            if ((budgets[budgetKey] === this.transactions[transKey].category)) {
+            if ((budgets[budgetKey] === this.transactions[transKey].budget)) {
               // console.log(budgets[budgetKey], this.transactions[transKey].category)
               transactions.push(this.transactions[transKey])
             }

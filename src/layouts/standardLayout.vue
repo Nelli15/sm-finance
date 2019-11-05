@@ -228,6 +228,13 @@
         <q-route-tab :to="{ name: 'budget' }" label="Budgets" v-if="isAdmin" />
         <q-route-tab :to="{ name: 'transactions' }" label="Transactions" v-if="isAdmin" />
         <q-route-tab :to="{ name: 'petty' }" label="Petty Cash" v-if="isAdmin" />
+        <q-space/>
+        <q-tab disable key="'electronicAccount-'+tableKey">
+          Electronic Funds: <q-badge v-if="accounts['debitCard']" :class="{ 'bg-green-8': (accounts['debitCard'].income - accounts['debitCard'].expenses) > 0, 'bg-red-8': (accounts['debitCard'].income - accounts['debitCard'].expenses) < 0, 'bg-black': (accounts['debitCard'].income - accounts['debitCard'].expenses) == 0 }" :label="'$'+(accounts['debitCard'].income - accounts['debitCard'].expenses)" />
+        </q-tab>
+        <q-tab disable key="'pettyAccount-'+tableKey">
+          Petty Cash: <q-badge v-if="accounts['pettyCash']" :class="{ 'bg-green-8': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) > 0, 'bg-red-8': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) < 0, 'bg-black': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) == 0 }" :label="'$'+(accounts['pettyCash'].income - accounts['pettyCash'].expenses)" />
+        </q-tab>
       </q-tabs>
     </q-header>
 
@@ -276,6 +283,7 @@ export default {
     this.$store.dispatch('fetchTransactions', this.$route.params.id)
     this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
     this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    this.$store.dispatch('fetchAccounts', this.$route.params.id)
     this.$store.dispatch('fetchContributors', this.$route.params.id)
     this.$store.dispatch('fetchInvites', this.$route.params.id)
     this.newInvitation.fromName = this.user.displayName
@@ -289,9 +297,12 @@ export default {
       'contributors',
       'isAdmin',
       'budgetOptions',
+      'accounts',
       'budgets',
       'budgetCategories',
-      'invites'
+      'invites',
+      'pettyTotals',
+      'tableKey'
     ])
   },
   methods: {

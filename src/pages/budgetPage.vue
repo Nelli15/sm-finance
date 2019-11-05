@@ -1,6 +1,7 @@
 <template>
   <q-page padding>
     <q-table
+      class="my-sticky-header-table"
       :data="budgetsFiltered"
       :columns="columns"
       title="Budget"
@@ -10,6 +11,7 @@
       :filter="filter"
       rows-per-page-label="Budgets per page:"
       :pagination.sync="pagination"
+      dense
     >
       <template v-slot:top="props">
         <div class="col-2 q-table__title">Budgets</div>
@@ -47,11 +49,11 @@
         />
       </template>
       <template v-slot:body="props">
-        <q-tr :props="props">
+        <q-tr :props="props" class="text-bold">
           <q-td key="category" :props="props">
             <!-- {{ props.row.category }} -->
             <!-- {{budgetCategories}} -->
-            {{ budgetCategories[props.row.category].category }}
+            {{ budgetCategories[props.row.category].label }}
             <!-- <q-popup-edit v-model="props.row.category">
               <q-input v-model="props.row.category" dense autofocus counter label="Budget Category" />
             </q-popup-edit> -->
@@ -70,12 +72,16 @@
             </q-popup-edit>
           </q-td>
           <q-td key="spent" :props="props">
-            ${{ props.row.spent }}
+            ${{ -props.row.expenses }}
+            <q-tooltip>
+              Auto Calculated
+            </q-tooltip>
           </q-td>
           <q-td key="remaining" :props="props">
-            <q-badge v-if="props.row.budget - props.row.spent > 0" color="positive" :label="'$'+(props.row.budget - props.row.spent)" />
-            <q-badge v-else-if="props.row.budget - props.row.spent < 0" color="negative" :label="'-$'+(props.row.budget - props.row.spent)*-1" />
-            <q-badge v-else color="black" :label="'$'+(props.row.budget - props.row.spent)" />
+            <q-badge :class="{ 'bg-green-8': (props.row.income - props.row.expenses) > 0, 'bg-red-8': (props.row.income - props.row.expenses) < 0, 'bg-black': (props.row.income - props.row.expenses) == 0 }" :label="'$'+(props.row.income - props.row.expenses)" />
+            <q-tooltip>
+              Auto Calculated
+            </q-tooltip>
           </q-td>
           <q-td key="transactions" :props="props">
             <q-btn :to="'transactions/'+props.row.id" flat>Transations</q-btn>
@@ -101,8 +107,8 @@ const columns = [
   { name: 'category', align: 'left', label: 'Category', field: 'category', sortable: true },
   { name: 'name', align: 'left', label: 'Name', field: 'label', sortable: true },
   { name: 'budgeted', align: 'center', label: 'Budgeted (AUD)', field: 'budgeted', sortable: true },
-  { name: 'spent', label: 'Spent (AUD)', field: 'spent', sortable: true },
-  { name: 'remaining', label: 'Remaining (AUD)', field: 'remaining', sortable: true },
+  { name: 'spent', align: 'center', label: 'Spent (AUD)', field: 'spent', sortable: true },
+  { name: 'remaining', align: 'center', label: 'Cash In Hand (AUD)', field: 'remaining', sortable: true },
   { name: 'transactions', label: '', field: 'category' }
 ]
 
