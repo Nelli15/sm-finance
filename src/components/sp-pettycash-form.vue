@@ -46,12 +46,14 @@ export default {
   props: ['projectId'],
   data () {
     return {
-      // newBudget: {
-      //   category: '', // ID
-      //   sub: true, // budget if true, category if false
-      //   label: '', // name of budget or category
-      //   budget: 0 // the amount budgeted
-      // },
+      newPetty: {
+        category: '', // Category of petty cash
+        amountAUD: '', // $ amount updated to petty cash
+        date: '', // date of petty cash transaction
+        desc: '', // description
+        number: '', // id
+        type: '' // Type of petty transaction
+      },
       loading: false
     }
   },
