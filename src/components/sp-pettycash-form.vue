@@ -46,22 +46,14 @@ export default {
   props: ['projectId'],
   data () {
     return {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      
-=======
-=======
->>>>>>> b93108b7391e3cd2234c285ef90c2665211a1798
-      // newBudget: {
-      //   category: '', // ID
-      //   sub: true, // budget if true, category if false
-      //   label: '', // name of budget or category
-      //   budget: 0 // the amount budgeted
-      // },
-<<<<<<< HEAD
->>>>>>> b93108b7391e3cd2234c285ef90c2665211a1798
-=======
->>>>>>> b93108b7391e3cd2234c285ef90c2665211a1798
+      newPetty: {
+        category: '', // Category of petty cash
+        amountAUD: '', // $ amount updated to petty cash
+        date: '', // date of petty cash transaction
+        desc: '', // description
+        number: '', // id
+        type: '' // Type of petty transaction
+      },
       loading: false
     }
   },
