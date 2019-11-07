@@ -32,17 +32,17 @@
                 <q-input v-model="newInvitation.email" type="email" label="Email" stack-label>
                   <template v-slot:append>
                   <q-select v-if="isAdmin" v-model="newInvitation.permission" placeholder="Permission" :options="['contributor','admin']"  label="Permission" stack-label style="min-width:100px" />
-                  <q-select v-if="isAdmin && newInvitation.permission === 'contributor'" value="" @input="addInviteBudget" :options="budgetOptions" label="Budgets" stack-label style="min-width:100px" />
+                  <q-select v-if="isAdmin && newInvitation.permission === 'contributor'" value="" @input="addNewInviteBudget" :options="budgetOptions" label="Budgets" stack-label style="min-width:100px" />
                 </template>
                 <template v-slot:after>
-                  <q-btn dense title="Send Invitation" icon="send" color="positive" />
+                  <q-btn dense title="Send Invitation" icon="send" color="positive" @click="addUser" />
                 </template>
                 </q-input>
                 <div v-if="newInvitation.budgets.length > 0 && newInvitation.permission === 'contributor'">Accessible Budgets</div>
                 <div class="q-gutter-xs">
                   <q-badge color="blue" v-for="budget in newInvitation.budgets" :key="'budget-'+budget">
                     {{ budgets[budget] ? budgets[budget].label : budgetCategories[budget].label }}
-                    <q-btn flat dense rounded size="xs" icon="close" @click="removeInviteBudget(budget)" />
+                    <q-btn flat dense rounded size="xs" icon="close" @click="removeNewInviteBudget(budget)" />
                   </q-badge>
                 </div>
               </q-card-section>
@@ -99,11 +99,11 @@
                       {{ member.permission }}
                       <q-popup-edit :value="member.permission" dense>
                         <!-- <q-select  :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" /> -->
-                        <q-select  :value="member.permission" :options="['contributor','admin']" dense autofocus counter />
+                        <q-select :value="member.permission" :options="['contributor','admin']" dense autofocus />
                       </q-popup-edit>
                     </q-item-section>
                     <q-item-section side>
-                      <q-btn dense icon="delete" color="negative" @click="deleteRole(member)" />
+                      <q-btn dense icon="delete" color="negative" @click="removeUser(member.uid)" />
                     </q-item-section>
                   </q-item>
                   <q-item v-for="member in contributors" :key="member.id" class="shadow-1 rounded-borders">
@@ -122,28 +122,29 @@
                       {{ member.permission }}
                       <q-popup-edit :value="member.permission" dense>
                         <!-- <q-select :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" /> -->
-                        <q-select  :value="member.permission" :options="['contributor','admin']" dense autofocus counter />
+                        <q-select :value="member.permission" :options="['contributor','admin']" dense autofocus />
                       </q-popup-edit>
                     </q-item-section>
-                    <q-item-section clickable>
-                      <div class="q-gutter-xs">
-                        <q-badge color="blue" v-for="budget in member.budgets" :key="'budget-'+budget">
-                          {{ budgets[budget] ? budgets[budget].label : budgetCategories[budget] ? budgetCategories[budget].label : ''}}
-                          <q-btn flat dense rounded size="xs" icon="close" />
-                        </q-badge>
-                      </div>
-                      <q-popup-edit :value="member.budgets" dense>
+                    <q-item-section clickable class="q-gutter-xs q-pr-lg">
+                      <!-- <div > -->
+                      <q-select :options="budgetOptions" dense autofocus style="min-width:100px;" @input="addContributorBudget(member.budgets, $event.id, member.uid)" value=""/>
+                      <q-badge color="blue" v-for="budget in member.budgets" :key="'budget-'+budget">
+                        {{ budgets[budget] ? budgets[budget].label : budgetCategories[budget] ? budgetCategories[budget].label : ''}}
+                        <q-btn flat dense rounded size="xs" icon="close" @click="removeContributorBudget(member.budgets, budget, member.uid)" />
+                      </q-badge>
+                      <!-- </div> -->
+                      <!-- <q-popup-edit :value="member.budgets" dense> -->
                         <!-- <q-select  :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" /> -->
-                        <q-select  :value="member.budgets" :options="budgetOptions" dense autofocus counter />
-                      </q-popup-edit>
+                      <!-- </q-popup-edit> -->
                     </q-item-section>
                     <q-item-section side>
-                      <q-btn dense icon="delete" color="negative" />
+                      <q-btn dense icon="delete" color="negative" @click="removeUser(member.uid)" />
                     </q-item-section>
                   </q-item>
                 </q-list>
               </q-card-section>
-              <!-- <q-separator v-if="invites.length > 0" />
+              <!-- {{invites}} -->
+              <q-separator v-if="invites.length > 0" />
               <q-card-section v-if="invites.length > 0">
                 <div class="text-subtitle2">Pending Invites</div>
               </q-card-section>
@@ -155,21 +156,32 @@
                         <img :src="'http://tinygraphs.com/spaceinvaders/'+uuid()+'?theme=bythepool&numcolors=4&size=220&fmt=svg'" />
                       </q-avatar>
                     </q-item-section>
-                    <q-item-section>
-                      {{ member.name }}
-                    </q-item-section>
                     <q-item-section style="min-width:250px">
                       {{ member.email }}
                     </q-item-section>
-                    <q-item-section>
-                      {{ member.role }}
+                    <q-item-section clickable>
+                      {{ member.permission }}
+                      <q-popup-edit :value="member.permission" dense>
+                        <!-- <q-select :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" /> -->
+                        <q-select :value="member.permission" :options="['contributor','admin']" dense autofocus />
+                      </q-popup-edit>
+                    </q-item-section>
+                    <q-item-section clickable v-if="member.permission === 'contributor'" >
+                      <q-select :options="budgetOptions" dense autofocus style="min-width:100px" @input="addInviteBudget(member.budgets, $event.id, member.email)" value="" />
+                      <q-badge color="blue" v-for="budget in member.budgets" :key="'budget-'+budget">
+                        {{ budgets[budget] ? budgets[budget].label : budgetCategories[budget] ? budgetCategories[budget].label : ''}}
+                        <q-btn flat dense rounded size="xs" icon="close" @click="removeInviteBudget(member.budgets, budget, member.email)" />
+                      </q-badge>
+                      <!-- <q-popup-edit :value="member.budgets" dense> -->
+                        <!-- <q-select  :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" /> -->
+                      <!-- </q-popup-edit> -->
                     </q-item-section>
                     <q-item-section side>
-                      <q-btn dense icon="delete" color="negative" @click="deleteInvite(member)" />
+                      <q-btn dense icon="delete" color="negative" @click="removeInvite(member.email)" />
                     </q-item-section>
                   </q-item>
                 </q-list>
-              </q-card-section> -->
+              </q-card-section>
             </q-card>
           </q-dialog>
 
@@ -216,6 +228,13 @@
         <q-route-tab :to="{ name: 'budget' }" label="Budgets" v-if="isAdmin" />
         <q-route-tab :to="{ name: 'transactions' }" label="Transactions" v-if="isAdmin" />
         <q-route-tab :to="{ name: 'petty' }" label="Petty Cash" v-if="isAdmin" />
+        <q-space/>
+        <q-tab v-if="isAdmin" disable key="'electronicAccount-'+tableKey">
+          Electronic Funds: <q-badge v-if="accounts['debitCard']" :class="{ 'bg-green-8': (accounts['debitCard'].income - accounts['debitCard'].expenses) > 0, 'bg-red-8': (accounts['debitCard'].income - accounts['debitCard'].expenses) < 0, 'bg-black': (accounts['debitCard'].income - accounts['debitCard'].expenses) == 0 }" :label="'$'+(accounts['debitCard'].income - accounts['debitCard'].expenses)" />
+        </q-tab>
+        <q-tab v-if="isAdmin" disable key="'pettyAccount-'+tableKey">
+          Petty Cash: <q-badge v-if="accounts['pettyCash']" :class="{ 'bg-green-8': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) > 0, 'bg-red-8': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) < 0, 'bg-black': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) == 0 }" :label="'$'+(accounts['pettyCash'].income - accounts['pettyCash'].expenses)" />
+        </q-tab>
       </q-tabs>
     </q-header>
 
@@ -236,9 +255,10 @@
 </template>
 
 <script>
+import { uid } from 'quasar'
 import { mapGetters } from 'vuex'
-// import firebase from 'firebase/app'
-// require('firebase/auth')
+import firebase from 'firebase/app'
+require('firebase/firestore')
 
 export default {
   data () {
@@ -263,7 +283,9 @@ export default {
     this.$store.dispatch('fetchTransactions', this.$route.params.id)
     this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
     this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    this.$store.dispatch('fetchAccounts', this.$route.params.id)
     this.$store.dispatch('fetchContributors', this.$route.params.id)
+    this.$store.dispatch('fetchInvites', this.$route.params.id)
     this.newInvitation.fromName = this.user.displayName
     this.newInvitation.projectName = this.project.name
   },
@@ -275,27 +297,85 @@ export default {
       'contributors',
       'isAdmin',
       'budgetOptions',
+      'accounts',
       'budgets',
-      'budgetCategories'
+      'budgetCategories',
+      'invites',
+      'pettyTotals',
+      'tableKey'
     ])
   },
   methods: {
-    addInviteBudget (event) {
+    uuid () {
+      return uid()
+    },
+    addContributorBudget (budgets, newBudget, uid) {
+      // console.log(this.newInvitation.budgets.indexOf(event.id) !== -1)
+      let tempBudgets = JSON.parse(JSON.stringify(budgets))
+      if (tempBudgets.indexOf(newBudget) === -1) {
+        tempBudgets.push(newBudget)
+        firebase.firestore().collection(`/projects/${this.$route.params.id}/contributors`).doc(uid).update({ budgets: tempBudgets })
+      }
+    },
+    removeContributorBudget (budgets, newBudget, uid) {
+      // var overrideStyleVal = this.overrideStyles[event].id
+      // console.log(overrideStyleVal)
+      let tempBudgets = JSON.parse(JSON.stringify(budgets))
+      var index = tempBudgets.indexOf(newBudget)
+      if (index > -1) {
+        tempBudgets.splice(index, 1)
+        firebase.firestore().collection(`/projects/${this.$route.params.id}/contributors`).doc(uid).update({ budgets: tempBudgets })
+      }
+    },
+    addInviteBudget (budgets, newBudget, email) {
+      // console.log(this.newInvitation.budgets.indexOf(event.id) !== -1)
+      let tempBudgets = JSON.parse(JSON.stringify(budgets))
+      if (tempBudgets.indexOf(newBudget) === -1) {
+        tempBudgets.push(newBudget)
+        firebase.firestore().collection(`/projects/${this.$route.params.id}/invites`).doc(email).update({ budgets: tempBudgets })
+      }
+    },
+    removeInviteBudget (budgets, newBudget, email) {
+      // var overrideStyleVal = this.overrideStyles[event].id
+      // console.log(overrideStyleVal)
+      let tempBudgets = JSON.parse(JSON.stringify(budgets))
+      var index = tempBudgets.indexOf(newBudget)
+      if (index > -1) {
+        tempBudgets.splice(index, 1)
+        firebase.firestore().collection(`/projects/${this.$route.params.id}/invitess`).doc(email).update({ budgets: tempBudgets })
+      }
+    },
+    addNewInviteBudget (event) {
       // console.log(this.newInvitation.budgets.indexOf(event.id) !== -1)
       if (this.newInvitation.budgets.indexOf(event.id) === -1) {
         this.newInvitation.budgets.push(event.id)
       }
     },
-    removeInviteBudget (event) {
+    removeNewInviteBudget (event) {
       // var overrideStyleVal = this.overrideStyles[event].id
       // console.log(overrideStyleVal)
       var index = this.newInvitation.budgets.indexOf(event)
       if (index > -1) {
         this.newInvitation.budgets.splice(index, 1)
       }
+    },
+    addUser (uid) {
+      console.log(`/projects/${this.$route.params.id}/invites/${this.newInvitation.email}`)
+      firebase.firestore().collection(`/projects/${this.$route.params.id}/invites`).doc(this.newInvitation.email).set(this.newInvitation)
+    },
+    removeUser (uid) {
+      // console.log(`/projects/${this.$route.params.id}/contributors/${event}`)
+      firebase.firestore().doc(`/projects/${this.$route.params.id}/contributors/${uid}`).delete()
+    },
+    removeInvite (email) {
+      // console.log(`/projects/${this.$route.params.id}/contributors/${event}`)
+      firebase.firestore().doc(`/projects/${this.$route.params.id}/invites/${email}`).delete()
     }
-  }
-  // watch: {
+  },
+  watch: {
+    project (oldVal, newVal) {
+      this.newInvitation.projectName = this.project.name
+    }
   //   newInvitation (oldVal, newVal) {
   //     if (oldVal.permission !== newVal.permission) {
   //       if (this.newInvitation.permission === 'contributor') {
@@ -305,6 +385,6 @@ export default {
   //       }
   //     }
   //   }
-  // }
+  }
 }
 </script>

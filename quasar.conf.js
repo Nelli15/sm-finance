@@ -42,7 +42,59 @@ module.exports = function (ctx) {
       //            (not treeshaking Quasar; biggest bundle size; convenient)
       all: 'auto',
 
-      brand: {
+      components: [
+        // 'QLayout',
+        // 'QHeader',
+        // // 'QDrawer',
+        // 'QPageContainer',
+        // 'QPage',
+        // 'QPageSticky',
+        // 'QToolbar',
+        // 'QToolbarTitle',
+        // 'QSpace',
+        // 'QBtn',
+        // 'QIcon',
+        // 'QList',
+        // 'QItem',
+        // // 'QItemSection',
+        // // 'QItemLabel',
+        // // 'QSeparator',
+        // 'QCard',
+        // 'QCardSection',
+        // // 'QCardActions',
+        // 'QForm',
+        // 'QSelect',
+        // 'QInput',
+        // 'QDate',
+        // 'QPopupEdit',
+        // 'QTabs',
+        // 'QRouteTab',
+        // // 'QTab',
+        // 'QBadge',
+        // 'QAvatar',
+        // 'QBanner',
+        // 'QTooltip',
+        // 'QTable',
+        // 'QTr',
+        // 'QTd',
+        // // 'QImg',
+        // 'QDialog',
+        // 'QPopupProxy',
+        // 'QInnerLoading'
+        // 'QSpinner',
+        // 'QMenu'
+        // // 'QFirebaseUploader'
+        ],
+      directives: [],
+
+      // Quasar plugins
+      plugins: [
+        'Notify',
+        'Loading',
+        'ClosePopup'
+      ],
+      config: {
+        brand: {
         primary: '#027BE3',
         secondary: '#26A69A',
         accent: '#abede9',
@@ -54,53 +106,6 @@ module.exports = function (ctx) {
         info: '#31CCEC',
         warning: '#F2C037'
       },
-
-      components: [
-        'QLayout',
-        'QHeader',
-        'QDrawer',
-        'QPageContainer',
-        'QPage',
-        'QToolbar',
-        'QToolbarTitle',
-        'QSpace',
-        'QBtn',
-        'QIcon',
-        'QList',
-        'QItem',
-        'QItemSection',
-        'QItemLabel',
-        'QSeparator',
-        'QCard',
-        'QCardSection',
-        'QCardActions',
-        'QForm',
-        'QSelect',
-        'QInput',
-        'QDate',
-        'QPopupEdit',
-        'QTab',
-        'QBadge',
-        'QAvatar',
-        'QBanner',
-        'QPageSticky',
-        'QTooltip',
-        'QTable',
-        'QTr',
-        'QTd',
-        'QImg',
-        'QDialog'
-        // 'QFirebaseUploader'
-        ],
-      directives: [],
-
-      // Quasar plugins
-      plugins: [
-        'Notify',
-        'Loading',
-        'ClosePopup'
-      ],
-      config: {
         loading: {}
       }
     },

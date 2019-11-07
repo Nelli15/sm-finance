@@ -4,29 +4,32 @@
         @reset="onReset"
         @submit="onSubmit">
       <q-list style="min-width: 100px">
-        <q-item>
+        <q-item class="text-h6 justify-center">
           <!-- <q-item-section> -->
-            Add Budget
+            Add Account
           <!-- </q-item-section> -->
         </q-item>
         <q-item>
           <q-btn-toggle
-            v-model="newBudget.sub"
+            v-model="newBudget.type"
             toggle-color="primary"
             :options="[
-              {label: 'Budget', value: true},
-              {label: 'Budget Category', value: false}
+              {label: 'Budget', value: 'budget'},
+              {label: 'Category', value: 'category'},
+              {label: 'Account', value: 'account'}
             ]"
             style="width:100%"
+            push
+            dense
           />
         </q-item>
         <q-item>
           <q-input v-model="newBudget.label" label="Budget Label" stack-label  style="width:100%"/>
         </q-item>
-        <q-item v-if="newBudget.sub">
+        <q-item v-if="newBudget.type === 'budget'">
           <!-- <q-item-section> -->
           <!-- <q-popup-edit v-model="props.row.category"> -->
-            <q-select :value="newBudget.category > '' ? budgets[newBudget.category] ? budgets[newBudget.category].label : budgetCategories[newBudget.category].label: ''" dense label="Category" stack-label :options="budgetOptions" option-label="label" :option-value="(item) => item === null ? null : item.id" @input="newBudget.category = $event.id" style="width:100%"/>
+            <q-select :value="newBudget.category > '' ? budgets[newBudget.category] ? budgets[newBudget.category].label : budgetCategories[newBudget.category].label: ''" dense label="Category" stack-label :options="budgetCategoryOptions" option-label="label" :option-value="(item) => item === null ? null : item.id" @input="newBudget.category = $event.id" style="width:100%"/>
           <!-- </q-popup-edit> -->
           <!-- </q-item-section> -->
         </q-item>
@@ -60,7 +63,7 @@ export default {
     return {
       newBudget: {
         category: '', // ID
-        sub: true, // budget if true, category if false
+        type: 'budget', // ['budget', 'category', 'account']
         label: '', // name of budget or category
         budget: 0 // the amount budgeted
       },
@@ -75,8 +78,8 @@ export default {
     onSubmit (event) {
       // this.loading = true
       this.$q.loading.show()
-      console.log(`/projects/${this.projectId}/budgets`)
-      let newBudgetRef = firebase.firestore().collection(`/projects/${this.projectId}/budgets`).doc()
+      // console.log(`/projects/${this.projectId}/budgets`)
+      let newBudgetRef = firebase.firestore().collection(`/projects/${this.projectId}/accounts`).doc()
       console.log(newBudgetRef)
       newBudgetRef.set(this.newBudget).then(res => {
         this.$q.loading.hide()
@@ -94,7 +97,8 @@ export default {
     ...mapGetters([
       'budgets',
       'budgetCategories',
-      'budgetOptions'
+      'budgetOptions',
+      'budgetCategoryOptions'
     ])
   }
 }

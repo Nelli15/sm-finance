@@ -4,16 +4,29 @@ require('firebase/firestore')
 // import Vue from 'vue'
 
 const state = {
-  petty: {}
+  transactions: {}
 }
 
 export const getters = {
-  petty: state => state.petty
+  pettyTransactions: state => state.transactions,
+  pettyTotals: state => {
+    let credits = 0
+    let debits = 0
+    for (var transKey in state.transactions) {
+      let transaction = state.transactions[transKey]
+      if (transaction.category === 'credit') {
+        credits += transaction.amountAUD
+      } else if (transaction.category === 'debit') {
+        debits += transaction.amountAUD
+      }
+    }
+    return debits - credits
+  }
 }
 
 export const mutations = {
   setPetty (state, payload) {
-    state.petty = payload
+    state.transactions = payload
   }
 }
 

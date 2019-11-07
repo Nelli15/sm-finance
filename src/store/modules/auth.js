@@ -8,6 +8,7 @@ const state = {
   },
   users: [],
   contributors: [],
+  invites: [],
   idToken: ''
 }
 
@@ -31,6 +32,13 @@ export const getters = {
     }
     return contributors
   },
+  invites: state => {
+    let invites = []
+    for (var invite in state.invites) {
+      invites.push(state.invites[invite])
+    }
+    return invites
+  },
   idToken: state => state.idToken
 }
 
@@ -45,6 +53,9 @@ export const mutations = {
   setIdToken (state, payload) {
     // console.log(payload)
     state.idToken = payload
+  },
+  setInvites (state, payload) {
+    state.invites = payload
   }
 }
 
@@ -60,6 +71,19 @@ export const actions = {
       await Promise.all(promises)
       // console.log(members)
       commit('setContributors', contributors)
+    })
+  },
+  fetchInvites ({ commit }, payload) {
+    // console.log('fetching contributors')
+    firebase.firestore().collection(`/projects/${payload}/invites`).onSnapshot(async adminsSnap => {
+      let invites = []
+      let promises = adminsSnap.docs.map(doc => {
+        // console.log('contributor ', doc.data())
+        invites.push(doc.data())
+      })
+      await Promise.all(promises)
+      // console.log(members)
+      commit('setInvites', invites)
     })
   }
 }

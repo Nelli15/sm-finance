@@ -5,17 +5,27 @@ require('firebase/firestore')
 
 const state = {
   budgetCategories: {},
-  budgets: [],
+  budgets: {},
+  accounts: {},
   tableKey: 0
 }
 
 export const getters = {
   budgetCategories: state => state.budgetCategories,
   budgets: state => state.budgets,
+  accounts: state => state.accounts,
   tableKey: state => state.tableKey,
   budgetOptions: state => {
     let result = {}, budgetOptions = []
-    Object.assign(result, state.budgetCategories, state.budgets)
+    Object.assign(result, state.accounts, state.budgets)
+    for (var key in result) {
+      budgetOptions.push(result[key])
+    }
+    return budgetOptions.sort((a, b) => (a.label > b.label) ? 1 : -1)
+  },
+  budgetCategoryOptions: state => {
+    let result = {}, budgetOptions = []
+    Object.assign(result, state.budgetCategories)
     for (var key in result) {
       budgetOptions.push(result[key])
     }
@@ -30,74 +40,99 @@ export const mutations = {
   setBudgets (state, payload) {
     state.budgets = payload
   },
+  setAccounts (state, payload) {
+    state.accounts = payload
+  },
   populateBudgets (state, rootState) {
     // console.log(rootState)
-    let transaction = {}, budgetCategory = {}
-    let total = 0, budgeted = 0
-    let budget
-    let found = false
-    for (var key in state.budgets) {
-      budget = state.budgets[key]
-      total = 0
+    let transaction = {}
+    // console.log(Object.keys(state.budgets).length)
+    if ((Object.keys(state.accounts).length > 0) &&
+      (Object.keys(state.budgets).length > 0) &&
+      (Object.keys(state.budgetCategories).length > 0)) {
+      let key
+
+      // reset the calculated values of the budgets
+      for (key in state.budgetCategories) {
+        state.budgetCategories[key].expenses = 0
+        state.budgetCategories[key].income = 0
+        state.budgetCategories[key].budget = 0
+      }
+      for (key in state.budgets) {
+        state.budgets[key].expenses = 0
+        state.budgets[key].income = 0
+      }
+      for (key in state.accounts) {
+        state.accounts[key].expenses = 0
+        state.accounts[key].income = 0
+      }
+      // console.log(state.budgets.length)
+      // loop through all the transactions categorising and creating totals
       for (var transKey in rootState.transactions.transactions) {
         transaction = rootState.transactions.transactions[transKey]
-        if (!transaction.deleted && transaction.category === budget.id) {
-          total += parseInt(transaction.amount) ? parseInt(transaction.amount) : 0
-        }
-      }
-      budget.spent = total
-      state.budgets[key] = budget
-      // state.budgets[key] = { ...state.budgets[key], [key]: budget }
-      // Vue.set(state.budgets[key], 'spent', total)
-      // state.tableKey += 1
-    }
 
-    // let transaction = {}
-    // let total = 0
-    // let budget
-    for (key in state.budgetCategories) {
-      budgetCategory = state.budgetCategories[key]
-      total = 0
-      budgeted = 0
-      found = false
-      for (transKey in rootState.transactions.transactions) {
-        transaction = rootState.transactions.transactions[transKey]
-        if (!transaction.deleted && transaction.category === budgetCategory.id) {
-          total += parseInt(transaction.amount) ? parseInt(transaction.amount) : 0
+        if (transaction.category === 'Expense') {
+          // calulate the expense transactions
+          if (state.accounts[transaction.budget]) {
+            state.accounts[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+          } else {
+            state.budgets[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            state.budgetCategories[state.budgets[transaction.budget].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+          }
+        } else if (transaction.category === 'Income') {
+          // calculate the income transactions
+          if (state.accounts[transaction.budget]) {
+            state.accounts[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+          } else {
+            state.budgets[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            state.budgetCategories[state.budgets[transaction.budget].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+          }
+        } else if (transaction.category === 'Journal') {
+          // calculate the journalled transactions
+          if (state.accounts[transaction.from]) {
+            state.accounts[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+          } else {
+            state.budgets[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            state.budgetCategories[state.budgets[transaction.from].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+          }
+          if (state.accounts[transaction.to]) {
+            state.accounts[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+          } else {
+            state.budgets[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            state.budgetCategories[state.budgets[transaction.to].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+          }
         }
       }
+      // console.log(state.budgets)
       for (var budgetKey in state.budgets) {
-        budget = state.budgets[budgetKey]
-        if (budget.category === budgetCategory.id) {
-          total += parseInt(budget.spent) ? parseInt(budget.spent) : 0
-          budgeted += parseInt(budget.budget) ? parseInt(budget.budget) : 0
-          found = true
-        }
+        // console.log(budgetKey)
+        state.budgetCategories[state.budgets[budgetKey].category].budget += parseFloat(state.budgets[budgetKey].budget) ? parseFloat(state.budgets[budgetKey].budget) : 0
+        // console.log(state.budgetCategories[state.budgets[budgetKey].category].budget)
       }
-      // console.log(total)
-      budgetCategory.spent = total
-      if (found) {
-        budgetCategory.budget = budgeted
-      }
-      state.budgetCategories[key] = budgetCategory
-      // state.budgets[key] = { ...state.budgets[key], [key]: budget }
-      // Vue.set(state.budgets[key], 'spent', total)
       state.tableKey += 1
     }
-    // commit('setBudgets', budgets)
+  },
+  setBudgetKey (state, payload) {
+    state.budgets[payload.budgetId][payload.key] = payload.val
+  },
+  setCategoryKey (state, payload) {
+    state.budgetCategories[payload.budgetId][payload.key] = payload.val
   }
 }
 
 export const actions = {
   fetchBudgetCategories ({ commit, dispatch }, payload) {
-    firebase.firestore().doc(`/projects/${payload}`).collection('/budgets').where('sub', '==', false)
-      .onSnapshot(async budgetsSnap => {
+    // console.log('Fetch Budget Categories', payload)
+    firebase.firestore().collection(`/projects/${payload}/accounts`).where('type', '==', 'category')
+      .onSnapshot(async categoriesSnap => {
+        // console.log('Fetch Budget Categories')
         let budgets = {}, budget = {}
-        let promises = budgetsSnap.docs.map(doc => {
+        let promises = categoriesSnap.docs.map(doc => {
           budget = doc.data()
           budget.id = doc.id
-          budget.label = budget.category
-          // console.log(budget)
+          budget.expenses = 0
+          budget.income = 0
+          budget.budget = 0
           budgets[budget.id] = budget
         })
         await Promise.all(promises)
@@ -107,12 +142,16 @@ export const actions = {
       })
   },
   fetchBudgets ({ commit, dispatch }, payload) {
-    firebase.firestore().doc(`/projects/${payload}`).collection('/budgets').where('sub', '==', true)
+    // console.log('Fetch Budgets', payload)
+    firebase.firestore().collection(`/projects/${payload}/accounts`).where('type', '==', 'budget')
       .onSnapshot(async budgetsSnap => {
+        // console.log('Fetch Budgets')
         let budgets = {}, budget = {}
         let promises = budgetsSnap.docs.map(doc => {
           budget = doc.data()
           budget.id = doc.id
+          budget.expenses = 0
+          budget.income = 0
           budgets[budget.id] = budget
         })
         await Promise.all(promises)
@@ -120,8 +159,32 @@ export const actions = {
         dispatch('fetchPopulateBudgets')
       })
   },
+  fetchAccounts ({ commit, dispatch }, payload) {
+    // console.log('Fetch Budgets', payload)
+    firebase.firestore().collection(`/projects/${payload}/accounts`).where('type', '==', 'account')
+      .onSnapshot(async accountsSnap => {
+        // console.log('Fetch accounts')
+        let accounts = {}, account = {}
+        let promises = accountsSnap.docs.map(doc => {
+          account = doc.data()
+          account.id = doc.id
+          account.expenses = 0
+          account.income = 0
+          accounts[account.id] = account
+        })
+        await Promise.all(promises)
+        commit('setAccounts', accounts)
+        dispatch('fetchPopulateBudgets')
+      })
+  },
   fetchPopulateBudgets ({ rootState, commit }) {
     commit('populateBudgets', rootState)
+  },
+  updateBudgetByKey ({ commit }, payload) {
+    commit('setBudgetKey', payload)
+  },
+  updateCategoryByKey ({ commit }, payload) {
+    commit('setCategoryKey', payload)
   }
 }
 export default {
