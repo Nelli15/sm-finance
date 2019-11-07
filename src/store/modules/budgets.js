@@ -5,8 +5,8 @@ require('firebase/firestore')
 
 const state = {
   budgetCategories: {},
-  budgets: [],
-  accounts: [],
+  budgets: {},
+  accounts: {},
   tableKey: 0
 }
 
@@ -18,6 +18,14 @@ export const getters = {
   budgetOptions: state => {
     let result = {}, budgetOptions = []
     Object.assign(result, state.accounts, state.budgets)
+    for (var key in result) {
+      budgetOptions.push(result[key])
+    }
+    return budgetOptions.sort((a, b) => (a.label > b.label) ? 1 : -1)
+  },
+  budgetCategoryOptions: state => {
+    let result = {}, budgetOptions = []
+    Object.assign(result, state.budgetCategories)
     for (var key in result) {
       budgetOptions.push(result[key])
     }
@@ -103,6 +111,12 @@ export const mutations = {
       }
       state.tableKey += 1
     }
+  },
+  setBudgetKey (state, payload) {
+    state.budgets[payload.budgetId][payload.key] = payload.val
+  },
+  setCategoryKey (state, payload) {
+    state.budgetCategories[payload.budgetId][payload.key] = payload.val
   }
 }
 
@@ -165,6 +179,12 @@ export const actions = {
   },
   fetchPopulateBudgets ({ rootState, commit }) {
     commit('populateBudgets', rootState)
+  },
+  updateBudgetByKey ({ commit }, payload) {
+    commit('setBudgetKey', payload)
+  },
+  updateCategoryByKey ({ commit }, payload) {
+    commit('setCategoryKey', payload)
   }
 }
 export default {

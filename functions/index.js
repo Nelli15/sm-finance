@@ -443,11 +443,11 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
     .then(async snap => {
       if (snap.exists) {
         var id = req.query.id  
-        console.log('user is a contributor', 'getting file', `projects/${projectId}/receipts/${id}.jpg`)
+        console.log('user is a contributor', 'getting file', `projects/${projectId}/receipts/${projectId}-${id}.jpg`)
         // console.log(fileName)
         var storage = admin.storage()
         var storageRef = storage.bucket()
-        var file = storageRef.file(`projects/${projectId}/receipts/${id}.jpg`)
+        var file = storageRef.file(`projects/${projectId}/receipts/${projectId}-${id}.jpg`)
 
         let exists = await file.exists()
         console.log('File Exists?', exists[0])

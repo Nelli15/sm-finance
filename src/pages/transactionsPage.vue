@@ -53,7 +53,7 @@
           <q-td key="number" :props="props">
             {{ props.row.id }}
           </q-td>
-          <q-td key="icon" :props="props">
+          <q-td key="icon" :props="props" class="cursor-pointer">
             <!-- {{props.row.type}} -->
             <q-icon v-if="props.row.type === 'Cheque'" name="mdi-checkbook" size="md">
               <q-tooltip>
@@ -78,27 +78,46 @@
             <q-popup-edit v-model="props.row.type">
               <q-select :value="props.row.type" dense label="Type" :options="typeOptions" @input="updateTransaction(props.row.id, 'type', $event)" />
             </q-popup-edit>
+            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+              <q-icon name="edit"/>
+              Edit
+            </q-tooltip>
           </q-td>
           <q-td key="category" :props="props">
             <!-- {{props.row.category}} -->
             <!-- {{budgets[props.row.category].category}} -->
             <!-- {{ props.row.id }} -->
-            {{ props.row.category !== 'Journal' ? getCategoryById(props.row.budget) : '' }}
-            {{ props.row.category === 'Journal' ? getCategoryById(props.row.from) : ''}}
-            <q-icon name="arrow_forward" v-if="props.row.category === 'Journal'" />
-            {{ props.row.category === 'Journal' ? getCategoryById(props.row.to) : ''}}
-            <!-- <q-popup-edit v-model="props.row.category">
-              <q-select v-model="props.row.category" dense autofocus label="Category" :options="budgets" option-label="category" option-value="category" />
-            </q-popup-edit> -->
+            <div v-if="props.row.category !== 'Journal'">
+              {{ props.row.category !== 'Journal' ? getCategoryById(props.row.budget) : '' }}
+            </div>
+            <div v-if="props.row.category === 'Journal'" class="cursor-pointer">
+              {{ props.row.category === 'Journal' ? getCategoryById(props.row.from) : '' }}
+              <q-icon name="arrow_forward" v-if="props.row.category === 'Journal'" />
+              {{ props.row.category === 'Journal' ? getCategoryById(props.row.to) : '' }}
+              <q-popup-edit v-model="props.row.from">
+                <q-select :value="getCategoryById(props.row.from)" @input="updateBudget(props.row.id, 'from', $event)" dense autofocus label="From" stack-label :options="budgetOptions" />
+                <q-select :value="getCategoryById(props.row.to)" @input="updateBudget(props.row.id, 'to', $event)" dense autofocus label="To" stack-label :options="budgetOptions" />
+              </q-popup-edit>
+              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+                <q-icon name="edit"/>
+                Edit
+              </q-tooltip>
+            </div>
           </q-td>
-          <q-td key="budget" :props="props">
+          <q-td key="budget" :props="props" class="cursor-pointer">
             <!-- {{ props.row.text }} -->
-            {{ budgets[props.row.budget] ? budgets[props.row.budget].label : '' }}
-            <!-- <q-popup-edit v-model="props.row.desc">
-              <q-input v-model="props.row.desc" dense autofocus label="Description" />
-            </q-popup-edit> -->
+            <div v-if="props.row.category !== 'Journal'">
+              {{ budgets[props.row.budget] ? budgets[props.row.budget].label : '' }}
+              <q-popup-edit v-model="props.row.budget">
+                <q-select :value="budgets[props.row.budget] > '' ? budgets[props.row.budget].label : ''" @input="updateTransaction(props.row.id, 'budget', $event)" dense autofocus counter label="Budget Category" :options="budgetOptions" />
+              </q-popup-edit>
+              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+                <q-icon name="edit"/>
+                Edit
+              </q-tooltip>
+            </div>
           </q-td>
-          <q-td key="date" :props="props">
+          <q-td key="date" :props="props" class="cursor-pointer">
             {{ props.row.date }}
             <q-popup-edit v-model="props.row.date">
               <!-- <q-date
@@ -109,63 +128,53 @@
               /> -->
               <q-date :value="props.row.date" @input="updateTransaction(props.row.id, 'date', $event)"  mask="DD/MM/YYYY" />
             </q-popup-edit>
+            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+              <q-icon name="edit"/>
+              Edit
+            </q-tooltip>
           </q-td>
-          <q-td key="amount" :props="props" :class="{ 'text-red-8': props.row.category === 'Expense', 'text-green-8': props.row.category === 'Income','text-blue-8': props.row.category === 'Journal', }">
+          <q-td key="amount" :props="props" :class="{ 'text-red-8': props.row.category === 'Expense', 'text-green-8': props.row.category === 'Income','text-blue-8': props.row.category === 'Journal', }"  class="cursor-pointer">
             <!-- {{ getAmount(props.row.text) }} -->
             <!-- {{props.row}} -->
             {{ props.row.amount }}
             <q-popup-edit v-model="props.row.amount">
               <q-input :value="props.row.amount" @input="updateTransaction(props.row.id, 'amount', $event)" dense autofocus :label="'Amount ('+project.currency+')'" />
             </q-popup-edit>
+            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+              <q-icon name="edit"/>
+              Edit
+            </q-tooltip>
           </q-td>
-          <q-td key="GST" :props="props">
+          <q-td key="GST" :props="props" class="cursor-pointer">
             <!-- {{ getGST(props.row.text) }} -->
             {{ props.row.GST }}
             <q-popup-edit v-model="props.row.GST">
               <q-input :value="props.row.GST" @input="updateTransaction(props.row.id, 'GST', $event)" dense autofocus label="GST" />
             </q-popup-edit>
+            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+              <q-icon name="edit"/>
+              Edit
+            </q-tooltip>
           </q-td>
-<!--           <q-td key="international" :props="props">
-            <q-checkbox :value="props.row.currency !== 'AUD'" disabled/>
-          </q-td> -->
-<!--           <q-td key="currency" :props="props">
-            {{ props.row.currency }}
-            <q-popup-edit v-model="props.row.currency">
-              <q-select v-model="props.row.currency" :options="ccOptions" dense autofocus use-input @filter="filterFn" label="Currency">
-                <template v-slot:no-option>
-                  <q-item>
-                    <q-item-section class="text-grey">
-                    No results
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
-            </q-popup-edit>
-          </q-td> -->
-<!--           <q-td key="amountInt" :props="props">
-            {{ props.row.amountInt }}
-            <q-popup-edit v-model="props.row.amountInt">
-              <q-input v-model="props.row.amountInt" dense autofocus label="Amount (Int)" />
-            </q-popup-edit>
-          </q-td> -->
-          <!-- <q-td key="type" :props="props">
-            {{ props.row.type }}
-            <q-popup-edit v-model="props.row.type">
-              <q-select v-model="props.row.type" :options="typeOptions" dense autofocu label="Type" />
-            </q-popup-edit>
-          </q-td> -->
-          <q-td key="desc" :props="props">
-            <!-- {{ props.row.text }} -->
+          <q-td key="desc" :props="props" class="cursor-pointer">
             {{ props.row.desc }}
             <q-popup-edit v-model="props.row.desc">
               <q-input :value="props.row.desc" @input="updateTransaction(props.row.id, 'desc', $event)"  dense autofocus label="Description" />
             </q-popup-edit>
+            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+              <q-icon name="edit"/>
+              Edit
+            </q-tooltip>
           </q-td>
-          <q-td key="cheque" :props="props">
+          <q-td key="cheque" :props="props" class="cursor-pointer">
             {{ props.row.cheque }}
             <q-popup-edit v-model="props.row.cheque">
               <q-input :value="props.row.cheque" @input="updateTransaction(props.row.id, 'cheque', $event)" dense autofocus label="Cheque #" />
             </q-popup-edit>
+            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+              <q-icon name="edit"/>
+              Edit
+            </q-tooltip>
           </q-td>
           <q-td key="reviewed" :props="props">
             <!-- {{props.row.deleted}} -->
@@ -175,12 +184,16 @@
           <q-td key="receipt" :props="props">
             <!-- <a :href="props.row.receipt">Receipt</a> -->
             <!-- {{getReceipt('the-speaker-grill-small')}} -->
-            <sp-receipt :id="props.row.id" :label="props.row.number" :url="props.row.receiptURL" />
+            <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false"/>
+            <!-- <q-inner-loading :showing="!props.row.receiptURL"> -->
+              <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL" />
+            <!-- </q-inner-loading> -->
+            <!-- {{props.row.receiptURL.startsWith('https://')}} -->
           </q-td>
           <q-td key="delete" :props="props">
             <!-- {{props.row.deleted}} -->
             <!-- <q-checkbox v-model="props.row.reviewed"/> -->
-            <q-btn icon="delete" color="negative" dense :disabled="true" />
+            <sp-delete-btn dense :docRef="`/projects/${project.id}/transactions/${props.row.id}`"/>
           </q-td>
         </q-tr>
       </template>
@@ -190,7 +203,7 @@
         <q-tooltip content-class="bg-accent text-grey-10">
           Add Transaction
         </q-tooltip>
-        <q-menu>
+        <q-menu v-close-popup>
           <!-- <q-scroll-area> -->
           <sp-trans-form :projectId="project.id" />
           <!-- </q-scroll-area> -->
@@ -203,7 +216,6 @@
 <script>
 import { debounce } from 'quasar'
 import firebase from 'firebase/app'
-require('firebase/auth')
 require('firebase/firestore')
 
 import { mapGetters, mapActions } from 'vuex'
@@ -216,7 +228,7 @@ export default {
       columns: [
         { name: 'number', label: 'Transaction ID', field: 'number', align: 'center', sortable: true },
         { name: 'icon', label: 'Type', field: 'icon', align: 'center' },
-        { name: 'category', label: 'Budget Category', field: 'category', align: 'center', sortable: true },
+        { name: 'category', label: 'Category', field: 'category', align: 'center', sortable: true },
         { name: 'budget', label: 'Budget', field: 'budget', align: 'center', sortable: true },
         { name: 'date', label: 'Date', field: 'date', align: 'center', sortable: true },
         { name: 'amount', label: `Amount (currency)`, field: 'amount', align: 'center', sortable: true },
@@ -229,7 +241,7 @@ export default {
       ],
       filter: '',
       ccOptions: [],
-      visibleColumns: ['icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'reviewed', 'receipt'],
+      visibleColumns: ['icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'reviewed'],
       pagination: {
         sortBy: 'date',
         descending: true,
@@ -419,7 +431,8 @@ export default {
   },
   components: {
     'sp-trans-form': () => import('../components/sp-trans-form.vue'),
-    'sp-receipt': () => import('../components/sp-receipt.vue')
+    'sp-receipt': () => import('../components/sp-receipt.vue'),
+    'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
   }
 }
 </script>

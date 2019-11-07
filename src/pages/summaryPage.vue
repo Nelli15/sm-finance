@@ -57,31 +57,33 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props" class="text-bold">
-          <q-td key="label" :props="props">
+          <q-td key="label" :props="props" class="cursor-pointer">
             {{ props.row.label }}
-            <!-- <q-popup-edit v-model="props.row.category">
-              <q-input v-model="props.row.category" dense autofocus counter label="Budget Category" />
-            </q-popup-edit> -->
+            <q-popup-edit v-model="props.row.label">
+              <q-input :value="props.row.label > '' ? props.row.label : ''" @input="updateCategory(props.row.id, 'label', $event)" dense autofocus label="Budget Label" />
+            </q-popup-edit>
+            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+              <q-icon name="edit"/>
+              Edit
+            </q-tooltip>
           </q-td>
           <q-td key="budgeted" :props="props">
             ${{ props.row.budget }}
-            <q-tooltip>
+            <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
           </q-td>
           <q-td key="spent" :props="props">
             ${{ -props.row.expenses }}
-            <q-tooltip>
+            <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
           </q-td>
           <q-td key="remaining" :props="props">
             <q-badge :class="{ 'bg-green-8': (props.row.income - props.row.expenses) > 0, 'bg-red-8': (props.row.income - props.row.expenses) < 0, 'bg-black': (props.row.income - props.row.expenses) == 0 }" :label="'$'+(props.row.income - props.row.expenses)" />
-              <q-tooltip>
+            <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
-            <!-- <q-badge v-else-if="props.row.budget + props.row.spent < 0" color="negative" :label="'-$'+(props.row.budget + props.row.spent)" /> -->
-            <!-- <q-badge v-else color="black" :label="'$'+(props.row.budget + props.row.spent)" /> -->
           </q-td>
           <q-td key="budgets" :props="props">
             <q-btn :to="'budget/'+props.row.id" flat>Budgets</q-btn>
@@ -92,8 +94,8 @@
     </q-table>
     <q-page-sticky position="bottom-left" :offset="[18, 18]" style="z-index:100">
       <q-btn fab icon="add" color="primary" direction="up">
-        <q-tooltip content-class="bg-accent text-grey-10">
-          Add Budget
+        <q-tooltip content-class="bg-accent text-black">
+          Add Account
         </q-tooltip>
         <sp-budget-form :projectId="$route.params.id" />
       </q-btn>
@@ -102,9 +104,10 @@
 </template>
 
 <script>
-// import firebase from 'firebase/app'
-// require('firebase/firestore')
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
+import { debounce } from 'quasar'
+import firebase from 'firebase/app'
+require('firebase/firestore')
 
 const columns = [
   { name: 'label', align: 'left', label: 'Label', field: 'label', sortable: true },
@@ -134,9 +137,31 @@ export default {
       // }
     }
   },
-  // created () {
-  //   this.$store.dispatch('fetchProject', this.$route.params.id)
-  // },
+  created () {
+    this.updateCategory = debounce(this.updateCategory, 1000)
+  },
+  methods: {
+    ...mapActions([
+      'updateCategoryByKey'
+    ]),
+    updateCategory (budgetId, key, val) {
+      console.log(budgetId, key, val)
+      this.updateCategoryByKey({ budgetId, key, val })
+      firebase.firestore().collection(`/projects/${this.project.id}/accounts`).doc(budgetId)
+        .update({ [key]: val })
+        .then(() => {
+          console.log('updated')
+          this.$q.notify({
+            color: 'positive',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'Budget Updated'
+          })
+        }).catch(err => {
+          console.log(err)
+        })
+    }
+  },
   computed: {
     ...mapGetters([
       'project',
