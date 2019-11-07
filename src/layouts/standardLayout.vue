@@ -221,21 +221,24 @@
           </q-menu>
         </q-btn>
       </q-toolbar>
-
-      <q-tabs align="left">
-        <q-route-tab to="/dashboard" label="Dashboard" />
-        <q-route-tab :to="{ name: 'summary' }" label="Summary" v-if="isAdmin" />
-        <q-route-tab :to="{ name: 'budget' }" label="Budgets" v-if="isAdmin" />
-        <q-route-tab :to="{ name: 'transactions' }" label="Transactions" v-if="isAdmin" />
-        <q-route-tab :to="{ name: 'petty' }" label="Petty Cash" v-if="isAdmin" />
+      <q-toolbar>
+        <q-tabs align="left">
+          <q-route-tab to="/dashboard" label="Dashboard" />
+          <q-route-tab :to="{ name: 'summary' }" label="Summary" v-if="isAdmin" />
+          <q-route-tab :to="{ name: 'budget' }" label="Budgets" v-if="isAdmin" />
+          <q-route-tab :to="{ name: 'transactions' }" label="Transactions" v-if="isAdmin" />
+          <q-route-tab :to="{ name: 'petty' }" label="Petty Cash" v-if="isAdmin" />
+        </q-tabs>
         <q-space/>
-        <q-tab v-if="isAdmin" disable key="'electronicAccount-'+tableKey">
-          Electronic Funds: <q-badge v-if="accounts['debitCard']" :class="{ 'bg-green-8': (accounts['debitCard'].income - accounts['debitCard'].expenses) > 0, 'bg-red-8': (accounts['debitCard'].income - accounts['debitCard'].expenses) < 0, 'bg-black': (accounts['debitCard'].income - accounts['debitCard'].expenses) == 0 }" :label="'$'+(accounts['debitCard'].income - accounts['debitCard'].expenses)" />
-        </q-tab>
-        <q-tab v-if="isAdmin" disable key="'pettyAccount-'+tableKey">
-          Petty Cash: <q-badge v-if="accounts['pettyCash']" :class="{ 'bg-green-8': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) > 0, 'bg-red-8': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) < 0, 'bg-black': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) == 0 }" :label="'$'+(accounts['pettyCash'].income - accounts['pettyCash'].expenses)" />
-        </q-tab>
-      </q-tabs>
+        <q-tabs align="right">
+          <q-tab v-if="isAdmin" key="'electronicAccount-'+tableKey">
+            Electronic Funds: <q-badge v-if="accounts['debitCard']" :class="{ 'bg-green-8': (accounts['debitCard'].income - accounts['debitCard'].expenses) > 0, 'bg-red-8': (accounts['debitCard'].income - accounts['debitCard'].expenses) < 0, 'bg-black': (accounts['debitCard'].income - accounts['debitCard'].expenses) == 0 }" :label="'$'+(accounts['debitCard'].income - accounts['debitCard'].expenses)" />
+          </q-tab>
+          <q-tab v-if="isAdmin" key="'pettyAccount-'+tableKey">
+            Petty Cash: <q-badge v-if="accounts['pettyCash']" :class="{ 'bg-green-8': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) > 0, 'bg-red-8': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) < 0, 'bg-black': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) == 0 }" :label="'$'+(accounts['pettyCash'].income - accounts['pettyCash'].expenses)" />
+          </q-tab>
+        </q-tabs>
+      </q-toolbar>
     </q-header>
 
     <q-page-container v-if="isAdmin || $route.name ==='addTrans'">

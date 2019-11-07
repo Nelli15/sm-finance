@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <span>
     <q-btn icon="delete" color="negative" :dense="dense" :disabled="disabled" @click="confirm = true"/>
     <q-dialog v-model="confirm" persistent>
       <q-card style="min-width:400px">
@@ -17,7 +17,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-  </div>
+  </span>
 </template>
 
 <script>

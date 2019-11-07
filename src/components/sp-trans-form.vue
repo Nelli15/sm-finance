@@ -2,6 +2,8 @@
   <q-form
     @reset="onReset"
     @submit="onSubmit"
+    @validation-success="onLog('success'+$event)"
+    @validation-error="onLog('err'+$event)"
   >
     <q-list style="min-width: 100px; max-width:500px;">
       <q-item class="text-h6 justify-center">
@@ -71,7 +73,7 @@
           <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
       </q-item>
-      <q-item v-show="newTrans.category !== 'Journal'">
+      <q-item v-if="newTrans.category !== 'Journal'">
         <!-- <q-item-section> -->
         <!-- <q-popup-edit v-model="props.row.category"> -->
         <q-select
@@ -85,7 +87,7 @@
           style="width:100%"
           use-input
           @filter="filterBudgets"
-          :rules="[ v => !!v || 'Required value' ]"
+          :rules="[ v => newTrans.category !== 'Journal' || !!v || 'Required value' ]"
         >
           <template v-slot:no-option>
             <q-item>
@@ -161,16 +163,25 @@
         <!-- </q-item-section> -->
       </q-item>
       <q-item>
-        <!-- <q-item-section> -->
-          <!-- <q-popup-edit v-model="props.row.category"> -->
-        <q-input v-model="newTrans.amount" dense :label="'Amount ('+this.project.currency+')'" mask="#.##" reverse-fill-mask :rules="[ v => !!v || 'Required value' ]" style="width:50%"/>
-          <!-- </q-popup-edit> -->
-        <!-- </q-item-section> -->
-        <!-- <q-item-section> -->
-          <!-- <q-popup-edit v-model="props.row.category"> -->
-        <q-input v-model="newTrans.GST" dense :label="'GST ('+this.project.currency+')'" v-show="newTrans.category !== 'Journal'" mask="#.##" reverse-fill-mask :rules="[v => parseFloat(v) <= parseFloat(newTrans.amount) * 0.1 || 'GST must be <= 10% of amount', v => !!v || 'Required value' ]" style="width:50%" />
-          <!-- </q-popup-edit> -->
-        <!-- </q-item-section> -->
+        <q-input
+          v-model="newTrans.amount"
+          dense
+          :label="'Amount ('+this.project.currency+')'"
+          mask="#.##"
+          reverse-fill-mask
+          :rules="[ v => !!v || 'Required value' ]"
+          style="width:50%"
+        />
+        <q-input
+          v-if="newTrans.category === 'Expense'"
+          v-model="newTrans.GST"
+          dense
+          :label="'GST ('+this.project.currency+')'"
+          mask="#.##"
+          reverse-fill-mask
+          :rules="[v => parseFloat(v) <= parseFloat(newTrans.amount) * 0.1 || 'GST must be <= 10% of amount', v => !!v || 'Required value' ]"
+          style="width:50%"
+        />
       </q-item>
       <q-item>
         <q-input v-model="newTrans.desc" dense label="Description" style="width:100%" />
@@ -214,7 +225,7 @@ export default {
     }
   },
   created () {
-    // console.log(`/projects/${this.projectId}/transactions`)
+    console.log(`/projects/${this.projectId}/transactions`)
     this.transRef = firebase.firestore().collection(`/projects/${this.project.id}/transactions`).doc()
     let date = new Date()
     this.newTrans.date = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
@@ -222,6 +233,9 @@ export default {
     // this.$store.dispatch('fetchBudgets', this.$route.params.id)
   },
   methods: {
+    onLog (event) {
+      console.log(event)
+    },
     onAdded (files) {
       console.log('file added', files)
       // files[0].name = 'blah.jpeg'
@@ -231,19 +245,23 @@ export default {
       this.uploading = true
     },
     onSubmit () {
-      // console.log('form submitted', this.newTrans)
+      console.log('submitting form', this.newTrans)
       this.newTrans.cheque = (this.newTrans.type === 'Cheque') ? this.newTrans.cheque : ''
       this.newTrans.GST = (this.newTrans.category !== 'Journal') ? this.newTrans.GST : 0
       this.newTrans.amount = (this.newTrans.type === 'Cash') ? round5(this.newTrans.amount) : this.newTrans.amount
-      this.transRef.set(this.newTrans)
+      this.transRef.set(this.newTrans).then(res => {
+        console.log('form submitted', res)
+        this.$q.notify({
+          color: 'positive',
+          textColor: 'white',
+          icon: 'cloud_done',
+          message: 'Form Submitted'
+        })
+      }).catch(err => {
+        console.error(err)
+      })
       // this.$refs.transUpload.upload()
       // this.$store.dispatch('updateTransactions', this.newTrans)
-      this.$q.notify({
-        color: 'positive',
-        textColor: 'white',
-        icon: 'cloud_done',
-        message: 'Form Submitted'
-      })
       // this.onReset()
       function round5 (x) {
         return (x % 5) >= 2.5 ? parseFloat(x / 5) * 5 + 5 : parseFloat(x / 5) * 5
@@ -298,6 +316,7 @@ export default {
       return date
     },
     filterBudgets (val, update) {
+      // console.log(this.budgetOptions)
       let budgets = this.isAdmin ? this.budgetOptions : this.contributorBudgets
       // console.log(budgets)
       if (val === '') {

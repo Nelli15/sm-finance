@@ -23,6 +23,14 @@ export const getters = {
     }
     return budgetOptions.sort((a, b) => (a.label > b.label) ? 1 : -1)
   },
+  budgetsArray: state => {
+    let result = {}, budgetOptions = []
+    Object.assign(result, state.budgets)
+    for (var key in result) {
+      budgetOptions.push(result[key])
+    }
+    return budgetOptions.sort((a, b) => (a.label > b.label) ? 1 : -1)
+  },
   budgetCategoryOptions: state => {
     let result = {}, budgetOptions = []
     Object.assign(result, state.budgetCategories)
@@ -57,53 +65,68 @@ export const mutations = {
         state.budgetCategories[key].expenses = 0
         state.budgetCategories[key].income = 0
         state.budgetCategories[key].budget = 0
+        state.budgetCategories[key].inUse = false
       }
       for (key in state.budgets) {
         state.budgets[key].expenses = 0
         state.budgets[key].income = 0
+        state.budgets[key].inUse = false
+        state.budgetCategories[state.budgets[key].category].inUse = true
       }
       for (key in state.accounts) {
         state.accounts[key].expenses = 0
         state.accounts[key].income = 0
+        state.accounts[key].inUse = false
       }
-      // console.log(state.budgets.length)
       // loop through all the transactions categorising and creating totals
       for (var transKey in rootState.transactions.transactions) {
         transaction = rootState.transactions.transactions[transKey]
-
-        if (transaction.category === 'Expense') {
-          // calulate the expense transactions
-          if (state.accounts[transaction.budget]) {
-            state.accounts[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-          } else {
-            state.budgets[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-            state.budgetCategories[state.budgets[transaction.budget].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-          }
-        } else if (transaction.category === 'Income') {
-          // calculate the income transactions
-          if (state.accounts[transaction.budget]) {
-            state.accounts[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-          } else {
-            state.budgets[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-            state.budgetCategories[state.budgets[transaction.budget].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-          }
-        } else if (transaction.category === 'Journal') {
-          // calculate the journalled transactions
-          if (state.accounts[transaction.from]) {
-            state.accounts[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-          } else {
-            state.budgets[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-            state.budgetCategories[state.budgets[transaction.from].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-          }
-          if (state.accounts[transaction.to]) {
-            state.accounts[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-          } else {
-            state.budgets[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-            state.budgetCategories[state.budgets[transaction.to].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+        if (transaction.deleted === false) {
+          if (transaction.category === 'Expense') {
+            // calulate the expense transactions
+            if (state.accounts[transaction.budget]) {
+              state.accounts[transaction.budget].inUse = true
+              state.accounts[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            } else {
+              state.budgets[transaction.budget].inUse = true
+              state.budgetCategories[state.budgets[transaction.budget].category].inUse = true
+              state.budgets[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              state.budgetCategories[state.budgets[transaction.budget].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            }
+          } else if (transaction.category === 'Income') {
+            // calculate the income transactions
+            if (state.accounts[transaction.budget]) {
+              state.accounts[transaction.budget].inUse = true
+              state.accounts[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            } else {
+              state.budgets[transaction.budget].inUse = true
+              state.budgetCategories[state.budgets[transaction.budget].category].inUse = true
+              state.budgets[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              state.budgetCategories[state.budgets[transaction.budget].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            }
+          } else if (transaction.category === 'Journal') {
+            // calculate the journalled transactions
+            if (state.accounts[transaction.from]) {
+              state.accounts[transaction.from].inUse = true
+              state.accounts[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            } else {
+              state.budgets[transaction.from].inUse = true
+              state.budgetCategories[state.budgets[transaction.from].category].inUse = true
+              state.budgets[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              state.budgetCategories[state.budgets[transaction.from].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            }
+            if (state.accounts[transaction.to]) {
+              state.accounts[transaction.to].inUse = true
+              state.accounts[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            } else {
+              state.budgets[transaction.to].inUse = true
+              state.budgetCategories[state.budgets[transaction.to].category].inUse = true
+              state.budgets[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              state.budgetCategories[state.budgets[transaction.to].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+            }
           }
         }
       }
-      // console.log(state.budgets)
       for (var budgetKey in state.budgets) {
         // console.log(budgetKey)
         state.budgetCategories[state.budgets[budgetKey].category].budget += parseFloat(state.budgets[budgetKey].budget) ? parseFloat(state.budgets[budgetKey].budget) : 0

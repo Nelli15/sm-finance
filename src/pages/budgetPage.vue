@@ -74,7 +74,8 @@
           <q-td key="budgeted" :props="props" class="cursor-pointer">
             ${{ props.row.budget }}
             <q-popup-edit v-model="props.row.budget">
-              <q-input v-model="props.row.budget" dense autofocus label="Budgeted Amount">
+              <!-- <q-input v-model="props.row.budget" dense autofocus label="Budgeted Amount"> -->
+              <q-input :value="props.row.budget > '' ? props.row.budget : ''" @input="updateBudget(props.row.id, 'budget', $event)" dense autofocus label="Budgeted Amount">
                 <template v-slot:prepend>
                   $
                 </template>
@@ -100,6 +101,9 @@
           <q-td key="transactions" :props="props">
             <q-btn :to="'transactions/'+props.row.id" flat>Transactions</q-btn>
           </q-td>
+          <q-td key="delete" :props="props">
+            <sp-delete-btn dense :disabled="props.row.inUse" :docRef="`/projects/${project.id}/transactions/${props.row.id}`"/>
+          </q-td>
         </q-tr>
       </template>
     </q-table>
@@ -108,7 +112,11 @@
         <q-tooltip content-class="bg-accent text-black">
           Add Account
         </q-tooltip>
-        <sp-budget-form :projectId="$route.params.id" />
+        <q-menu v-close-popup>
+          <!-- <q-scroll-area> -->
+          <sp-budget-form :projectId="$route.params.id" />
+          <!-- </q-scroll-area> -->
+        </q-menu>
       </q-btn>
     </q-page-sticky>
   </q-page>
@@ -126,7 +134,8 @@ const columns = [
   { name: 'budgeted', align: 'center', label: 'Budgeted (AUD)', field: 'budgeted', sortable: true },
   { name: 'spent', align: 'center', label: 'Spent (AUD)', field: 'spent', sortable: true },
   { name: 'remaining', align: 'center', label: 'Cash in Hand (AUD)', field: 'remaining', sortable: true },
-  { name: 'transactions', label: '', field: 'category' }
+  { name: 'transactions', label: '', field: 'category' },
+  { name: 'delete', label: 'Delete', field: 'delete', align: 'center' }
 ]
 
 export default {
@@ -135,6 +144,7 @@ export default {
       // data,
       columns,
       filter: '',
+      visibleColumns: ['category', 'name', 'budgeted', 'spent', 'remaining', 'transactions', 'delete'],
       pagination: {
         sortBy: 'category',
         descending: false,
@@ -202,7 +212,8 @@ export default {
     }
   },
   components: {
-    'sp-budget-form': () => import('./../components/sp-budget-form.vue')
+    'sp-budget-form': () => import('./../components/sp-budget-form.vue'),
+    'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
   }
 }
 </script>

@@ -74,7 +74,7 @@
             </q-tooltip>
           </q-td>
           <q-td key="spent" :props="props">
-            ${{ -props.row.expenses }}
+            ${{ props.row.expenses }}
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
@@ -89,6 +89,9 @@
             <q-btn :to="'budget/'+props.row.id" flat>Budgets</q-btn>
             <q-btn :to="'transactions/'+props.row.id" flat>Transactions</q-btn>
           </q-td>
+          <q-td key="delete" :props="props">
+            <sp-delete-btn dense :disabled="props.row.inUse" :docRef="`/projects/${project.id}/transactions/${props.row.id}`"/>
+          </q-td>
         </q-tr>
       </template>
     </q-table>
@@ -97,7 +100,11 @@
         <q-tooltip content-class="bg-accent text-black">
           Add Account
         </q-tooltip>
-        <sp-budget-form :projectId="$route.params.id" />
+        <q-menu v-close-popup>
+          <!-- <q-scroll-area> -->
+          <sp-budget-form :projectId="$route.params.id" />
+          <!-- </q-scroll-area> -->
+        </q-menu>
       </q-btn>
     </q-page-sticky>
   </q-page>
@@ -114,7 +121,8 @@ const columns = [
   { name: 'budgeted', align: 'center', label: 'Budgeted (AUD)', field: 'budgeted', sortable: true },
   { name: 'spent', align: 'center', label: 'Spent (AUD)', field: 'spent', sortable: true },
   { name: 'remaining', align: 'center', label: 'Cash in Hand (AUD)', field: 'remaining', sortable: true },
-  { name: 'budgets', label: '', field: 'category' }
+  { name: 'budgets', label: '', field: 'category' },
+  { name: 'delete', label: 'Delete', field: 'delete', align: 'center' }
 ]
 
 export default {
@@ -122,6 +130,7 @@ export default {
     return {
       columns,
       filter: '',
+      visibleColumns: ['label', 'budgeted', 'spent', 'remaining', 'budgets', 'delete'],
       pagination: {
         sortBy: 'category',
         descending: false,
@@ -178,7 +187,8 @@ export default {
     }
   },
   components: {
-    'sp-budget-form': () => import('./../components/sp-budget-form.vue')
+    'sp-budget-form': () => import('./../components/sp-budget-form.vue'),
+    'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
   }
 }
 </script>
