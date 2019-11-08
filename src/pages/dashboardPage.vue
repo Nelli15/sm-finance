@@ -48,7 +48,7 @@
                 Open the Project
               </q-tooltip>
             </q-btn>
-            <q-btn icon="import_export" label="Export">
+            <q-btn icon="import_export" label="Export" @click.stop="onExport(props.row.id)" :loading="exportLoading" :disabled="exportLoading">
               <q-tooltip>
                 Export Project
               </q-tooltip>
@@ -90,7 +90,7 @@
             </q-list>
             <q-separator />
             <q-card-actions align="center" class="bg-white text-black">
-              <q-btn icon="import_export" label="export" style="width:100%" flat>
+              <q-btn @click.stop="onExport(props.row.id)" icon="import_export" label="export" style="width:100%" flat :loading="exportLoading" :disabled="exportLoading">
                 <q-tooltip>
                   Export Project
                 </q-tooltip>
@@ -107,6 +107,7 @@
 // import firebase from 'firebase/app'
 // require('firebase/firestore')
 import { mapGetters } from 'vuex'
+import { saveAs } from 'file-saver'
 
 const columns = [
   { name: 'name', align: 'left', label: 'Project', field: 'name' },
@@ -120,7 +121,8 @@ export default {
   data () {
     return {
       columns,
-      grid: true
+      grid: true,
+      exportLoading: false
       // project: {
       //   name: 'Gold Coast Schoolies',
       //   id: '12345',
@@ -139,11 +141,40 @@ export default {
       } else {
         this.$router.push(`/project/${projectId}/summary`)
       }
+    },
+    async onExport (projectId) {
+      this.exportLoading = true
+      console.log(projectId, this.idToken)
+      if (projectId > '') {
+        const src = `/downloadReceiptsZip/?projectId=${projectId}`
+        const options = {
+          headers: {
+            Authorization: `Bearer ${this.idToken}`
+          }
+        }
+        let res = await fetch(src, options)
+          .catch(() => {
+            console.log('error occured')
+            this.exportLoading = false
+            this.$q.notify({
+              color: 'negative',
+              textColor: 'white',
+              icon: 'error',
+              message: 'Something went wrong'
+            })
+          })
+        console.log(res.status)
+        let blob = await res.blob()
+        // console.log(blob)
+        saveAs(blob, 'receipts.zip')
+        this.exportLoading = false
+      }
     }
   },
   computed: {
     ...mapGetters([
-      'projects'
+      'projects',
+      'idToken'
     ])
   }
 }

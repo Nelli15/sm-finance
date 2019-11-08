@@ -396,7 +396,7 @@ exports.onUserStatusChanged = functions.database.ref('/status/{uid}').onUpdate((
 
 exports.getReceipt = functions.https.onRequest(async (req, res) => {
   // console.log(req.headers.authorization)
-  console.log('Check if request is authorized with Firebase ID token');
+  // console.log('Check if request is authorized with Firebase ID token');
 
   if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) &&
       !(req.cookies && req.cookies.__session)) {
@@ -738,47 +738,92 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
   // var app = require('express')();
   // var p = require('path');
 
-  var archive = archiver('zip');
+  if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) &&
+      !(req.cookies && req.cookies.__session)) {
+    console.error('No Firebase ID token was passed as a Bearer token in the Authorization header.',
+        'Make sure you authorize your request by providing the following HTTP header:',
+        'Authorization: Bearer <Firebase ID Token>',
+        'or by passing a "__session" cookie.');
+    res.status(403).send('Unauthorized');
+    return;
+  }
 
-  archive.on('error', function(err) {
-    res.status(500).send({error: err.message});
-  });
+  let idToken;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    console.log('Found "Authorization" header');
+    // Read the ID Token from the Authorization header.
+    idToken = req.headers.authorization.split('Bearer ')[1];
+  } else if(req.cookies) {
+    console.log('Found "__session" cookie');
+    // Read the ID Token from cookie.
+    idToken = req.cookies.__session;
+  } else {
+    // No cookie
+    res.status(403).send('Unauthorized');
+    return;
+  }
 
-  //on stream closed we can end the request
-  archive.on('end', function() {
-    console.log('Archive wrote %d bytes', archive.pointer());
-  });
+  try {
+    const decodedIdToken = await admin.auth().verifyIdToken(idToken);
+    console.log('ID Token correctly decoded', decodedIdToken);
+    req.user = decodedIdToken;
+    // next();
+    // return;
+  } catch (error) {
+    console.error('Error while verifying Firebase ID token:', error);
+    res.status(403).send('Unauthorized');
+    return;
+  }
 
-  //set the archive name
-  res.attachment('download.zip');
+  //user is authorised
+  console.log(req.user, req.query)
 
-  //this is the streaming magic
-  // archive.pipe(res);
+  var projectId = req.query.projectId
 
-  let files = await admin.storage().bucket().getFiles({
-    // delimiter: '/',
-    // prefix: `` ///${req.query.projectId}/receipts/`
-  })
-  files.forEach(file => {
-    console.log(file);
-  });
-    // console.log(files)
-    // res.status(200).send(files)
- // .child(`/projects/${req.query.projectId}/receipts/`).listAll()
+  db.doc(`/projects/${projectId}/contributors/${req.user.user_id}`).get()
+    .then(async snap => {
+      if (snap.exists) {
+        var id = req.query.id  
+        console.log('user is a contributor', 'getting file')
 
-  // var files = [__dirname + '/fixtures/file1.txt', __dirname + '/fixtures/file2.txt'];
+        var archive = archiver('zip');
 
-  // for(var i in files) {
-  //   archive.file(files[i], { name: path.basename(files[i]) });
-  // }
+        archive.on('error', function(err) {
+          res.status(500).send({error: err.message});
+        });
 
-  // var directories = [`gs://${fileBucket}/${filePath}`]
+        //on stream closed we can end the request
+        archive.on('end', function() {
+          console.log('Archive wrote %d bytes', archive.pointer());
+        });
 
-  // for(var i in directories) {
-  //   archive.directory(directories[i], directories[i].replace(__dirname + '/fixtures', ''));
-  // }
+        //set the archive name
+        res.attachment('download.zip');
 
-  archive.finalize();
+        //this is the streaming magic
+        archive.pipe(res);
+
+        console.log(`projects/${req.query.projectId}/receipts/`)
+        
+        let [files] = await admin.storage().bucket().getFiles({
+          delimiter: '/',
+          prefix: `projects/${req.query.projectId}/receipts/` ///${req.query.projectId}/receipts/`
+        })
+        console.log(files.length)
+        // res.status(200)
+        files.forEach(file => {
+          if (file.metadata.name !== `projects/eEETgU4kt32WOHomjBYx/receipts/`) {
+            console.log(file.metadata.name)
+            archive.append(file.createReadStream(), { name: path.parse(file.metadata.name).base })
+          }
+        });
+
+        archive.finalize();
+        } else {
+        res.status(403).send('Unauthorized')
+        return
+      }
+    })
 })
 
 

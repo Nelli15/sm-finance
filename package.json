@@ -15,6 +15,8 @@
     "@tensorflow/tfjs": "^1.2.11",
     "archiver": "^3.1.1",
     "currency-codes": "^1.5.0",
+    "downloadjs": "^1.4.7",
+    "file-saver": "^2.0.2",
     "firebase": "^6.6.2",
     "firebaseui": "^4.2.0",
     "quasar": "^1.0.0"

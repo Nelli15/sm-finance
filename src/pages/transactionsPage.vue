@@ -389,6 +389,12 @@ export default {
           })
         }).catch(err => {
           console.log(err)
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Something went wrong'
+          })
         })
     }
   },
