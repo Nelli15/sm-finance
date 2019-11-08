@@ -1,11 +1,4 @@
 {
-  "database": {
-    "rules": "database.rules.json"
-  },
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
   "hosting": {
     "public": "dist/spa",
     "ignore": [
@@ -13,12 +6,13 @@
       "**/.*",
       "**/node_modules/**"
     ],
-  "rewrites": [ {
-    "source": "/receipt",
-    "function": "getReceipt"
-  }]
-  },
-  "storage": {
-    "rules": "storage.rules"
+    "rewrites": [ {
+      "source": "/receipt",
+      "function": "getReceipt"
+    },
+    {
+      "source": "/downloadReceiptsZip",
+      "function": "downloadReceiptsZip"
+    }]
   }
 }

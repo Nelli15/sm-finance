@@ -3,7 +3,8 @@ const admin = require('firebase-admin');
 // const validator = require('validator');
 const nodemailer = require('nodemailer');
 const cors = require('cors')({origin: true});
-var serviceAccount = require("./sp-finance-firebase-adminsdk-6mhpx-7ad8d7a061.json");
+const serviceAccount = require("./sp-finance-firebase-adminsdk-6mhpx-7ad8d7a061.json");
+const archiver = require('archiver');
 
 // const config = require('./config.json');
 
@@ -731,6 +732,53 @@ exports.onTransactionCreate = functions.firestore.document("/projects/{projectId
     console.log('No receipt uploaded')
   }
   return true
+})
+
+exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
+  // var app = require('express')();
+  // var p = require('path');
+
+  var archive = archiver('zip');
+
+  archive.on('error', function(err) {
+    res.status(500).send({error: err.message});
+  });
+
+  //on stream closed we can end the request
+  archive.on('end', function() {
+    console.log('Archive wrote %d bytes', archive.pointer());
+  });
+
+  //set the archive name
+  res.attachment('download.zip');
+
+  //this is the streaming magic
+  // archive.pipe(res);
+
+  let files = await admin.storage().bucket().getFiles({
+    // delimiter: '/',
+    // prefix: `` ///${req.query.projectId}/receipts/`
+  })
+  files.forEach(file => {
+    console.log(file);
+  });
+    // console.log(files)
+    // res.status(200).send(files)
+ // .child(`/projects/${req.query.projectId}/receipts/`).listAll()
+
+  // var files = [__dirname + '/fixtures/file1.txt', __dirname + '/fixtures/file2.txt'];
+
+  // for(var i in files) {
+  //   archive.file(files[i], { name: path.basename(files[i]) });
+  // }
+
+  // var directories = [`gs://${fileBucket}/${filePath}`]
+
+  // for(var i in directories) {
+  //   archive.directory(directories[i], directories[i].replace(__dirname + '/fixtures', ''));
+  // }
+
+  archive.finalize();
 })
 
 

@@ -55,7 +55,7 @@
             <!-- {{budgetCategories}} -->
             {{ budgetCategories[props.row.category].label }}
             <q-popup-edit v-model="props.row.category">
-              <q-select :value="props.row.category > '' ? budgets[props.row.category] ? budgets[props.row.category].label : budgetCategories[props.row.category].label: ''" @input="updateBudget(props.row.id, 'category', $event.id)" dense autofocus counter label="Budget Category" :options="budgetCategoryOptions" />
+              <q-select :value="props.row.category > '' ? budgets[props.row.category] ? budgets[props.row.category].label : budgetCategories[props.row.category].label: ''" @input="updateBudget(props.row.id, 'category', $event.id)" dense autofocus label="Budget Category" :options="budgetCategoryOptions" />
             </q-popup-edit>
             <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
               <q-icon name="edit"/>
