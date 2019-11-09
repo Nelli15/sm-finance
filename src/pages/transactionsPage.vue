@@ -44,9 +44,12 @@
         <q-toggle
           v-model="showArchived"
           color="secondary"
-          label="Show Archive"
-        />
-
+          icon="archive"
+        >
+          <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+            Show Archived
+          </q-tooltip>
+        </q-toggle>
         <q-btn
           flat round dense
           :icon="props.inFullscreen ? 'fullscreen_exit' : 'fullscreen'"
@@ -96,23 +99,6 @@
             <div v-if="props.row.category !== 'Journal'">
               {{ props.row.category !== 'Journal' ? getCategoryById(props.row.budget) : '' }}
             </div>
-            <div v-if="props.row.category === 'Journal'" class="cursor-pointer">
-              {{ accounts[props.row.from] ? accounts[props.row.from].label : '' }}
-              {{ budgetCategories[props.row.from] ? budgetCategories[props.row.from].label : '' }}
-              {{ budgets[props.row.from] ? budgets[props.row.from].label : '' }}
-              <q-icon name="arrow_forward" v-if="props.row.category === 'Journal'" />
-              {{ accounts[props.row.to] ? accounts[props.row.to].label : '' }}
-              {{ budgetCategories[props.row.to] ? budgetCategories[props.row.to].label : '' }}
-              {{ budgets[props.row.to] ? budgets[props.row.to].label : '' }}
-              <q-popup-edit v-model="props.row.from">
-                <q-select :value="getCategoryById(props.row.from)" @input="updateBudget(props.row.id, 'from', $event)" dense autofocus label="From" stack-label :options="budgetOptions" />
-                <q-select :value="getCategoryById(props.row.to)" @input="updateBudget(props.row.id, 'to', $event)" dense autofocus label="To" stack-label :options="budgetOptions" />
-              </q-popup-edit>
-              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-                <q-icon name="edit"/>
-                Edit
-              </q-tooltip>
-            </div>
           </q-td>
           <q-td key="budget" :props="props" class="cursor-pointer">
             <!-- {{ props.row.text }} -->
@@ -149,6 +135,27 @@
                 Edit
               </q-tooltip>
             </div>
+            <div v-if="props.row.category === 'Journal'" class="cursor-pointer">
+              {{ accounts[props.row.from] ? accounts[props.row.from].label : '' }}
+              {{ budgetCategories[props.row.from] ? budgetCategories[props.row.from].label : '' }}
+              {{ budgets[props.row.from] ? budgets[props.row.from].label : '' }}
+              <q-icon name="arrow_forward" v-if="props.row.category === 'Journal'" />
+              {{ accounts[props.row.to] ? accounts[props.row.to].label : '' }}
+              {{ budgetCategories[props.row.to] ? budgetCategories[props.row.to].label : '' }}
+              {{ budgets[props.row.to] ? budgets[props.row.to].label : '' }}
+              <q-popup-edit v-model="props.row.from">
+                <q-select v-if="accounts[props.row.from]" :value="accounts[props.row.from].label" @input="updateTransaction(props.row.id, 'from', $event.id)" dense autofocus label="From" stack-label :options="budgetOptions" />
+                <q-select v-if="budgets[props.row.from]" :value="budgets[props.row.from].label" @input="updateTransaction(props.row.id, 'from', $event.id)" dense autofocus label="From" stack-label :options="budgetOptions" />
+                <q-select v-if="budgetCategories[props.row.from]" :value="budgetCategories[props.row.from].label" @input="updateTransaction(props.row.id, 'from', $event.id)" dense autofocus label="From" stack-label :options="budgetOptions" />
+                <q-select v-if="accounts[props.row.to]" :value="accounts[props.row.to].label" @input="updateTransaction(props.row.id, 'to', $event.id)" dense autofocus label="To" stack-label :options="budgetOptions" />
+                <q-select v-if="budgets[props.row.to]" :value="budgets[props.row.to].label" @input="updateTransaction(props.row.id, 'to', $event.id)" dense autofocus label="To" stack-label :options="budgetOptions" />
+                <q-select v-if="budgetCategories[props.row.to]" :value="budgetCategories[props.row.to].label" @input="updateTransaction(props.row.id, 'to', $event.id)" dense autofocus label="To" stack-label :options="budgetOptions" />
+              </q-popup-edit>
+              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+                <q-icon name="edit"/>
+                Edit
+              </q-tooltip>
+            </div>
           </q-td>
           <q-td key="date" :props="props" class="cursor-pointer">
             {{ props.row.date }}
@@ -169,7 +176,7 @@
           <q-td key="amount" :props="props" :class="{ 'text-red-8': props.row.category === 'Expense', 'text-green-8': props.row.category === 'Income','text-blue-8': props.row.category === 'Journal', }"  class="cursor-pointer">
             <!-- {{ getAmount(props.row.text) }} -->
             <!-- {{props.row}} -->
-            {{ props.row.amount }}
+            {{ parseFloat(props.row.amount).toFixed(2) }}
             <q-popup-edit v-model="props.row.amount">
               <q-input :value="props.row.amount" @input="updateTransaction(props.row.id, 'amount', $event)" dense autofocus :label="'Amount ('+project.currency+')'" />
             </q-popup-edit>
@@ -178,13 +185,13 @@
               Edit
             </q-tooltip>
           </q-td>
-          <q-td key="GST" :props="props" class="cursor-pointer">
+          <q-td key="GST" :props="props" :class="{'cursor-pointer': props.row.category !== 'Journal' }">
             <!-- {{ getGST(props.row.text) }} -->
-            {{ props.row.GST }}
-            <q-popup-edit v-model="props.row.GST">
-              <q-input :value="props.row.GST" @input="updateTransaction(props.row.id, 'GST', $event)" dense autofocus label="GST" />
+            {{ parseFloat(props.row.GST ? props.row.GST : 0).toFixed(2) }}
+            <q-popup-edit v-model="props.row.GST" v-if="props.row.category !== 'Journal'">
+              <q-input :value="props.row.GST" @input="updateTransaction(props.row.id, 'GST', $event)" dense autofocus label="GST"/>
             </q-popup-edit>
-            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black" v-if="props.row.category !== 'Journal'">
               <q-icon name="edit"/>
               Edit
             </q-tooltip>
@@ -199,31 +206,39 @@
               Edit
             </q-tooltip>
           </q-td>
-          <q-td key="cheque" :props="props" class="cursor-pointer">
+          <q-td key="cheque" :props="props" class="{ 'cursor-pointer': props.row.type === 'Cheque' }">
             {{ props.row.cheque }}
-            <q-popup-edit v-model="props.row.cheque">
+            <q-popup-edit v-model="props.row.cheque" v-if="props.row.type === 'Cheque'">
               <q-input :value="props.row.cheque" @input="updateTransaction(props.row.id, 'cheque', $event)" dense autofocus label="Cheque #" />
             </q-popup-edit>
-            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black" v-if="props.row.type === 'Cheque'">
               <q-icon name="edit"/>
               Edit
             </q-tooltip>
           </q-td>
-          <q-td key="reviewed" :props="props">
+          <!-- <q-td key="reviewed" :props="props"> -->
             <!-- {{props.row.deleted}} -->
-            <q-btn icon="check" round :color="props.row.reviewed ? 'positive' : ''" @click="updateTransaction(props.row.id, 'reviewed', !props.row.reviewed)" outline dense/>
             <!-- <q-checkbox :value="props.row.reviewed" @input="updateTransaction(props.row.id, 'reviewed', $event)" /> -->
-          </q-td>
-          <q-td key="receipt" :props="props">
+          <!-- </q-td> -->
+          <!-- <q-td key="receipt" :props="props"> -->
             <!-- <a :href="props.row.receipt">Receipt</a> -->
             <!-- {{getReceipt('the-speaker-grill-small')}} -->
-            <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false"/>
             <!-- <q-inner-loading :showing="!props.row.receiptURL"> -->
-              <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL" />
             <!-- </q-inner-loading> -->
             <!-- {{props.row.receiptURL.startsWith('https://')}} -->
-          </q-td>
+          <!-- </q-td> -->
           <q-td key="delete" :props="props" auto-width>
+            <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
+            <q-btn icon="check" round :color="props.row.reviewed ? 'positive' : ''" @click="updateTransaction(props.row.id, 'reviewed', !props.row.reviewed)" outline dense class="q-mr-sm shadow-1">
+              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+                Reviewed?
+              </q-tooltip>
+            </q-btn>
+            <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL">
+              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+                Checking for receipt
+              </q-tooltip>
+            </q-spinner-gears>
             <q-btn
               :value="props.row.deleted ? props.row.deleted : false"
               @click="updateTransaction(props.row.id, 'deleted', !props.row.deleted)"
@@ -232,7 +247,6 @@
               class="q-mr-sm"
             >
               <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-                <q-icon name="archive"/>
                 Archive
               </q-tooltip>
             </q-btn>
@@ -279,13 +293,13 @@ export default {
         { name: 'GST', label: `GST (currency)`, field: 'GST', align: 'center', sortable: true },
         { name: 'desc', label: 'Description', field: 'desc', align: 'center', sortable: true },
         { name: 'cheque', label: 'Cheque #', field: 'cheque', align: 'center', sortable: true },
-        { name: 'reviewed', label: 'Reviewed', field: 'reviewed', align: 'center', sortable: true },
-        { name: 'receipt', label: 'Receipt', field: 'receipt', align: 'center' },
-        { name: 'delete', label: 'Delete', field: 'delete', align: 'center' }
+        // { name: 'reviewed', label: 'Reviewed', field: 'reviewed', align: 'center', sortable: true },
+        // { name: 'receipt', label: 'Receipt', field: 'receipt', align: 'center' },
+        { name: 'delete', label: '', field: 'delete', align: 'center' }
       ],
       filter: '',
       ccOptions: [],
-      visibleColumns: ['icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'reviewed'],
+      visibleColumns: ['icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'delete'],
       pagination: {
         sortBy: 'date',
         descending: true,
@@ -375,7 +389,17 @@ export default {
       }
     },
     updateTransaction (trans, key, val) {
-      console.log(trans, key, val)
+      // console.log(trans, key, val)
+      // console.log(parseFloat(this.transactions[this.transactions.findIndex(x => x.id === trans)].amount) * 0.1, parseFloat(val), (parseFloat(val) <= (parseFloat(this.transactions[this.transactions.findIndex(x => x.id === trans)].amount) * 0.1)))
+      if (key === 'GST' && (parseFloat(val) > (parseFloat(this.transactions[this.transactions.findIndex(x => x.id === trans)].amount) * 0.1))) {
+        this.$q.notify({
+          color: 'negative',
+          textColor: 'white',
+          icon: 'error',
+          message: 'GST must be <= Amount'
+        })
+        return
+      }
       this.updateTransactionByKey({ trans, key, val })
       firebase.firestore().collection(`/projects/${this.project.id}/transactions`).doc(trans)
         .update({ [key]: val })

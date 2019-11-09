@@ -804,7 +804,7 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
         archive.pipe(res);
 
         console.log(`projects/${req.query.projectId}/receipts/`)
-        
+
         let [files] = await admin.storage().bucket().getFiles({
           delimiter: '/',
           prefix: `projects/${req.query.projectId}/receipts/` ///${req.query.projectId}/receipts/`
@@ -824,6 +824,38 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
         return
       }
     })
+})
+
+exports.createProject = functions.https.onCall(async (data, context) => {
+  console.log(context.auth)
+  let projectRef = admin.firestore().collection(`/projects`).doc()
+  await projectRef.set({
+    name: 'Untitled Project',
+    number: '',
+    participants: '',
+    currency: 'AUD',
+    internationalProject: false
+  })
+  projectRef.collection('/contributors').doc(context.auth.uid).set({
+    email: context.auth.token.email,
+    name: context.auth.token.name,
+    uid: context.auth.uid,
+    permission: 'admin',
+    photoUrl: context.auth.token.picture
+  })
+  let accountsRef = projectRef.collection('/accounts')
+  accountsRef.doc('debitCard').set({
+    label: 'Debit Card',
+    systemAccount: false,
+    type: 'account',
+    inHeader: true
+  })
+  accountsRef.doc('pettyCash').set({
+    label: 'Petty Cash',
+    systemAccount: false,
+    type: 'account',
+    inHeader: true
+  })
 })
 
 

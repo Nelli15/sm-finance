@@ -72,7 +72,7 @@
               Edit
             </q-tooltip>          </q-td>
           <q-td key="budgeted" :props="props" class="cursor-pointer">
-            ${{ props.row.budget }}
+            ${{ parseFloat(props.row.budget).toFixed(2) }}
             <q-popup-edit v-model="props.row.budget">
               <!-- <q-input v-model="props.row.budget" dense autofocus label="Budgeted Amount"> -->
               <q-input :value="props.row.budget > '' ? props.row.budget : ''" @input="updateBudget(props.row.id, 'budget', $event)" dense autofocus label="Budgeted Amount">
@@ -87,13 +87,13 @@
             </q-tooltip>
           </q-td>
           <q-td key="spent" :props="props">
-            ${{ props.row.expenses }}
+            ${{ props.row.expenses.toFixed(2) }}
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
           </q-td>
           <q-td key="remaining" :props="props">
-            <q-badge :class="{ 'bg-green-8': (props.row.income - props.row.expenses) > 0, 'bg-red-8': (props.row.income - props.row.expenses) < 0, 'bg-black': (props.row.income - props.row.expenses) == 0 }" :label="'$'+(props.row.income - props.row.expenses)" />
+            <q-badge :class="{ 'bg-green-8': (props.row.income - props.row.expenses) > 0, 'bg-red-8': (props.row.income - props.row.expenses) < 0, 'bg-black': (props.row.income - props.row.expenses) == 0 }" :label="'$'+(props.row.income - props.row.expenses).toFixed(2)" />
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
@@ -102,7 +102,10 @@
             <q-btn :to="'transactions/'+props.row.id" flat>Transactions</q-btn>
           </q-td>
           <q-td key="delete" :props="props">
-            <sp-delete-btn dense :disabled="props.row.inUse" :docRef="`/projects/${project.id}/transactions/${props.row.id}`"/>
+            <div v-if="props.row.inUse">
+              IN USE
+            </div>
+            <sp-delete-btn dense v-if="!props.row.inUse" :docRef="`/projects/${project.id}/transactions/${props.row.id}`"/>
           </q-td>
         </q-tr>
       </template>

@@ -48,9 +48,14 @@
                 Open the Project
               </q-tooltip>
             </q-btn>
-            <q-btn icon="import_export" label="Export" @click.stop="onExport(props.row.id)" :loading="exportLoading" :disabled="exportLoading">
+            <q-btn icon="import_export" label="Export CSV">
               <q-tooltip>
-                Export Project
+                Export Transactions in a .csv file
+              </q-tooltip>
+            </q-btn>
+            <q-btn icon="import_export" label="Export Receipts" @click.stop="onExport(props.row.id)" :loading="exportZipLoading" :disabled="exportZipLoading">
+              <q-tooltip>
+                Export Receipts images in a .zip file
               </q-tooltip>
             </q-btn>
           </q-td>
@@ -89,10 +94,15 @@
               </q-item>
             </q-list>
             <q-separator />
-            <q-card-actions align="center" class="bg-white text-black">
-              <q-btn @click.stop="onExport(props.row.id)" icon="import_export" label="export" style="width:100%" flat :loading="exportLoading" :disabled="exportLoading">
+            <q-card-actions align="center" class="bg-secondary text-black">
+              <q-btn icon="import_export" label="Export CSV" style="width:45%" class="bg-white text-black">
                 <q-tooltip>
-                  Export Project
+                  Export transactions in a .csv file
+                </q-tooltip>
+              </q-btn>
+              <q-btn icon="import_export" label="Export Zip" @click.stop="onExport(props.row.id)" :loading="exportZipLoading" :disabled="exportZipLoading" style="width:45%" class="bg-white text-black">
+                <q-tooltip>
+                  Export receipt images in a .zip file
                 </q-tooltip>
               </q-btn>
             </q-card-actions>
@@ -122,7 +132,7 @@ export default {
     return {
       columns,
       grid: true,
-      exportLoading: false
+      exportZipLoading: false
       // project: {
       //   name: 'Gold Coast Schoolies',
       //   id: '12345',
@@ -143,7 +153,7 @@ export default {
       }
     },
     async onExport (projectId) {
-      this.exportLoading = true
+      this.exportZipLoading = true
       console.log(projectId, this.idToken)
       if (projectId > '') {
         const src = `/downloadReceiptsZip/?projectId=${projectId}`
@@ -155,7 +165,7 @@ export default {
         let res = await fetch(src, options)
           .catch(() => {
             console.log('error occured')
-            this.exportLoading = false
+            this.exportZipLoading = false
             this.$q.notify({
               color: 'negative',
               textColor: 'white',
@@ -167,7 +177,7 @@ export default {
         let blob = await res.blob()
         // console.log(blob)
         saveAs(blob, 'receipts.zip')
-        this.exportLoading = false
+        this.exportZipLoading = false
       }
     }
   },

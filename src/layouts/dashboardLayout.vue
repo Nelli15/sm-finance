@@ -9,6 +9,11 @@
           </q-avatar> -->
           SP Finances
         </q-toolbar-title>
+        <q-btn icon="add" flat dense @click="createProject">
+          <q-tooltip content-class="bg-accent text-grey-10">
+            Add a Project
+          </q-tooltip>
+        </q-btn>
         <q-btn
           flat
           no-caps
@@ -63,8 +68,8 @@
 
 <script>
 import { mapGetters } from 'vuex'
-// import firebase from 'firebase/app'
-// require('firebase/auth')
+import firebase from 'firebase/app'
+require('firebase/functions')
 
 export default {
   data () {
@@ -77,6 +82,13 @@ export default {
     // console.log(this.user.uid)
     if (this.user.uid) {
       this.$store.dispatch('fetchProjects', this.user.uid)
+    }
+  },
+  methods: {
+    async createProject () {
+      let createProject = firebase.functions().httpsCallable('createProject')
+      let res = await createProject()
+      console.log(res)
     }
   },
   computed: {

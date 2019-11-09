@@ -222,20 +222,17 @@
         </q-btn>
       </q-toolbar>
       <q-toolbar>
-        <q-tabs align="left">
-          <q-route-tab to="/dashboard" label="Dashboard" />
-          <q-route-tab :to="{ name: 'summary' }" label="Summary" v-if="isAdmin" />
-          <q-route-tab :to="{ name: 'budget' }" label="Budgets" v-if="isAdmin" />
-          <q-route-tab :to="{ name: 'transactions' }" label="Transactions" v-if="isAdmin" />
-          <q-route-tab :to="{ name: 'petty' }" label="Petty Cash" v-if="isAdmin" />
+        <q-tabs align="left" shrink>
+          <q-route-tab to="/dashboard" icon="dashboard" label="Dashboard" />
+          <q-route-tab :to="{ name: 'summary' }" icon="category" label="Summary" v-if="isAdmin" />
+          <q-route-tab :to="{ name: 'budget' }" icon="reorder" label="Budgets" v-if="isAdmin" />
+          <q-route-tab :to="{ name: 'transactions' }" icon="mdi-bank-transfer" label="Transactions" v-if="isAdmin" />
+          <q-route-tab :to="{ name: 'petty' }" icon="mdi-cash-register" label="Petty Cash" v-if="isAdmin" />
         </q-tabs>
         <q-space/>
-        <q-tabs align="right">
-          <q-tab v-if="isAdmin" key="'electronicAccount-'+tableKey">
-            Electronic Funds: <q-badge v-if="accounts['debitCard']" :class="{ 'bg-green-8': (accounts['debitCard'].income - accounts['debitCard'].expenses) > 0, 'bg-red-8': (accounts['debitCard'].income - accounts['debitCard'].expenses) < 0, 'bg-black': (accounts['debitCard'].income - accounts['debitCard'].expenses) == 0 }" :label="'$'+(accounts['debitCard'].income - accounts['debitCard'].expenses)" />
-          </q-tab>
-          <q-tab v-if="isAdmin" key="'pettyAccount-'+tableKey">
-            Petty Cash: <q-badge v-if="accounts['pettyCash']" :class="{ 'bg-green-8': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) > 0, 'bg-red-8': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) < 0, 'bg-black': (accounts['pettyCash'].income - accounts['pettyCash'].expenses) == 0 }" :label="'$'+(accounts['pettyCash'].income - accounts['pettyCash'].expenses)" />
+        <q-tabs align="right" v-if="isAdmin">
+          <q-tab v-for="account in headerAccounts" :key="account.label+'-'+tableKey" >
+            {{account.label}}: <q-badge :class="{ 'bg-green-8': (account.income - account.expenses) > 0, 'bg-red-8': (account.income - account.expenses) < 0, 'bg-black': (account.income - account.expenses) == 0 }" icon="account_balance" :label="'$'+(account.income - account.expenses)" />
           </q-tab>
         </q-tabs>
       </q-toolbar>
@@ -305,7 +302,8 @@ export default {
       'budgetCategories',
       'invites',
       'pettyTotals',
-      'tableKey'
+      'tableKey',
+      'headerAccounts'
     ])
   },
   methods: {

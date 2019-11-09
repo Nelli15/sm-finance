@@ -1,6 +1,11 @@
 <template>
   <span>
-    <q-btn icon="delete" color="negative" :dense="dense" :disabled="disabled" @click="confirm = true"/>
+    <q-btn icon="delete" color="negative" :dense="dense" :disabled="disabled" @click="confirm = true">
+      <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+        <q-icon name="delete"/>
+        Delete
+      </q-tooltip>
+    </q-btn>
     <q-dialog v-model="confirm" persistent>
       <q-card style="min-width:400px">
         <q-card-section class="row items-center">

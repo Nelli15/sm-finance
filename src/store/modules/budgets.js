@@ -38,6 +38,15 @@ export const getters = {
       budgetOptions.push(result[key])
     }
     return budgetOptions.sort((a, b) => (a.label > b.label) ? 1 : -1)
+  },
+  headerAccounts: state => {
+    let accounts = []
+    for (var key in state.accounts) {
+      if (state.accounts[key].inHeader === true) {
+        accounts.push(state.accounts[key])
+      }
+    }
+    return accounts.sort((a, b) => (a.label > b.label) ? 1 : -1)
   }
 }
 
@@ -106,6 +115,7 @@ export const mutations = {
             }
           } else if (transaction.category === 'Journal') {
             // calculate the journalled transactions
+            console.log(transaction, state.accounts, state.accounts[transaction.from], state.accounts[transaction.to])
             if (state.accounts[transaction.from]) {
               state.accounts[transaction.from].inUse = true
               state.accounts[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
