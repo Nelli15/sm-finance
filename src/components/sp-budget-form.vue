@@ -35,7 +35,7 @@
       <q-item v-if="newBudget.type === 'budget'">
         <!-- <q-item-section> -->
           <!-- <q-popup-edit v-model="props.row.category"> -->
-            <q-input v-model="newBudget.budget" dense :label="'Budget Amount ('+project.currency+')'" stack-label type="number" style="width:100%" :rules="[val => !!val || 'Field is Required!']" />
+            <q-input v-model="newBudget.budget" dense :label="'Budget Amount ('+project.currency+')'" stack-label type="number" style="width:100%" :rules="[val => !!val || 'Field is Required!']" prefix="$" />
           <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
       </q-item>

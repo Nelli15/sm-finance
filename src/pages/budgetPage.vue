@@ -63,7 +63,7 @@
               Edit
             </q-tooltip>
           </q-td>
-          <q-td key="name" :props="props" class="cursor-pointer">
+          <q-td key="label" :props="props" class="cursor-pointer">
             {{ props.row.label }}
             <q-popup-edit v-model="props.row.label">
               <q-input :value="props.row.label > '' ? props.row.label : ''" @input="updateBudget(props.row.id, 'label', $event)" dense autofocus label="Budget Label" />
@@ -71,7 +71,8 @@
             <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
               <q-icon name="edit"/>
               Edit
-            </q-tooltip>          </q-td>
+            </q-tooltip>
+          </q-td>
           <q-td key="budgeted" :props="props" class="cursor-pointer">
             ${{ parseFloat(props.row.budget).toFixed(2) }}
             <q-popup-edit v-model="props.row.budget">
@@ -134,7 +135,7 @@ require('firebase/firestore')
 
 const columns = [
   { name: 'category', align: 'left', label: 'Category', field: 'category', sortable: true },
-  { name: 'name', align: 'left', label: 'Name', field: 'label', sortable: true },
+  { name: 'label', align: 'left', label: 'Label', field: 'label', sortable: true },
   { name: 'budgeted', align: 'center', label: 'Budgeted (AUD)', field: 'budgeted', sortable: true },
   { name: 'spent', align: 'center', label: 'Spent (AUD)', field: 'spent', sortable: true },
   { name: 'remaining', align: 'center', label: 'Cash in Hand (AUD)', field: 'remaining', sortable: true },
