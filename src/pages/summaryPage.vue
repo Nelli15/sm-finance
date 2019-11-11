@@ -68,6 +68,7 @@
             </q-tooltip>
           </q-td>
           <q-td key="budgeted" :props="props">
+            <!-- {{props.row.budget}} -->
             ${{ props.row.budget.toFixed(2) }}
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated

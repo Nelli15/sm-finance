@@ -149,8 +149,8 @@ export default {
       filter: '',
       visibleColumns: ['category', 'name', 'budgeted', 'spent', 'remaining', 'transactions', 'delete'],
       pagination: {
-        sortBy: 'category',
-        descending: false,
+        sortBy: 'label',
+        descending: true,
         page: 1,
         rowsPerPage: 10
         // rowsNumber: xx if getting data from a server

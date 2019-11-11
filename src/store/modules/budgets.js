@@ -80,7 +80,11 @@ export const mutations = {
         state.budgets[key].expenses = 0
         state.budgets[key].income = 0
         state.budgets[key].inUse = false
-        state.budgetCategories[state.budgets[key].category].inUse = true
+        console.log(state.budgetCategories[state.budgets[key].category])
+        if (state.budgetCategories[state.budgets[key].category]) {
+          state.budgetCategories[state.budgets[key].category].inUse = true
+          state.budgetCategories[state.budgets[key].category].budget += state.budgets[key].budget ? parseFloat(state.budgets[key].budget) : 0
+        }
       }
       for (key in state.accounts) {
         state.accounts[key].expenses = 0
@@ -137,11 +141,11 @@ export const mutations = {
           }
         }
       }
-      for (var budgetKey in state.budgets) {
-        // console.log(budgetKey)
-        state.budgetCategories[state.budgets[budgetKey].category].budget += parseFloat(state.budgets[budgetKey].budget) ? parseFloat(state.budgets[budgetKey].budget) : 0
-        // console.log(state.budgetCategories[state.budgets[budgetKey].category].budget)
-      }
+      // for (var budgetKey in state.budgets) {
+      //   // console.log(budgetKey)
+      //   state.budgetCategories[state.budgets[budgetKey].category].budget += parseFloat(state.budgets[budgetKey].budget) ? parseFloat(state.budgets[budgetKey].budget) : 0
+      //   // console.log(state.budgetCategories[state.budgets[budgetKey].category].budget)
+      // }
       state.tableKey += 1
     }
   },
