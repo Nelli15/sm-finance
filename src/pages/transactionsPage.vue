@@ -60,6 +60,14 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props" class="text-bold" :class="{ 'bg-red-2': props.row.deleted}">
+          <q-td key="submittedBy" :props="props">
+            <q-avatar v-if="props.row.submittedBy">
+              <img :src="props.row.submittedBy.photoURL"/>
+              <q-tooltip content-class="bg-accent text-black">
+                <b>{{props.row.submittedBy.displayName}}</b><br>{{props.row.submittedBy.email}}
+              </q-tooltip>
+            </q-avatar>
+          </q-td>
           <q-td key="number" :props="props">
             {{ props.row.id }}
           </q-td>
@@ -285,6 +293,7 @@ export default {
   data () {
     return {
       columns: [
+        { name: 'submittedBy', label: 'From', field: 'submittedBy', align: 'left', sortable: true },
         { name: 'number', label: 'Transaction ID', field: 'number', align: 'center', sortable: true },
         { name: 'icon', label: 'Type', field: 'icon', align: 'center' },
         { name: 'category', label: 'Category', field: 'category', align: 'center', sortable: true },
@@ -300,7 +309,7 @@ export default {
       ],
       filter: '',
       ccOptions: [],
-      visibleColumns: ['icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'delete'],
+      visibleColumns: ['submittedBy', 'icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'delete'],
       pagination: {
         sortBy: 'date',
         descending: true,

@@ -253,6 +253,7 @@ export default {
       this.newTrans.cheque = (this.newTrans.type === 'Cheque') ? this.newTrans.cheque : ''
       this.newTrans.GST = (this.newTrans.category !== 'Journal') ? this.newTrans.GST : 0
       this.newTrans.amount = (this.newTrans.type === 'Cash') ? round5(this.newTrans.amount) : this.newTrans.amount
+      this.newTrans.submittedBy = this.user
       this.transRef.set(this.newTrans).then(res => {
         // console.log('form submitted', res)
         this.$q.loading.hide()
@@ -354,7 +355,8 @@ export default {
       'budgetOptions',
       'contributorBudgets',
       'isAdmin',
-      'isContributor'
+      'isContributor',
+      'user'
     ]),
     isValid () {
       console.log(this.newTrans.to !== '' && this.newTrans.from !== '' && this.newTrans.to === this.newTrans.from)
