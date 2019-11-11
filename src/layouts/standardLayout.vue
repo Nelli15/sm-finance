@@ -278,7 +278,7 @@ export default {
     }
   },
   created () {
-    console.log(this.$route.name)
+    // console.log(this.$route.name)
     this.$store.dispatch('fetchProject', { projectId: this.$route.params.id, uid: this.user.uid })
     this.$store.dispatch('fetchTransactions', this.$route.params.id)
     this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
@@ -316,6 +316,23 @@ export default {
       if (tempBudgets.indexOf(newBudget) === -1) {
         tempBudgets.push(newBudget)
         firebase.firestore().collection(`/projects/${this.$route.params.id}/contributors`).doc(uid).update({ budgets: tempBudgets })
+          .then(() => {
+            // console.log('updated')
+            this.$q.notify({
+              color: 'positive',
+              textColor: 'white',
+              icon: 'cloud_done',
+              message: 'Contributor Added Successfully'
+            })
+          }).catch(err => {
+            console.log(err)
+            this.$q.notify({
+              color: 'negative',
+              textColor: 'white',
+              icon: 'error',
+              message: 'Oops, Something went wrong!'
+            })
+          })
       }
     },
     removeContributorBudget (budgets, newBudget, uid) {
@@ -326,6 +343,23 @@ export default {
       if (index > -1) {
         tempBudgets.splice(index, 1)
         firebase.firestore().collection(`/projects/${this.$route.params.id}/contributors`).doc(uid).update({ budgets: tempBudgets })
+          .then(() => {
+            // console.log('updated')
+            this.$q.notify({
+              color: 'positive',
+              textColor: 'white',
+              icon: 'cloud_done',
+              message: 'Contributor Removed Successfully'
+            })
+          }).catch(err => {
+            console.log(err)
+            this.$q.notify({
+              color: 'negative',
+              textColor: 'white',
+              icon: 'error',
+              message: 'Oops, Something went wrong!'
+            })
+          })
       }
     },
     addInviteBudget (budgets, newBudget, email) {
@@ -334,6 +368,23 @@ export default {
       if (tempBudgets.indexOf(newBudget) === -1) {
         tempBudgets.push(newBudget)
         firebase.firestore().collection(`/projects/${this.$route.params.id}/invites`).doc(email).update({ budgets: tempBudgets })
+          .then(() => {
+            // console.log('updated')
+            this.$q.notify({
+              color: 'positive',
+              textColor: 'white',
+              icon: 'cloud_done',
+              message: 'Contributor Budget Added Successfully'
+            })
+          }).catch(err => {
+            console.log(err)
+            this.$q.notify({
+              color: 'negative',
+              textColor: 'white',
+              icon: 'error',
+              message: 'Oops, Something went wrong!'
+            })
+          })
       }
     },
     removeInviteBudget (budgets, newBudget, email) {
@@ -344,6 +395,23 @@ export default {
       if (index > -1) {
         tempBudgets.splice(index, 1)
         firebase.firestore().collection(`/projects/${this.$route.params.id}/invitess`).doc(email).update({ budgets: tempBudgets })
+          .then(() => {
+            // console.log('updated')
+            this.$q.notify({
+              color: 'positive',
+              textColor: 'white',
+              icon: 'cloud_done',
+              message: 'Contributor Budget Removed Successfully'
+            })
+          }).catch(err => {
+            console.log(err)
+            this.$q.notify({
+              color: 'negative',
+              textColor: 'white',
+              icon: 'error',
+              message: 'Oops, Something went wrong!'
+            })
+          })
       }
     },
     addNewInviteBudget (event) {
@@ -361,16 +429,67 @@ export default {
       }
     },
     addUser (uid) {
-      console.log(`/projects/${this.$route.params.id}/invites/${this.newInvitation.email}`)
+      // console.log(`/projects/${this.$route.params.id}/invites/${this.newInvitation.email}`)
       firebase.firestore().collection(`/projects/${this.$route.params.id}/invites`).doc(this.newInvitation.email).set(this.newInvitation)
+        .then(() => {
+          // console.log('updated')
+          this.$q.notify({
+            color: 'positive',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'User Added Successfully'
+          })
+        }).catch(err => {
+          console.log(err)
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
+          })
+        })
     },
     removeUser (uid) {
       // console.log(`/projects/${this.$route.params.id}/contributors/${event}`)
       firebase.firestore().doc(`/projects/${this.$route.params.id}/contributors/${uid}`).delete()
+        .then(() => {
+          // console.log('updated')
+          this.$q.notify({
+            color: 'positive',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'User Removed Successfully'
+          })
+        }).catch(err => {
+          console.log(err)
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
+          })
+        })
     },
     removeInvite (email) {
       // console.log(`/projects/${this.$route.params.id}/contributors/${event}`)
       firebase.firestore().doc(`/projects/${this.$route.params.id}/invites/${email}`).delete()
+        .then(() => {
+          // console.log('updated')
+          this.$q.notify({
+            color: 'positive',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'Invite Removed Successfully'
+          })
+        }).catch(err => {
+          console.log(err)
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
+          })
+        })
     }
   },
   watch: {

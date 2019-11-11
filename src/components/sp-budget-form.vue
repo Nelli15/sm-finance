@@ -35,7 +35,7 @@
       <q-item v-if="newBudget.type === 'budget'">
         <!-- <q-item-section> -->
           <!-- <q-popup-edit v-model="props.row.category"> -->
-            <q-input v-model="newBudget.budget" dense label="Budget" stack-label type="number" style="width:100%" :rules="[val => !!val || 'Field is Required!']" />
+            <q-input v-model="newBudget.budget" dense :label="'Budget Amount ('+project.currency+')'" stack-label type="number" style="width:100%" :rules="[val => !!val || 'Field is Required!']" />
           <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
       </q-item>
@@ -60,7 +60,7 @@ export default {
         category: '', // ID
         type: 'budget', // ['budget', 'category', 'account']
         label: '', // name of budget or category
-        budget: 0 // the amount budgeted
+        budget: '' // the amount budgeted
       },
       loading: false
     }
@@ -99,11 +99,17 @@ export default {
       // this.loading = false
     },
     onReset (event) {
-
+      this.newBudget = {
+        category: '', // ID
+        type: 'budget', // ['budget', 'category', 'account']
+        label: '', // name of budget or category
+        budget: '' // the amount budgeted
+      }
     }
   },
   computed: {
     ...mapGetters([
+      'project',
       'budgets',
       'budgetCategories',
       'budgetOptions',

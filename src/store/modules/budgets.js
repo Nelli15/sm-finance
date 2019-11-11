@@ -80,7 +80,7 @@ export const mutations = {
         state.budgets[key].expenses = 0
         state.budgets[key].income = 0
         state.budgets[key].inUse = false
-        console.log(state.budgetCategories[state.budgets[key].category])
+        // console.log(state.budgetCategories[state.budgets[key].category])
         if (state.budgetCategories[state.budgets[key].category]) {
           state.budgetCategories[state.budgets[key].category].inUse = true
           state.budgetCategories[state.budgets[key].category].budget += state.budgets[key].budget ? parseFloat(state.budgets[key].budget) : 0
@@ -119,7 +119,7 @@ export const mutations = {
             }
           } else if (transaction.category === 'Journal') {
             // calculate the journalled transactions
-            console.log(transaction, state.accounts, state.accounts[transaction.from], state.accounts[transaction.to])
+            // console.log(transaction, state.accounts, state.accounts[transaction.from], state.accounts[transaction.to])
             if (state.accounts[transaction.from]) {
               state.accounts[transaction.from].inUse = true
               state.accounts[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0

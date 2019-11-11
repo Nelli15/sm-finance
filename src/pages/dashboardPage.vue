@@ -154,7 +154,7 @@ export default {
     },
     async onExport (projectId) {
       this.exportZipLoading = true
-      console.log(projectId, this.idToken)
+      // console.log(projectId, this.idToken)
       if (projectId > '') {
         const src = `/downloadReceiptsZip/?projectId=${projectId}`
         const options = {
@@ -170,7 +170,7 @@ export default {
               color: 'negative',
               textColor: 'white',
               icon: 'error',
-              message: 'Something went wrong'
+              message: 'Oops, Something went wrong!'
             })
           })
         console.log(res.status)
@@ -178,6 +178,12 @@ export default {
         // console.log(blob)
         saveAs(blob, 'receipts.zip')
         this.exportZipLoading = false
+        this.$q.notify({
+          color: 'positive',
+          textColor: 'white',
+          icon: 'cloud-download',
+          message: '.zip Export Successful'
+        })
       }
     }
   },

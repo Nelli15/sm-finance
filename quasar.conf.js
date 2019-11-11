@@ -91,7 +91,8 @@ module.exports = function (ctx) {
       plugins: [
         'Notify',
         'Loading',
-        'ClosePopup'
+        'ClosePopup',
+        'LocalStorage',
       ],
       config: {
         brand: {

@@ -19,6 +19,7 @@
       rows-per-page-label="Budgets per page:"
       :pagination.sync="pagination"
       dense
+      @update:pagination="$q.localStorage.set('summaryTableRows', $event.rowsPerPage)"
     >
       <template v-slot:top="props">
         <div class="col-4 q-table__title">Categories</div>
@@ -152,18 +153,19 @@ export default {
   },
   created () {
     this.updateCategory = debounce(this.updateCategory, 1000)
+    this.pagination.rowsPerPage = this.$q.localStorage.getItem('summaryTableRows')
   },
   methods: {
     ...mapActions([
       'updateCategoryByKey'
     ]),
     updateCategory (budgetId, key, val) {
-      console.log(budgetId, key, val)
+      // console.log(budgetId, key, val)
       this.updateCategoryByKey({ budgetId, key, val })
       firebase.firestore().collection(`/projects/${this.project.id}/accounts`).doc(budgetId)
         .update({ [key]: val })
         .then(() => {
-          console.log('updated')
+          // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',

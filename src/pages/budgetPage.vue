@@ -11,6 +11,7 @@
       :filter="filter"
       rows-per-page-label="Budgets per page:"
       :pagination.sync="pagination"
+      @update:pagination="$q.localStorage.set('budgetTableRows', $event.rowsPerPage)"
       dense
     >
       <template v-slot:top="props">
@@ -161,18 +162,19 @@ export default {
     // this.$store.dispatch('fetchTransactions', this.$route.params.id)
     // this.$store.dispatch('fetchBudgets', this.$route.params.id)
     this.updateBudget = debounce(this.updateBudget, 1000)
+    this.pagination.rowsPerPage = this.$q.localStorage.getItem('budgetTableRows')
   },
   methods: {
     ...mapActions([
       'updateBudgetByKey'
     ]),
     updateBudget (budgetId, key, val) {
-      console.log(budgetId, key, val)
+      // console.log(budgetId, key, val)
       this.updateBudgetByKey({ budgetId, key, val })
       firebase.firestore().collection(`/projects/${this.project.id}/accounts`).doc(budgetId)
         .update({ [key]: val })
         .then(() => {
-          console.log('updated')
+          // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',

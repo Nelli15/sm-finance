@@ -11,6 +11,7 @@
       :filter="filter"
       rows-per-page-label="Transactions per page:"
       :pagination.sync="pagination"
+      @update:pagination="$q.localStorage.set('transTableRows', $event.rowsPerPage)"
       dense
     >
       <template v-slot:top="props">
@@ -312,7 +313,7 @@ export default {
     }
   },
   created () {
-    console.log(this.project.currency)
+    // console.log(this.project.currency)
     if (this.project.currency) {
       for (var key in this.columns) {
         if (this.columns[key].label.search('(currency)') !== -1) {
@@ -322,6 +323,7 @@ export default {
     }
 
     this.updateTransaction = debounce(this.updateTransaction, 1000)
+    this.pagination.rowsPerPage = this.$q.localStorage.getItem('transTableRows')
   },
   methods: {
     ...mapActions([
@@ -369,24 +371,24 @@ export default {
       }
     },
     getGST (text) {
-      if (text > '') {
-        let totalFound = false
-        // let amountFound
-        let textArray = text.split('\n').join(' ').split(' ')
-        // console.log(textArray.length)
-        for (var key in textArray) {
-          // console.log(key, textArray[key].toLowerCase())
-          if ((textArray[key].toLowerCase().indexOf('gst') !== -1) || (textArray[key].toLowerCase().indexOf('tax') !== -1)) {
-            // console.log(key + 1)
-            totalFound = true
-            // console.log(textArray[key] + textArray[(parseInt(key) + 1)] + textArray[(parseInt(key) + 2)])
-          }
-          if ((totalFound || !totalFound) && textArray[key].indexOf('$') !== -1) {
-            console.log(key, textArray[key].toLowerCase())
-            // return parseFloat(textArray[key].split('$').join(''))
-          }
-        }
-      }
+      // if (text > '') {
+      //   // let totalFound = false
+      //   // let amountFound
+      //   let textArray = text.split('\n').join(' ').split(' ')
+      //   // console.log(textArray.length)
+      //   for (var key in textArray) {
+      //     // console.log(key, textArray[key].toLowerCase())
+      //     // if ((textArray[key].toLowerCase().indexOf('gst') !== -1) || (textArray[key].toLowerCase().indexOf('tax') !== -1)) {
+      //     //   // console.log(key + 1)
+      //     //   totalFound = true
+      //     //   // console.log(textArray[key] + textArray[(parseInt(key) + 1)] + textArray[(parseInt(key) + 2)])
+      //     // }
+      //     // if ((totalFound || !totalFound) && textArray[key].indexOf('$') !== -1) {
+      //       // console.log(key, textArray[key].toLowerCase())
+      //       // return parseFloat(textArray[key].split('$').join(''))
+      //     // }
+      //   }
+      // }
     },
     updateTransaction (trans, key, val) {
       // console.log(trans, key, val)
@@ -404,7 +406,7 @@ export default {
       firebase.firestore().collection(`/projects/${this.project.id}/transactions`).doc(trans)
         .update({ [key]: val })
         .then(() => {
-          console.log('updated')
+          // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
@@ -486,7 +488,7 @@ export default {
   },
   watch: {
     project (oldVal, newVal) {
-      console.log(this.project.currency)
+      // console.log(this.project.currency)
       for (var key in this.columns) {
         if (this.columns[key].label.search('(currency)') !== -1) {
           this.columns[key].label = this.columns[key].label.replace('(currency)', `(${this.project.currency})`)

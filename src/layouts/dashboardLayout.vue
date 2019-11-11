@@ -87,8 +87,25 @@ export default {
   methods: {
     async createProject () {
       let createProject = firebase.functions().httpsCallable('createProject')
-      let res = await createProject()
-      console.log(res)
+      createProject()
+        .then(() => {
+          // console.log('updated')
+          this.$q.notify({
+            color: 'positive',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'Project Created Successfully'
+          })
+        }).catch(err => {
+          console.log(err)
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
+          })
+        })
+      // console.log(res)
     }
   },
   computed: {
