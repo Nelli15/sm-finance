@@ -5,7 +5,7 @@
     <q-list style="min-width: 100px;min-height:360px;">
       <q-item class="text-h6 justify-center">
         <!-- <q-item-section> -->
-          Add Account
+          Add {{newBudget.type}}
         <!-- </q-item-section> -->
       </q-item>
       <q-item>
@@ -83,8 +83,9 @@ export default {
           color: 'positive',
           textColor: 'white',
           icon: 'cloud_done',
-          message: `${this.newBudget}: ${this.newBudget.label} Created Successfully`
+          message: `${this.newBudget.type}: ${this.newBudget.label} Created Successfully`
         })
+        this.$emit('onSubmit', this.newBudget)
       }).catch(err => {
         console.error(err)
         this.$q.loading.hide()

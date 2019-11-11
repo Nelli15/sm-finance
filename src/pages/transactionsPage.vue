@@ -261,9 +261,9 @@
         <q-tooltip content-class="bg-accent text-grey-10">
           Add Transaction
         </q-tooltip>
-        <q-menu v-close-popup persistent>
+        <q-menu ref="addTransMenu" persistent>
           <!-- <q-scroll-area> -->
-          <sp-trans-form :projectId="project.id" />
+          <sp-trans-form :projectId="project.id" @onSubmit="$refs.addTransMenu.hide()"/>
           <!-- </q-scroll-area> -->
         </q-menu>
       </q-btn>

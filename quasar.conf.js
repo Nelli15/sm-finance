@@ -95,18 +95,23 @@ module.exports = function (ctx) {
       ],
       config: {
         brand: {
-        primary: '#027BE3',
-        secondary: '#26A69A',
-        accent: '#abede9',
+          primary: '#027BE3',
+          secondary: '#26A69A',
+          accent: '#abede9',
 
-        dark: '#1d1d1d',
+          dark: '#1d1d1d',
 
-        positive: '#21BA45',
-        negative: '#C10015',
-        info: '#31CCEC',
-        warning: '#F2C037'
-      },
-        loading: {}
+          positive: '#21BA45',
+          negative: '#C10015',
+          info: '#31CCEC',
+          warning: '#F2C037'
+        },
+        loading: {},
+        notify: {
+          timeout: 1000,
+          textColor: 'white',
+          actions: [{ icon: 'close', color: 'white' }]
+        }
       }
     },
 

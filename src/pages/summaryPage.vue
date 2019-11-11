@@ -103,9 +103,9 @@
         <q-tooltip content-class="bg-accent text-black">
           Add Account
         </q-tooltip>
-        <q-menu v-close-popup>
+        <q-menu ref="addCategoryMenu" persistent>
           <!-- <q-scroll-area> -->
-          <sp-budget-form :projectId="$route.params.id" />
+          <sp-budget-form :projectId="$route.params.id" @onSubmit="$refs.addCategoryMenu.hide()"/>
           <!-- </q-scroll-area> -->
         </q-menu>
       </q-btn>
@@ -135,7 +135,7 @@ export default {
       filter: '',
       visibleColumns: ['label', 'budgeted', 'spent', 'remaining', 'budgets', 'delete'],
       pagination: {
-        sortBy: 'category',
+        sortBy: 'label',
         descending: false,
         page: 1,
         rowsPerPage: 10

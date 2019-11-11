@@ -115,9 +115,9 @@
         <q-tooltip content-class="bg-accent text-black">
           Add Account
         </q-tooltip>
-        <q-menu v-close-popup>
+        <q-menu ref="addBudgetMenu" persistent>
           <!-- <q-scroll-area> -->
-          <sp-budget-form :projectId="$route.params.id" />
+          <sp-budget-form :projectId="$route.params.id" @onSubmit="$refs.addBudgetMenu.hide()"/>
           <!-- </q-scroll-area> -->
         </q-menu>
       </q-btn>

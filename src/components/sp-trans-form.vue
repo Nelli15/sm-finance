@@ -260,6 +260,7 @@ export default {
           icon: 'cloud_done',
           message: `Transaction: Submitted Successfully`
         })
+        this.$emit('onSubmit', this.newTrans)
       }).catch(err => {
         console.error(err)
         this.$q.loading.hide()
