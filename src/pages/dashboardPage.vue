@@ -33,13 +33,13 @@
               <q-input v-model="props.row.category" dense autofocus counter label="Budget Category" />
             </q-popup-edit> -->
           </q-td>
-          <q-td key="number" :props="props">
+          <q-td key="number" :props="props" v-if="props.row.permission === 'admin'">
             {{ props.row.number }}
           </q-td>
-          <q-td key="participants" :props="props">
+          <q-td key="participants" :props="props" v-if="props.row.permission === 'admin'">
             {{ props.row.participants }} Participants
           </q-td>
-          <q-td key="currency" :props="props">
+          <q-td key="currency" :props="props" v-if="props.row.permission === 'admin'">
             Project Currency ({{ props.row.currency }})
           </q-td>
           <q-td key="export" :props="props">
@@ -48,12 +48,12 @@
                 Open the Project
               </q-tooltip>
             </q-btn>
-            <q-btn icon="import_export" label="Export CSV">
+            <q-btn icon="import_export" label="Export CSV" v-if="props.row.permission === 'admin'">
               <q-tooltip>
                 Export Transactions in a .csv file
               </q-tooltip>
             </q-btn>
-            <q-btn icon="import_export" label="Export Receipts" @click.stop="onExport(props.row.id)" :loading="exportZipLoading" :disabled="exportZipLoading">
+            <q-btn icon="import_export" label="Export Receipts" @click.stop="onExport(props.row.id)" :loading="exportZipLoading" :disabled="exportZipLoading" v-if="props.row.permission === 'admin'">
               <q-tooltip>
                 Export Receipts images in a .zip file
               </q-tooltip>
@@ -69,7 +69,7 @@
                 <q-item-section>
                   <q-item-label class="text-h6">{{ props.row.name }}</q-item-label>
                 </q-item-section>
-                <q-item-section side>
+                <q-item-section side v-if="props.row.permission === 'admin'">
                   <q-item-label class="text-white">({{ props.row.number }})</q-item-label>
                 </q-item-section>
               </q-item>
@@ -77,24 +77,24 @@
             <q-separator />
             <q-list dense>
               <q-item>
-                <q-item-section>
+                <q-item-section v-if="props.row.permission === 'admin'">
                   <q-item-label>Participants </q-item-label>
                 </q-item-section>
-                <q-item-section side>
+                <q-item-section side v-if="props.row.permission === 'admin'">
                   <q-item-label class="text-white">{{ props.row.participants }}</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item>
-                <q-item-section>
+                <q-item-section v-if="props.row.permission === 'admin'">
                   <q-item-label>Currency</q-item-label>
                 </q-item-section>
-                <q-item-section side>
+                <q-item-section side v-if="props.row.permission === 'admin'">
                   <q-item-label class="text-white">{{ props.row.currency }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
             <q-separator />
-            <q-card-actions align="center" class="bg-secondary text-black">
+            <q-card-actions align="center" class="bg-secondary text-black" v-if="props.row.permission === 'admin'">
               <q-btn icon="import_export" label="Export CSV" style="width:45%" class="bg-white text-black">
                 <q-tooltip>
                   Export transactions in a .csv file

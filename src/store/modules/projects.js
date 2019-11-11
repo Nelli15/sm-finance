@@ -107,6 +107,9 @@ export const actions = {
               project = projectDoc.data()
               project.id = projectDoc.id
               project.permission = userDoc.data().permission
+              // if (project.permission === 'contributor') {
+              // project.budgets = userDoc.data().budgets
+              // }
               // console.log(project)
               if (state.projects.findIndex(x => x.id === project.id) !== -1) {
                 commit('updateProjects', { index: state.projects.findIndex(x => x.id === project.id), project })

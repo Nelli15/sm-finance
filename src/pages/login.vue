@@ -1,9 +1,11 @@
 <template>
-    <div>
-        <div class="text-center my-4">
-            <h2>Welcome to the SP Finances App!</h2>
-            <h4>You'll need to login to continue</h4>
+  <div style="background-color:black;height:100vh;">
+    <img style="min-height:100vh;min-width:100vw; max-width: 100vw;max-height:100vh; opacity: 0.5;filter: alpha(opacity=50); position: absolute;top:0px" src="https://firebasestorage.googleapis.com/v0/b/sp-finance.appspot.com/o/assets%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=34eac538-a272-4039-be17-c77a05c27da7"/>
+        <div class="text-center text-white" style="padding-top:30vh; z-index:1;">
+            <div class="text-h4">Welcome to the Summer Projects Finances App!</div>
+            <div class="text-h5">You'll need to login to continue</div>
         </div>
+        <div id="loader"><q-spinner/></div>
         <div id="firebaseui-auth-container"></div>
     </div>
 </template>
@@ -17,14 +19,15 @@ export default {
   mounted () {
     // let self = this
     let uiConfig = {
-      signInOptions: [{
-        provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID
-      },
-      {
-        provider: firebase.auth.FacebookAuthProvider.PROVIDER_ID
-      }],
+      signInOptions: [
+        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+        firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+        firebase.auth.EmailAuthProvider.PROVIDER_ID
+      ],
+      signInSuccessUrl: '/#/dashboard',
       callbacks: {
         signInSuccessWithAuthResult (authResult, redirectUrl) {
+          console.log(authResult, redirectUrl)
           // this.$store.dispatch('fetchCreds')
           // var onUserSignIn = firebase.functions().httpsCallable('onUserSignIn')
           // onUserSignIn({ user: firebase.auth().currentUser }).then((res) => {
@@ -35,11 +38,20 @@ export default {
           //   // this.$toasted.global.toast_error(`${err}`)
           // })
           // console.log(authResult)
-          if (redirectUrl) {
-            window.location.href = redirectUrl
-          } else {
-            window.location.href = '/#/dashboard'
-          }
+          // if (redirectUrl) {
+          //   window.location.href = redirectUrl
+          // } else {
+          //   window.location.href = '/#/dashboard'
+          // }
+          return true
+        },
+        signInFailure (err) {
+          console.log(err)
+        },
+        uiShown: function () {
+          // The widget is rendered.
+          // Hide the loader.
+          document.getElementById('loader').style.display = 'none'
         }
       }
     }
