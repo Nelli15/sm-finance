@@ -15,7 +15,8 @@ function waitForUid (payload, rootState, dispatch) {
 
 const state = {
   project: {},
-  projects: []
+  projects: [],
+  projectsTableKey: 1
 }
 
 export const getters = {
@@ -61,18 +62,24 @@ export const getters = {
       }
     }
     return []
-  }
+  },
+  projectsTableKey: state => state.projectsTableKey
 }
 
 export const mutations = {
   setProject (state, payload) {
-    state.project = payload
+    // state.project = payload
+    Vue.set(state, 'project', payload)
   },
   setProjects (state, payload) {
-    state.projects = payload
+    // state.projects = payload
+    Vue.set(state, 'projects', payload)
   },
   setPermissions (state, payload) {
     Vue.set(state.project, 'permissions', payload)
+  },
+  updateProjects (state, payload) {
+    Vue.set(state.projects, payload.index, payload.project)
   }
 }
 
@@ -96,12 +103,18 @@ export const actions = {
         var promises = projectsSnap.docs.map(userDoc => {
           return new Promise((resolve, reject) => {
             userDoc.ref.parent.parent.onSnapshot(projectDoc => {
+              // console.log(projectDoc)
               project = projectDoc.data()
               project.id = projectDoc.id
               project.permission = userDoc.data().permission
               // console.log(project)
-              projects.push(project)
-              resolve()
+              if (state.projects.findIndex(x => x.id === project.id) !== -1) {
+                commit('updateProjects', { index: state.projects.findIndex(x => x.id === project.id), project })
+                resolve()
+              } else {
+                projects.push(project)
+                resolve()
+              }
             })
           })
         })
