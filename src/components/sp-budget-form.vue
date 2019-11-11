@@ -68,6 +68,7 @@ export default {
   created () {
     // this.$store.dispatch('fetchTransactions', this.$route.params.id)
     // this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    // this.$q.loading.show()
   },
   methods: {
     onSubmit (event) {
@@ -75,12 +76,24 @@ export default {
       this.$q.loading.show()
       // console.log(`/projects/${this.projectId}/budgets`)
       let newBudgetRef = firebase.firestore().collection(`/projects/${this.projectId}/accounts`).doc()
-      console.log(newBudgetRef)
+      // console.log(newBudgetRef)
       newBudgetRef.set(this.newBudget).then(res => {
         this.$q.loading.hide()
+        this.$q.notify({
+          color: 'positive',
+          textColor: 'white',
+          icon: 'cloud_done',
+          message: `${this.newBudget}: ${this.newBudget.label} Created Successfully`
+        })
       }).catch(err => {
-        console.log(err)
+        console.error(err)
         this.$q.loading.hide()
+        this.$q.notify({
+          color: 'negative',
+          textColor: 'white',
+          icon: 'error',
+          message: 'Oops, Something went wrong!'
+        })
       })
       // this.loading = false
     },

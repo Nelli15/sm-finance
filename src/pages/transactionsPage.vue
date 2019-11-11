@@ -409,7 +409,7 @@ export default {
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Transaction Updated'
+            message: 'Transaction: Updated Successfully'
           })
         }).catch(err => {
           console.log(err)
@@ -417,7 +417,7 @@ export default {
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Something went wrong'
+            message: 'Oops, Something went wrong!'
           })
         })
     }

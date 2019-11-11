@@ -225,6 +225,7 @@ export default {
     }
   },
   created () {
+    // this.$q.dark.set(true)
     console.log(`/projects/${this.projectId}/transactions`)
     this.transRef = firebase.firestore().collection(`/projects/${this.project.id}/transactions`).doc()
     let date = new Date()
@@ -245,20 +246,29 @@ export default {
       this.uploading = true
     },
     onSubmit () {
-      console.log('submitting form', this.newTrans)
+      // console.log('submitting form', this.newTrans)
+      this.$q.loading.show()
       this.newTrans.cheque = (this.newTrans.type === 'Cheque') ? this.newTrans.cheque : ''
       this.newTrans.GST = (this.newTrans.category !== 'Journal') ? this.newTrans.GST : 0
       this.newTrans.amount = (this.newTrans.type === 'Cash') ? round5(this.newTrans.amount) : this.newTrans.amount
       this.transRef.set(this.newTrans).then(res => {
-        console.log('form submitted', res)
+        // console.log('form submitted', res)
+        this.$q.loading.hide()
         this.$q.notify({
           color: 'positive',
           textColor: 'white',
           icon: 'cloud_done',
-          message: 'Form Submitted'
+          message: `Transaction: Submitted Successfully`
         })
       }).catch(err => {
         console.error(err)
+        this.$q.loading.hide()
+        this.$q.notify({
+          color: 'negative',
+          textColor: 'white',
+          icon: 'error',
+          message: 'Oops, Something went wrong!'
+        })
       })
       // this.$refs.transUpload.upload()
       // this.$store.dispatch('updateTransactions', this.newTrans)

@@ -49,7 +49,27 @@ export default {
     onDelete () {
       console.log('onDelete')
       if (this.confirmMessage === 'DELETE') {
+        this.$q.loading.show()
         firebase.firestore().doc(this.docRef).delete()
+          .then(res => {
+            // console.log('form submitted', res)
+            this.$q.loading.hide()
+            this.$q.notify({
+              color: 'positive',
+              textColor: 'white',
+              icon: 'cloud_done',
+              message: `Deleted Successfully`
+            })
+          }).catch(err => {
+            console.error(err)
+            this.$q.loading.hide()
+            this.$q.notify({
+              color: 'negative',
+              textColor: 'white',
+              icon: 'error',
+              message: 'Oops, Something went wrong!'
+            })
+          })
       }
     }
   },

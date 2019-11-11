@@ -177,10 +177,16 @@ export default {
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Budget Updated'
+            message: 'Budget: Updated Successfully'
           })
         }).catch(err => {
           console.log(err)
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
+          })
         })
     }
   },
