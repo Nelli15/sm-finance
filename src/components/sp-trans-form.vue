@@ -171,6 +171,7 @@
           reverse-fill-mask
           :rules="[ v => !!v || 'Required value' ]"
           style="width:50%"
+          prefix="$"
         />
         <q-input
           v-if="newTrans.category === 'Expense'"
@@ -181,6 +182,7 @@
           reverse-fill-mask
           :rules="[v => parseFloat(v) <= parseFloat(newTrans.amount) * 0.1 || 'GST must be <= 10% of amount', v => !!v || 'Required value' ]"
           style="width:50%"
+          prefix="$"
         />
       </q-item>
       <q-item>
