@@ -119,7 +119,10 @@ export const actions = {
           })
         })
         await Promise.all(promises)
-        commit('setProjects', projects)
+        console.log(projects.length)
+        if (projects.length > 0) {
+          commit('setProjects', projects)
+        }
       })
   },
   fetchPermissions ({ commit }, payload) {
