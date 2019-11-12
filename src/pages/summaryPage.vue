@@ -61,7 +61,7 @@
           <q-td key="label" :props="props" class="cursor-pointer">
             {{ props.row.label }}
             <q-popup-edit v-model="props.row.label">
-              <q-input :value="props.row.label > '' ? props.row.label : ''" @input="updateCategory(props.row.id, 'label', $event)" dense autofocus label="Budget Label" />
+              <q-input :value="props.row.label > '' ? props.row.label : ''" @input="updateAccount(props.row.id, 'label', $event)" dense autofocus label="Budget Label" />
             </q-popup-edit>
             <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
               <q-icon name="edit"/>
@@ -88,7 +88,7 @@
             </q-tooltip>
           </q-td>
           <q-td key="actions" :props="props">
-            <q-toggle :value="props.row.inHeader">
+            <q-toggle :value="props.row.inHeader" @input="updateAccount(props.row.id, 'inHeader', $event)">
               <q-tooltip content-class="bg-accent text-black">
                 View in Header
               </q-tooltip>
@@ -271,12 +271,14 @@ export default {
   },
   created () {
     this.updateCategory = debounce(this.updateCategory, 1000)
+    this.updateAccount = debounce(this.updateAccount, 1000)
     this.pagination.rowsPerPage = this.$q.localStorage.getItem('summaryTableRows')
     this.accountsPagination.rowsPerPage = this.$q.localStorage.getItem('accountsTableRows')
   },
   methods: {
     ...mapActions([
-      'updateCategoryByKey'
+      'updateCategoryByKey',
+      'updateAccountByKey'
     ]),
     updateCategory (budgetId, key, val) {
       // console.log(budgetId, key, val)
@@ -290,6 +292,29 @@ export default {
             textColor: 'white',
             icon: 'cloud_done',
             message: 'Category: Updated Successfully'
+          })
+        }).catch(err => {
+          console.log(err)
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
+          })
+        })
+    },
+    updateAccount (accountId, key, val) {
+      // console.log(budgetId, key, val)
+      this.updateAccountByKey({ accountId, key, val })
+      firebase.firestore().collection(`/projects/${this.project.id}/accounts`).doc(accountId)
+        .update({ [key]: val })
+        .then(() => {
+          // console.log('updated')
+          this.$q.notify({
+            color: 'positive',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'Account: Updated Successfully'
           })
         }).catch(err => {
           console.log(err)

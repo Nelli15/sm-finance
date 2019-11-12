@@ -154,6 +154,9 @@ export const mutations = {
   },
   setCategoryKey (state, payload) {
     state.budgetCategories[payload.budgetId][payload.key] = payload.val
+  },
+  setAccountKey (state, payload) {
+    state.accounts[payload.accountId][payload.key] = payload.val
   }
 }
 
@@ -222,6 +225,9 @@ export const actions = {
   },
   updateCategoryByKey ({ commit }, payload) {
     commit('setCategoryKey', payload)
+  },
+  updateAccountByKey ({ commit }, payload) {
+    commit('setAccountKey', payload)
   }
 }
 export default {
