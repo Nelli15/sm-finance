@@ -52,7 +52,7 @@ export default routes
 
 async function isAdmin (to, from, next) {
   if (auth.state.userLoadStatus === false) {
-    console.log('awaiting user check')
+    // console.log('awaiting user check')
     setTimeout(async () => isAdmin(to, from, next), 10)
   } else {
     console.log('user found', auth.state.user.uid)
@@ -61,7 +61,7 @@ async function isAdmin (to, from, next) {
         console.log(err)
         next('/login')
       })
-    console.log(res)
+    // console.log(res)
     if (res) {
       if (!res.exists) next('/login')
       else if (res.get('permission') !== 'admin') next('/dashboard')
@@ -72,16 +72,16 @@ async function isAdmin (to, from, next) {
 
 async function isProjectContributor (to, from, next) {
   if (auth.state.userLoadStatus === false) {
-    console.log('awaiting user check')
+    // console.log('awaiting user check')
     setTimeout(async () => isProjectContributor(to, from, next), 10)
   } else {
-    console.log('user found', auth.state.user.uid)
+    // console.log('user found', auth.state.user.uid)
     let res = await firebase.firestore().doc(`/projects/${to.params.id}/contributors/${auth.state.user.uid}`).get()
       .catch(err => {
         console.log(err)
         next('/login')
       })
-    console.log(res)
+    // console.log(res)
     if (res) {
       if (!res.exists) next('/login')
       else if (res.get('permission') !== 'admin' && res.get('permission') !== 'contributor') next('/dashboard')

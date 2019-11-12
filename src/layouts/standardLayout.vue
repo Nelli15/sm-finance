@@ -238,19 +238,9 @@
       </q-toolbar>
     </q-header>
 
-    <q-page-container v-if="isAdmin || $route.name ==='addTrans'">
+    <q-page-container>
       <router-view />
     </q-page-container>
-    <q-page-container v-else>
-      <q-page>
-        <q-banner>
-          <div class="text-h6">
-            403 Unauthorised! You are not Authorised to be here.
-          </div>
-        </q-banner>
-      </q-page>
-    </q-page-container>
-
   </q-layout>
 </template>
 
