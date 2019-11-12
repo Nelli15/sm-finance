@@ -236,7 +236,7 @@
             <!-- </q-inner-loading> -->
             <!-- {{props.row.receiptURL.startsWith('https://')}} -->
           <!-- </q-td> -->
-          <q-td key="delete" :props="props" auto-width>
+          <q-td key="actions" :props="props" auto-width>
             <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
             <q-btn icon="check" round :color="props.row.reviewed ? 'positive' : ''" @click="updateTransaction(props.row.id, 'reviewed', !props.row.reviewed)" outline dense class="q-mr-sm shadow-1">
               <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
@@ -296,8 +296,8 @@ export default {
         { name: 'submittedBy', label: 'From', field: 'submittedBy', align: 'left', sortable: true },
         { name: 'number', label: 'Transaction ID', field: 'number', align: 'center', sortable: true },
         { name: 'icon', label: 'Type', field: 'icon', align: 'center' },
-        { name: 'category', label: 'Category', field: 'category', align: 'center', sortable: true },
-        { name: 'budget', label: 'Account', field: 'budget', align: 'center', sortable: true },
+        { name: 'category', label: 'Category', field: 'category', align: 'left', sortable: true },
+        { name: 'budget', label: 'Account', field: 'budget', align: 'left', sortable: true },
         { name: 'date', label: 'Date', field: 'date', align: 'center', sortable: true },
         { name: 'amount', label: `Amount (currency)`, field: 'amount', align: 'center', sortable: true },
         { name: 'GST', label: `GST (currency)`, field: 'GST', align: 'center', sortable: true },
@@ -305,11 +305,11 @@ export default {
         { name: 'cheque', label: 'Cheque #', field: 'cheque', align: 'center', sortable: true },
         // { name: 'reviewed', label: 'Reviewed', field: 'reviewed', align: 'center', sortable: true },
         // { name: 'receipt', label: 'Receipt', field: 'receipt', align: 'center' },
-        { name: 'delete', label: '', field: 'delete', align: 'center' }
+        { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
       ],
       filter: '',
       ccOptions: [],
-      visibleColumns: ['submittedBy', 'icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'delete'],
+      visibleColumns: ['submittedBy', 'icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'actions'],
       pagination: {
         sortBy: 'date',
         descending: true,

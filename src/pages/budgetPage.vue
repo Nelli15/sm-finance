@@ -100,13 +100,19 @@
               Auto Calculated
             </q-tooltip>
           </q-td>
-          <q-td key="transactions" :props="props">
-            <q-btn :to="'transactions/'+props.row.id" flat>Transactions</q-btn>
-          </q-td>
-          <q-td key="delete" :props="props">
-            <div v-if="props.row.inUse">
-              IN USE
-            </div>
+          <q-td key="buttons" :props="props">
+            <q-btn :to="'transactions/'+props.row.id" dense class="q-mr-sm">
+              Transactions
+              <q-tooltip content-class="bg-accent text-black">
+                View this Budgets Transactions
+              </q-tooltip>
+            </q-btn>
+            <q-btn v-if="props.row.inUse" dense color="negative">
+              <q-icon name="delete_forever"/>
+              <q-tooltip content-class="bg-accent text-black">
+                Cannot Delete Budget while in use
+              </q-tooltip>
+            </q-btn>
             <sp-delete-btn dense v-if="!props.row.inUse" :docRef="`/projects/${project.id}/transactions/${props.row.id}`"/>
           </q-td>
         </q-tr>
@@ -139,8 +145,7 @@ const columns = [
   { name: 'budgeted', align: 'center', label: 'Budgeted (AUD)', field: 'budgeted', sortable: true },
   { name: 'spent', align: 'center', label: 'Spent (AUD)', field: 'spent', sortable: true },
   { name: 'remaining', align: 'center', label: 'Cash in Hand (AUD)', field: 'remaining', sortable: true },
-  { name: 'transactions', label: '', field: 'category' },
-  { name: 'delete', label: 'Delete', field: 'delete', align: 'center' }
+  { name: 'buttons', label: 'Actions', field: 'buttons', align: 'right' }
 ]
 
 export default {
@@ -149,7 +154,7 @@ export default {
       // data,
       columns,
       filter: '',
-      visibleColumns: ['category', 'name', 'budgeted', 'spent', 'remaining', 'transactions', 'delete'],
+      visibleColumns: ['category', 'name', 'budgeted', 'spent', 'remaining', 'actions'],
       pagination: {
         sortBy: 'label',
         descending: true,
