@@ -9,6 +9,7 @@ function waitForUid (payload, rootState, dispatch) {
     setTimeout(() => waitForUid(payload, rootState, dispatch), 10)
   } else {
     payload.uid = rootState.auth.user.uid
+    // commit('setUserLoadStatus', true)
     dispatch('fetchPermissions', payload)
   }
 }
@@ -85,6 +86,7 @@ export const mutations = {
 
 export const actions = {
   fetchProject ({ dispatch, commit, rootState }, payload) {
+    console.log('fetching project')
     let project = {}
     firebase.firestore().doc(`/projects/${payload.projectId}`)
       .onSnapshot(async projectSnap => {
@@ -108,6 +110,7 @@ export const actions = {
               project.id = projectDoc.id
               project.permission = userDoc.data().permission
               // if (project.permission === 'contributor') {
+
               // project.budgets = userDoc.data().budgets
               // }
               // console.log(project)

@@ -9,7 +9,8 @@ const state = {
   users: [],
   contributors: [],
   invites: [],
-  idToken: ''
+  idToken: '',
+  userLoadStatus: false
 }
 
 export const getters = {
@@ -39,7 +40,8 @@ export const getters = {
     }
     return invites
   },
-  idToken: state => state.idToken
+  idToken: state => state.idToken,
+  userLoadStatus: state => state.userLoadStatus
 }
 
 export const mutations = {
@@ -56,6 +58,9 @@ export const mutations = {
   },
   setInvites (state, payload) {
     state.invites = payload
+  },
+  setUserLoadStatus (state, payload) {
+    state.userLoadStatus = payload
   }
 }
 

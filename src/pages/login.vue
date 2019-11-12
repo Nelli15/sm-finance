@@ -10,7 +10,8 @@
     </div>
 </template>
 <script>
-import firebase from 'firebase'
+import firebase from 'firebase/app'
+require('firebase/auth')
 var firebaseui = require('firebaseui')
 // import store from '../store/index.js'
 import '../../node_modules/firebaseui/dist/firebaseui.css'

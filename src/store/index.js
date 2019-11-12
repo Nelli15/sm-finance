@@ -43,12 +43,14 @@ export default function (/* { ssrContext } */) {
           if (Store.state.projects.project) {
             Store.dispatch('fetchTransactions', Store.state.projects.project.id)
           }
+          Store.commit('setUserLoadStatus', true)
         })
     } else {
       Store.commit('setUser', {})
+      Store.commit('setUserLoadStatus', true)
       // state.user =
       // console.log(Vue)
-      Store.$router.push('/login')
+      // Store.$router.push('/login')
       // router.push(`/login?signInSuccessUrl=${router.currentRoute.fullPath}`)
     }
   })
