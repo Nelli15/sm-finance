@@ -826,6 +826,65 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
     })
 })
 
+exports.downloadCSV = functions.https.onRequest(async (req, res) => {
+  if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) &&
+      !(req.cookies && req.cookies.__session)) {
+    console.error('No Firebase ID token was passed as a Bearer token in the Authorization header.',
+        'Make sure you authorize your request by providing the following HTTP header:',
+        'Authorization: Bearer <Firebase ID Token>',
+        'or by passing a "__session" cookie.');
+    res.status(403).send('Unauthorized');
+    return;
+  }
+
+  let idToken;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    console.log('Found "Authorization" header');
+    // Read the ID Token from the Authorization header.
+    idToken = req.headers.authorization.split('Bearer ')[1];
+  } else if(req.cookies) {
+    console.log('Found "__session" cookie');
+    // Read the ID Token from cookie.
+    idToken = req.cookies.__session;
+  } else {
+    // No cookie
+    res.status(403).send('Unauthorized');
+    return;
+  }
+
+  try {
+    const decodedIdToken = await admin.auth().verifyIdToken(idToken);
+    console.log('ID Token correctly decoded', decodedIdToken);
+    req.user = decodedIdToken;
+    // next();
+    // return;
+  } catch (error) {
+    console.error('Error while verifying Firebase ID token:', error);
+    res.status(403).send('Unauthorized');
+    return;
+  }
+
+  var projectId = req.query.projectId
+  console.log(projectId)
+  console.log(`/projects/${projectId}`)
+  let project = await db.doc(`/projects/${projectId}`).get().catch(err => {console.log(err)})
+  console.log(`/projects/${projectId}/accounts`)
+  let accounts = await db.collection(`/projects/${projectId}/accounts`).get().catch(err => {console.log(err)})
+  console.log(`/projects/${projectId}/transactions`)
+  let transactions = await db.collection(`/projects/${projectId}/transactions`).get().catch(err => {console.log(err)})
+  // console.log(transactions)
+  let transArray = [['sp_code', 'trans_number', 'trans_international?', 'trans_aus_currency_amt', 'trans_aus_gst', 'trans_int_currency', 'trans_int_curreny_amt', 'trans_int_aud_equiv', 'trans_date', 'trans_type', 'trans_category', 'trans_cheque', 'trans_description', 'trans_deleted?']]
+  let index = 1
+  transactions.forEach(transaction => {
+    let transData = transaction.data()
+    transArray[index] = [project.get('number'), transaction.id, 0, transData.amount, transData.GST, '', '', '', transData.date, transData.type, accounts.docs[transData.budget], transData.cheque, transData.desc, transData.deleted]
+    index++
+  })
+  console.log(transArray.map(e => e.join(",")).join("\n"))
+  res.status(200).send(transArray.map(e => e.join(",")).join("\n"))
+
+})
+
 exports.createProject = functions.https.onCall(async (data, context) => {
   console.log(context.auth)
   let projectRef = admin.firestore().collection(`/projects`).doc()

@@ -91,15 +91,22 @@ async function isProjectContributor (to, from, next) {
 }
 
 async function isLoggedIn (to, from, next) {
-  if (from.name === 'login') next()
-  if (auth.state.user.uid === false) {
-    console.log('awaiting user check')
-    setTimeout(async () => isLoggedIn(to, from, next), 100)
-  } else {
-    console.log('user found', to, from)
-    if (!auth.state.user.uid) next('/login')
-    else next()
-  }
+  // if (from.name === 'login') next()
+  // if (auth.state.user.uid === false) {
+  //   console.log('awaiting user check')
+  //   setTimeout(async () => isLoggedIn(to, from, next), 100)
+  // } else {
+  //   console.log('user found', to, from, auth.state.user.uid)
+  //   if (!auth.state.user.uid) next('/login')
+  //   else next()
+  // }
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      next()
+    } else {
+      next('/login')
+    }
+  })
 }
 
 // function isContributor (to, from, next) {

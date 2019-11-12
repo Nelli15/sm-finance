@@ -13,6 +13,10 @@
     {
       "source": "/downloadReceiptsZip",
       "function": "downloadReceiptsZip"
+    },
+    {
+      "source": "/downloadCSV",
+      "function": "downloadCSV"
     }]
   }
 }
