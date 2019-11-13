@@ -8,15 +8,15 @@
           </q-card-section>
           <q-separator />
           <q-card-section class="q-gutter-md">
-            <q-input prefix="$100 x" :suffix="'$'+(dollars.hundreds * 100).toFixed(2)" color="secondary" outlined v-model="dollars.hundreds" type="number" style="max-width:250px" dense>
+            <q-input prefix="$100 x" :suffix="'$'+(dollars['hundreds'] * 100).toFixed(2)" color="secondary" outlined :value="dollars['hundreds']" type="number" style="max-width:250px" dense @input="updatePetty('petty.dollars.hundreds', $event)">
             </q-input>
-            <q-input prefix="$50 x" :suffix="'$'+(dollars.fifties * 50).toFixed(2)" color="secondary" outlined v-model="dollars.fifties" type="number" style="max-width:250px" dense>
+            <q-input prefix="$50 x" :suffix="'$'+(dollars['fifties'] * 50).toFixed(2)" color="secondary" outlined :value="dollars['fifties']" type="number" style="max-width:250px" dense @input="updatePetty('petty.dollars.fifties', $event)">
             </q-input>
-            <q-input prefix="$20 x" :suffix="'$'+(dollars.twenties * 20).toFixed(2)" color="secondary" outlined v-model="dollars.twenties" type="number" style="max-width:250px" dense>
+            <q-input prefix="$20 x" :suffix="'$'+(dollars['twenties'] * 20).toFixed(2)" color="secondary" outlined :value="dollars['twenties']" type="number" style="max-width:250px" dense @input="updatePetty('petty.dollars.twenties', $event)">
             </q-input>
-            <q-input prefix="$10 x" :suffix="'$'+(dollars.tens * 10).toFixed(2)" color="secondary" outlined v-model="dollars.tens" type="number" style="max-width:250px" dense>
+            <q-input prefix="$10 x" :suffix="'$'+(dollars['tens'] * 10).toFixed(2)" color="secondary" outlined :value="dollars['tens']" type="number" style="max-width:250px" dense @input="updatePetty('petty.dollars.tens', $event)">
             </q-input>
-            <q-input prefix="$5 x" :suffix="'$'+(dollars.fives * 5).toFixed(2)" color="secondary" outlined v-model="dollars.fives" type="number" style="max-width:250px" dense>
+            <q-input prefix="$5 x" :suffix="'$'+(dollars['fives'] * 5).toFixed(2)" color="secondary" outlined :value="dollars['fives']" type="number" style="max-width:250px" dense @input="updatePetty('petty.dollars.fives', $event)">
             </q-input>
           </q-card-section>
         </q-card>
@@ -26,17 +26,17 @@
           </q-card-section>
           <q-separator />
           <q-card-section class="q-gutter-md">
-            <q-input prefix="$2 x" :suffix="'$'+(dollars.twos * 2).toFixed(2)" color="secondary" outlined v-model="dollars.twos" type="number" style="max-width:250px" dense>
+            <q-input prefix="$2 x" :suffix="'$'+(dollars['twos'] * 2).toFixed(2)" color="secondary" outlined :value="dollars['twos']" type="number" style="max-width:250px" dense @input="updatePetty('petty.dollars.twos', $event)">
             </q-input>
-            <q-input prefix="$1 x" :suffix="'$'+(dollars.ones * 1).toFixed(2)" color="secondary" outlined v-model="dollars.ones" type="number" style="max-width:250px" dense>
+            <q-input prefix="$1 x" :suffix="'$'+(dollars['ones'] * 1).toFixed(2)" color="secondary" outlined :value="dollars['ones']" type="number" style="max-width:250px" dense @input="updatePetty('petty.dollars.ones', $event)">
             </q-input>
-            <q-input prefix="50c x" :suffix="'$'+(cents.fifties * 0.50).toFixed(2)" color="secondary" outlined v-model="cents.fifties" type="number" style="max-width:250px" dense>
+            <q-input prefix="50c x" :suffix="'$'+(cents['fifties'] * 0.50).toFixed(2)" color="secondary" outlined :value="cents['fifties']" type="number" style="max-width:250px" dense @input="updatePetty('petty.cents.fifties', $event)">
             </q-input>
-            <q-input prefix="20c x" :suffix="'$'+(cents.twenties * 0.20).toFixed(2)" color="secondary" outlined v-model="cents.twenties" type="number" style="max-width:250px" dense>
+            <q-input prefix="20c x" :suffix="'$'+(cents['twenties'] * 0.20).toFixed(2)" color="secondary" outlined :value="cents['twenties']" type="number" style="max-width:250px" dense @input="updatePetty('petty.cents.twenties', $event)">
             </q-input>
-            <q-input prefix="10c x" :suffix="'$'+(cents.tens * 0.10).toFixed(2)" color="secondary" outlined v-model="cents.tens" type="number" style="max-width:250px" dense>
+            <q-input prefix="10c x" :suffix="'$'+(cents['tens'] * 0.10).toFixed(2)" color="secondary" outlined :value="cents['tens']" type="number" style="max-width:250px" dense @input="updatePetty('petty.cents.tens', $event)">
             </q-input>
-            <q-input prefix="5c x" :suffix="'$'+(cents.fives * 0.05).toFixed(2)" color="secondary" outlined v-model="cents.fives" type="number" style="max-width:250px" dense>
+            <q-input prefix="5c x" :suffix="'$'+(cents['fives'] * 0.05).toFixed(2)" color="secondary" outlined :value="cents['fives']" type="number" style="max-width:250px" dense @input="updatePetty('petty.cents.fives', $event)">
             </q-input>
           </q-card-section>
         </q-card>
@@ -125,47 +125,77 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
+import firebase from 'firebase/app'
+require('firebase/firestore')
 
 export default {
   data () {
     return {
-      dollars: {
-        hundreds: 0,
-        fifties: 0,
-        twenties: 0,
-        tens: 0,
-        fives: 0,
-        twos: 0,
-        ones: 0
-      },
-      cents: {
-        fifties: 0,
-        twenties: 0,
-        tens: 0,
-        fives: 0
-      },
+      // dollars: {
+      //   hundreds: 0,
+      //   fifties: 0,
+      //   twenties: 0,
+      //   tens: 0,
+      //   fives: 0,
+      //   twos: 0,
+      //   ones: 0
+      // },
+      // cents: {
+      //   fifties: 0,
+      //   twenties: 0,
+      //   tens: 0,
+      //   fives: 0
+      // },
       tab: 'calculator'
     }
   },
   created () {
-    this.$store.dispatch('fetchPetty', this.$route.params.id)
+    // this.$store.dispatch('fetchPetty', this.$route.params.id)
   },
   computed: {
     ...mapGetters([
-      'pettyTransactions',
       'budgetCategories',
       'budgets',
-      'accounts'
+      'accounts',
+      'project',
+      // 'petty'
+      'dollars',
+      'cents'
     ]),
     expected () {
-      return this.accounts['pettyCash'].income - this.accounts['pettyCash'].expenses
+      return (this.accounts['pettyCash'] ? this.accounts['pettyCash'].income : 0) - (this.accounts['pettyCash'] ? this.accounts['pettyCash'].expenses : 0)
     },
     total () {
-      return (this.dollars.hundreds * 100 + this.dollars.fifties * 50 + this.dollars.twenties * 20 + this.dollars.tens * 10 + this.dollars.fives * 5 + this.dollars.twos * 2 + this.dollars.ones * 1 + this.cents.fifties * 0.5 + this.cents.twenties * 0.2 + this.cents.tens * 0.1 + this.cents.fives * 0.05).toFixed(2)
+      return (this.dollars['hundreds'] * 100 + this.dollars['fifties'] * 50 + this.dollars['twenties'] * 20 + this.dollars['tens'] * 10 + this.dollars['fives'] * 5 + this.dollars['twos'] * 2 + this.dollars['ones'] * 1 + this.cents['fifties'] * 0.5 + this.cents['twenties'] * 0.2 + this.cents['tens'] * 0.1 + this.cents['fives'] * 0.05).toFixed(2)
     }
   },
   methods: {
+    ...mapActions([
+      'updatePettyByKey'
+    ]),
+    updatePetty (key, val) {
+      console.log('updatePetty', `/projects/`, this.project.id)
+      this.updatePettyByKey({ key, val })
+      firebase.firestore().doc(`/projects/${this.project.id}`).update({ [key]: val })
+        .then(() => {
+          // console.log('updated')
+          this.$q.notify({
+            color: 'positive',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'Petty Cash: Updated Successfully'
+          })
+        }).catch(err => {
+          console.log(err)
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
+          })
+        })
+    }
   }
 }
 </script>

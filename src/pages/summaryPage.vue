@@ -1,10 +1,46 @@
 <template>
   <q-page padding>
     <q-banner class="bg-secondary text-white text-center" rounded>
-      <div class="text-h4">{{ project.name }}</div>
-      <div class="text-subtitle1  q-pb-md">{{ project.number }}</div>
-      <div class="text-h6">{{ project.participants }} Participants</div>
-      <div class="text-subtitle-1">Project Currency ({{ project.currency }})</div>
+      <q-badge class="bg-secondary text-h4">
+        {{ project.name }}
+        <q-popup-edit v-model="project.name">
+          <q-input :value="project.name > '' ? project.name : ''" @input="updateProject('name', $event)" dense autofocus label="Project Label" />
+        </q-popup-edit>
+        <q-tooltip anchor="bottom middle" self="top middle" content-class="bg-accent text-black">
+          <q-icon name="edit"/>
+          Edit
+        </q-tooltip>
+      </q-badge><br>
+      <q-badge class="bg-secondary text-subtitle1 q-mb-md">
+        {{ project.number }}
+        <q-popup-edit v-model="project.number" max-width="100px">
+          <q-input :value="project.number > '' ? project.number : ''" @input="updateProject('number', $event)" dense autofocus label="Project Number" input-style="max-width:100px;" />
+        </q-popup-edit>
+        <q-tooltip anchor="bottom middle" self="top middle" content-class="bg-accent text-black">
+          <q-icon name="edit"/>
+          Edit
+        </q-tooltip>
+      </q-badge><br>
+      <q-badge class="bg-secondary text-h6">
+        {{ project.participants }} Participants
+        <q-popup-edit v-model="project.participants">
+          <q-input :value="project.participants > '' ? project.participants : ''" @input="updateProject('participants', $event)" dense autofocus label="Participants" />
+        </q-popup-edit>
+        <q-tooltip anchor="bottom middle" self="top middle" content-class="bg-accent text-black">
+          <q-icon name="edit"/>
+          Edit
+        </q-tooltip>
+      </q-badge><br>
+      <q-badge class="bg-secondary text-subtitle-1">
+        Project Currency ({{ project.currency }})
+        <q-popup-edit v-model="project.currency">
+          <q-input :value="project.currency > '' ? project.currency : ''" @input="updateProject('currency', $event)" dense autofocus label="Currency" />
+        </q-popup-edit>
+        <q-tooltip anchor="bottom middle" self="top middle" content-class="bg-accent text-black">
+          <q-icon name="edit"/>
+          Edit
+        </q-tooltip>
+      </q-badge>
     </q-banner>
 
     <q-table
@@ -43,7 +79,7 @@
           style="min-width: 150px"
         /> -->
 
-        <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+        <q-input borderless dense debounce="300" v-model="accountsFilter" placeholder="Search">
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -88,7 +124,7 @@
             </q-tooltip>
           </q-td>
           <q-td key="actions" :props="props">
-            <q-toggle :value="props.row.inHeader" @input="updateAccount(props.row.id, 'inHeader', $event)">
+            <q-toggle :value="props.row.inHeader" @input="updateAccount(props.row.id, 'inHeader', $event)" icon="view_compact">
               <q-tooltip content-class="bg-accent text-black">
                 View in Header
               </q-tooltip>
@@ -115,7 +151,7 @@
       :rows-per-page-options="[5,6,7,8,9,10,15,20,50,100]"
       row-key="name"
       :key="'budgets'+tableKey"
-      :filter="filter"
+      :filter="summaryFilter"
       rows-per-page-label="Budgets per page:"
       :pagination.sync="pagination"
       dense
@@ -143,7 +179,7 @@
           style="min-width: 150px"
         /> -->
 
-        <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+        <q-input borderless dense debounce="300" v-model="summaryFilter" placeholder="Search">
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -243,7 +279,7 @@ export default {
     return {
       columns,
       accountColumns,
-      filter: '',
+      summaryFilter: '',
       accountsFilter: '',
       visibleColumns: ['label', 'budgeted', 'spent', 'remaining', 'actions'],
       accountsVisibleColumns: ['label', 'budgeted', 'spent', 'remaining', 'actions'],

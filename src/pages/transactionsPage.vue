@@ -112,7 +112,7 @@
           <q-td key="budget" :props="props" class="cursor-pointer">
             <!-- {{ props.row.text }} -->
             <div v-if="props.row.category === 'Expense'">
-              {{ budgets[props.row.budget] ? budgets[props.row.budget].label : '' }}
+              {{ budgets[props.row.budget] ? budgets[props.row.budget].label : accounts[props.row.budget] ? accounts[props.row.budget].label : '' }}
               <q-popup-edit v-model="props.row.budget">
                 <q-select
                   :value="budgets[props.row.budget] > '' ? budgets[props.row.budget].label : ''"

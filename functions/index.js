@@ -118,17 +118,30 @@ exports.sendInvite = functions.firestore.document("/projects/{projectId}/invites
   let userRef = await admin.firestore().collection(`/users`).where('email', '==', snapData.email.toLowerCase()).get()
   if (!userRef.empty) {
     user = userRef.docs[0].data()
-    return snap.ref.parent.parent.collection('/contributors').doc(`/${userRef.docs[0].id}`).set({
-      uid: userRef.docs[0].id,
-      email: user.email.toLowerCase(),
-      name: user.name,
-      permission: snap.data().permission,
-      budgets: snap.data().budgets,
-      photoURL: user.photoURL
-    }).then(res => {
-      //delete the old invites
-      snap.ref.delete()
-    })
+    let contributorSnap = snap.ref.parent.parent.collection('/contributors').doc(`/${userRef.docs[0].id}`)
+    if (!contributorSnap.exists) {
+      return contributorSnap.set({
+        uid: userRef.docs[0].id,
+        email: user.email.toLowerCase(),
+        name: user.name,
+        permission: snap.data().permission,
+        budgets: snap.data().budgets,
+        photoURL: user.photoURL
+      }).then(res => {
+        //delete the old invites
+        snap.ref.delete()
+      })
+    } else {
+      let permission = (snap.data().permission === 'admin' || contributorSnap.data().permission === 'admin') ? 'admin' : 'contributor'
+      let budgets = (permission === 'contributor') ? snap.data().budgets.concat(contributorSnap.data().budgets) : []
+      return contributorSnap.update({
+        permission,
+        budgets
+      }).then(res => {
+        //delete the old invites
+        snap.ref.delete()
+      })
+    }
   }
 
   // check the email is lower case or it won't be found when the user logs in
@@ -893,7 +906,24 @@ exports.createProject = functions.https.onCall(async (data, context) => {
     number: '',
     participants: '',
     currency: 'AUD',
-    internationalProject: false
+    internationalProject: false,
+    petty: {
+      dollars: {
+        hundreds: 0,
+        fifties: 0,
+        twenties: 0,
+        tens: 0,
+        fives: 0,
+        twos: 0,
+        ones: 0
+      },
+      cents: {
+        fifties: 0,
+        twenties: 0,
+        tens: 0,
+        fives: 0
+      }
+    }
   })
   projectRef.collection('/contributors').doc(context.auth.uid).set({
     email: context.auth.token.email,

@@ -9,7 +9,6 @@ function waitForUid (payload, rootState, dispatch) {
     setTimeout(() => waitForUid(payload, rootState, dispatch), 10)
   } else {
     payload.uid = rootState.auth.user.uid
-    // commit('setUserLoadStatus', true)
     dispatch('fetchPermissions', payload)
   }
 }
@@ -93,6 +92,7 @@ export const actions = {
         project = projectSnap.data()
         project.id = projectSnap.id
         commit('setProject', project)
+        commit('setPetty', project.petty)
         waitForUid(payload, rootState, dispatch)
       })
   },

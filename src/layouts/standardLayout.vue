@@ -420,6 +420,28 @@ export default {
     },
     addUser (uid) {
       // console.log(`/projects/${this.$route.params.id}/invites/${this.newInvitation.email}`)
+      for (var key in this.invites) {
+        if (this.newInvitation.email.toLowerCase() === this.invites[key].email.toLowerCase()) {
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Invite already sent'
+          })
+          return
+        }
+      }
+      for (key in this.contributors) {
+        if (this.newInvitation.email.toLowerCase() === this.contributors[key].email.toLowerCase()) {
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'User already has access'
+          })
+          return
+        }
+      }
       firebase.firestore().collection(`/projects/${this.$route.params.id}/invites`).doc(this.newInvitation.email).set(this.newInvitation)
         .then(() => {
           // console.log('updated')

@@ -73,6 +73,8 @@
           <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
       </q-item>
+        <!-- {{budgetsFiltered}} -->
+
       <q-item v-if="newTrans.category !== 'Journal'">
         <!-- <q-item-section> -->
         <!-- <q-popup-edit v-model="props.row.category"> -->

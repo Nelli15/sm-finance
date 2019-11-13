@@ -1,5 +1,8 @@
 <template>
   <q-btn icon="receipt" @click="showDialog = !showDialog" :loading="loading" dense flat>
+    <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+      Receipt
+    </q-tooltip>
     <!-- {{props.row.showDialogReceipt}} -->
     <q-dialog v-model="showDialog">
       <q-card style="max-width:100%" dark class="bg-black no-scroll">

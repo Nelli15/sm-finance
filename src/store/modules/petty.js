@@ -1,14 +1,14 @@
 // import firebase from '../../scripts/firebase'
-import firebase from 'firebase/app'
-require('firebase/firestore')
+// import firebase from 'firebase/app'
+// require('firebase/firestore')
 // import Vue from 'vue'
 
 const state = {
+  petty: {},
   transactions: {}
 }
 
 export const getters = {
-  pettyTransactions: state => state.transactions,
   pettyTotals: state => {
     let credits = 0
     let debits = 0
@@ -21,31 +21,27 @@ export const getters = {
       }
     }
     return debits - credits
+  },
+  dollars: state => {
+    return state.petty.dollars ? state.petty.dollars : {}
+  },
+  cents: state => {
+    return state.petty.cents ? state.petty.cents : {}
   }
 }
 
 export const mutations = {
   setPetty (state, payload) {
-    state.transactions = payload
+    state.petty = payload
+  },
+  setPettyKey (state, payload) {
+    state.petty[payload.key] = payload.val
   }
 }
 
 export const actions = {
-  fetchPetty ({ commit }, payload) {
-    firebase.firestore().doc(`/projects/${payload}`).collection('/petty')
-      .onSnapshot(async transactionsSnap => {
-        // console.log('transaction updated')
-        let transactions = []
-        let promises = transactionsSnap.docs.map(doc => {
-          transactions.push(doc.data())
-        })
-        await Promise.all(promises)
-        // console.log(members)
-        // commit('setTransactions', transactions)
-        commit('setPetty', transactions)
-        // dispatch('fetchPopulateBudgets')
-        // return true
-      })
+  updatePettyByKey ({ commit }, payload) {
+    commit('setPettyKey', payload)
   }
 }
 
