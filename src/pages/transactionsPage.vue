@@ -460,6 +460,24 @@ export default {
               budgets.push(key)
             }
           }
+        } else if (this.accounts[this.$route.params.budgetCategory]) {
+          // the filter is an account
+          // find all transactions in the account
+          for (var transKey in this.transactions) {
+            // check if the transaction exists in the budgets array
+            console.log(!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived))
+            if (!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived)) {
+              // check it's not archieved and if it is archieve check if the archive is showing
+              console.log(this.transactions[transKey], (this.$route.params.budgetCategory === this.transactions[transKey].budget), (this.$route.params.budgetCategory === this.transactions[transKey].to), (this.$route.params.budgetCategory === this.transactions[transKey].from))
+              if (((this.$route.params.budgetCategory === this.transactions[transKey].budget) && (this.transactions[transKey].category !== 'Journal')) ||
+                ((this.$route.params.budgetCategory === this.transactions[transKey].to) && (this.transactions[transKey].category === 'Journal')) ||
+                ((this.$route.params.budgetCategory === this.transactions[transKey].from) && (this.transactions[transKey].category === 'Journal'))) {
+                // add the transactions to the transaction array
+                transactions.push(this.transactions[transKey])
+              }
+            }
+          }
+          return transactions
         } else {
           // the filter is not a category
           // add the budget to the array of budgets
@@ -467,11 +485,22 @@ export default {
         }
 
         // find all transactions in the budgets
-        for (var transKey in this.transactions) {
+        for (transKey in this.transactions) {
           // check if the transaction exists in the budgets array
           if (budgets.includes(this.transactions[transKey].budget)) {
             // check it's not archieved and if it is archieve check if the archive is showing
             if (!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived)) {
+              // add the transactions to the transaction array
+              transactions.push(this.transactions[transKey])
+            }
+          }
+          // console.log(!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived))
+          if (!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived)) {
+            // check it's not archieved and if it is archieve check if the archive is showing
+            // console.log(this.transactions[transKey], (this.$route.params.budgetCategory === this.transactions[transKey].budget), (this.$route.params.budgetCategory === this.transactions[transKey].to), (this.$route.params.budgetCategory === this.transactions[transKey].from))
+            if ((budgets.includes(this.transactions[transKey].budget) && (this.transactions[transKey].category !== 'Journal')) ||
+              (budgets.includes(this.transactions[transKey].to) && (this.transactions[transKey].category === 'Journal')) ||
+              (budgets.includes(this.transactions[transKey].from) && (this.transactions[transKey].category === 'Journal'))) {
               // add the transactions to the transaction array
               transactions.push(this.transactions[transKey])
             }
@@ -492,7 +521,7 @@ export default {
     },
     pageLabel () {
       let category = this.$route.params.budgetCategory
-      return category > '' ? this.budgets[category] ? this.budgets[category].label : this.budgetCategories[category].label : ''
+      return category > '' ? this.budgets[category] ? this.budgets[category].label : this.budgetCategories[category] ? this.budgetCategories[category].label : this.accounts[category] ? this.accounts[category].label : '' : ''
     }
   },
   watch: {
