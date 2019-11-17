@@ -487,13 +487,13 @@ export default {
         // find all transactions in the budgets
         for (transKey in this.transactions) {
           // check if the transaction exists in the budgets array
-          if (budgets.includes(this.transactions[transKey].budget)) {
-            // check it's not archieved and if it is archieve check if the archive is showing
-            if (!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived)) {
-              // add the transactions to the transaction array
-              transactions.push(this.transactions[transKey])
-            }
-          }
+          // if (budgets.includes(this.transactions[transKey].budget)) {
+          //   // check it's not archieved and if it is archieve check if the archive is showing
+          //   if (!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived)) {
+          //     // add the transactions to the transaction array
+          //     transactions.push(this.transactions[transKey])
+          //   }
+          // }
           // console.log(!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived))
           if (!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived)) {
             // check it's not archieved and if it is archieve check if the archive is showing

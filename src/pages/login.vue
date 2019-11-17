@@ -1,7 +1,7 @@
 <template>
   <div style="background-color:black;height:100vh;">
     <img style="min-height:100vh;min-width:100vw; max-width: 100vw;max-height:100vh; opacity: 0.5;filter: alpha(opacity=50); position: absolute;top:0px" src="https://firebasestorage.googleapis.com/v0/b/sp-finance.appspot.com/o/assets%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=34eac538-a272-4039-be17-c77a05c27da7"/>
-        <div class="text-center text-white" style="padding-top:30vh; z-index:1;">
+        <div class="text-center text-white" style="padding-top:15vh; z-index:1;">
             <div class="text-h4">Welcome to the Summer Projects Finances App!</div>
             <div class="text-h5">You'll need to login to continue</div>
         </div>
@@ -23,6 +23,9 @@ export default {
       signInOptions: [
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
         firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+        'microsoft.com',
+        // 'yahoo.com',
+        firebase.auth.GithubAuthProvider.PROVIDER_ID,
         firebase.auth.EmailAuthProvider.PROVIDER_ID
       ],
       signInSuccessUrl: '/#/dashboard',
