@@ -94,18 +94,18 @@
               </q-item>
             </q-list>
             <q-separator />
-            <q-card-actions align="center" class="bg-secondary text-black" v-if="props.row.permission === 'contributor'">
-              <q-btn icon="import_export" label="Add Transaction" style="width:100%" class="bg-white text-black">
+            <q-card-actions align="center" class="bg-secondary text-black">
+              <q-btn icon="import_export" label="Add Transaction" style="width:100%" class="bg-white text-black" v-if="props.row.permission === 'contributor'">
                 <q-tooltip>
                   Export transactions in a .csv file
                 </q-tooltip>
               </q-btn>
-              <q-btn icon="import_export" label="Export CSV" @click.stop="onCSVExport(props.row.id)" :loading="exportCSVLoading" :disabled="exportCSVLoading" style="width:45%" class="bg-white text-black">
+              <q-btn icon="import_export" label="Export CSV" @click.stop="onCSVExport(props.row.id)" :loading="exportCSVLoading" :disabled="exportCSVLoading" style="width:45%" class="bg-white text-black" v-if="props.row.permission === 'admin'">
                 <q-tooltip>
                   Export transactions in a .csv file
                 </q-tooltip>
               </q-btn>
-              <q-btn icon="import_export" label="Export Zip" @click.stop="onZipExport(props.row.id)" :loading="exportZipLoading" :disabled="exportZipLoading" style="width:45%" class="bg-white text-black">
+              <q-btn icon="import_export" label="Export Zip" @click.stop="onZipExport(props.row.id)" :loading="exportZipLoading" :disabled="exportZipLoading" style="width:45%" class="bg-white text-black" v-if="props.row.permission === 'admin'">
                 <q-tooltip>
                   Export receipt images in a .zip file
                 </q-tooltip>
