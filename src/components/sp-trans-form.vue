@@ -283,7 +283,13 @@ export default {
       // this.$store.dispatch('updateTransactions', this.newTrans)
       // this.onReset()
       function round5 (x) {
-        return (x % 5) >= 2.5 ? parseFloat(x / 5) * 5 + 5 : parseFloat(x / 5) * 5
+        var mod = (x - Math.floor(x)) * 100
+        if ((mod % 5) > 0) {
+          (mod % 5) <= 2 ? mod = mod - (mod % 5) : mod = mod + (5 - (mod % 5))
+          return parseFloat(Math.floor(x) + (mod / 100))
+        } else {
+          return parseFloat(x)
+        }
       }
     },
     onReset () {
