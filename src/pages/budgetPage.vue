@@ -101,7 +101,7 @@
             </q-tooltip>
           </q-td>
           <q-td key="buttons" :props="props">
-            <q-btn :to="'transactions/'+props.row.id" dense class="q-mr-sm">
+            <q-btn :to="{ name: 'transactions', params: { budgetCategory: props.row.id } }" dense class="q-mr-sm">
               Transactions
               <q-tooltip content-class="bg-accent text-black">
                 View this Budgets Transactions
@@ -212,7 +212,7 @@ export default {
         let budgets = []
         // console.log(this.budgets)
         for (var key in this.budgets) {
-          // console.log(this.$route.params.budgetCategory, '===', this.budgets, key)
+          console.log(this.$route.params.budgetCategory, '===', this.budgets, key)
           if (this.$route.params.budgetCategory === this.budgets[key].category) {
             budgets.push(this.budgets[key])
           }

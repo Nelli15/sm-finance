@@ -22,7 +22,7 @@ export const getters = {
         admins.push(state.contributors[contributor])
       }
     }
-    return admins
+    return admins.sort((a, b) => (a.name > b.name) ? 1 : -1)
   },
   contributors: state => {
     let contributors = []
@@ -31,14 +31,14 @@ export const getters = {
         contributors.push(state.contributors[contributor])
       }
     }
-    return contributors
+    return contributors.sort((a, b) => (a.name > b.name) ? 1 : -1)
   },
   invites: state => {
     let invites = []
     for (var invite in state.invites) {
       invites.push(state.invites[invite])
     }
-    return invites
+    return invites.sort((a, b) => (a.name > b.name) ? 1 : -1)
   },
   idToken: state => state.idToken,
   userLoadStatus: state => state.userLoadStatus

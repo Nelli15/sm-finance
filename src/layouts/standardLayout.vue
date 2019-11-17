@@ -83,10 +83,17 @@
               </q-card-section>
               <q-card-section style="max-height: 40vh;" class="scroll">
                 <q-list separator>
+                  <!-- Admins -->
+                  <div class="text-subtitle2" v-if="admins.length > 0">
+                    Admins
+                    <q-tooltip content-class="bg-accent text-grey-10">
+                      Admins have total control and access over a Project
+                    </q-tooltip>
+                  </div>
                   <q-item v-for="member in admins" :key="member.id" class="shadow-1 rounded-borders">
                     <q-item-section avatar>
                       <q-avatar>
-                        <img :src="member.photoURL" />
+                        <img :src="member.photoURL" @error="replaceByDefault" />
                       </q-avatar>
                     </q-item-section>
                     <q-item-section>
@@ -95,21 +102,29 @@
                     <q-item-section style="min-width:250px">
                       {{ member.email }}
                     </q-item-section>
-                    <q-item-section clickable>
+                    <!-- <q-item-section clickable>
                       {{ member.permission }}
                       <q-popup-edit :value="member.permission" dense>
-                        <!-- <q-select  :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" /> -->
+                        <q-select  :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" />
                         <q-select :value="member.permission" :options="['contributor','admin']" dense autofocus />
                       </q-popup-edit>
-                    </q-item-section>
+                    </q-item-section> -->
                     <q-item-section side>
                       <q-btn dense icon="delete" color="negative" @click="removeUser(member.uid)" />
                     </q-item-section>
                   </q-item>
+                  <!-- Contributors -->
+                  <div class="text-subtitle2" v-if="contributors.length > 0">
+                    Contributors
+                    <q-tooltip content-class="bg-accent text-grey-10">
+                      Contributors can submit receipts and transactions for the Budgets they have access to
+                    </q-tooltip>
+                  </div>
                   <q-item v-for="member in contributors" :key="member.id" class="shadow-1 rounded-borders">
                     <q-item-section avatar>
+                      <!-- {{member}} -->
                       <q-avatar>
-                        <img :src="member.photoURL" />
+                        <img :src="member.photoURL ? member.photoURL : 'http://tinygraphs.com/spaceinvaders/' + uuid() + '?theme=bythepool&numcolors=4&size=220&fmt=svg'" @error="replaceByDefault" />
                       </q-avatar>
                     </q-item-section>
                     <q-item-section>
@@ -118,16 +133,16 @@
                     <q-item-section style="min-width:250px">
                       {{ member.email }}
                     </q-item-section>
-                    <q-item-section clickable>
+                    <!-- <q-item-section clickable>
                       {{ member.permission }}
                       <q-popup-edit :value="member.permission" dense>
-                        <!-- <q-select :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" /> -->
+                        <q-select :value="member.role" :options="['viewer','editor','super editor']" dense autofocus counter @input="updateRole(member, $event)" />
                         <q-select :value="member.permission" :options="['contributor','admin']" dense autofocus />
                       </q-popup-edit>
-                    </q-item-section>
+                    </q-item-section> -->
                     <q-item-section clickable class="q-gutter-xs q-pr-lg">
                       <!-- <div > -->
-                      <q-select :options="budgetOptions" dense autofocus style="min-width:100px;" @input="addContributorBudget(member.budgets, $event.id, member.uid)" value=""/>
+                      <q-select :options="budgetOptions" dense autofocus style="min-width:100px;" @input="addContributorBudget(member.budgets, $event.id, member.uid)" value="" label="Budgets" stack-label/>
                       <q-badge color="blue" v-for="budget in member.budgets" :key="'budget-'+budget">
                         {{ budgets[budget] ? budgets[budget].label : budgetCategories[budget] ? budgetCategories[budget].label : ''}}
                         <q-btn flat dense rounded size="xs" icon="close" @click="removeContributorBudget(member.budgets, budget, member.uid)" />
@@ -141,19 +156,26 @@
                       <q-btn dense icon="delete" color="negative" @click="removeUser(member.uid)" />
                     </q-item-section>
                   </q-item>
-                </q-list>
-              </q-card-section>
+                <!-- </q-list> -->
+              <!-- </q-card-section> -->
               <!-- {{invites}} -->
-              <q-separator v-if="invites.length > 0" />
+              <!-- <q-separator v-if="invites.length > 0" />
               <q-card-section v-if="invites.length > 0">
                 <div class="text-subtitle2">Pending Invites</div>
-              </q-card-section>
-              <q-card-section v-if="invites.length > 0" style="max-height: 40vh" class="scroll">
-                <q-list separator>
+              </q-card-section> -->
+<!--               <q-card-section v-if="invites.length > 0" style="max-height: 40vh" class="scroll">
+                <q-list separator> -->
+                  <div class="text-subtitle2" v-if="invites.length > 0">
+                    Pending Invites
+                    <q-tooltip content-class="bg-accent text-grey-10">
+                      Invitations that have been sent but not accepted
+                    </q-tooltip>
+                  </div>
                   <q-item v-for="member in invites" :key="member.id" class="shadow-1 rounded-borders">
                     <q-item-section avatar>
                       <q-avatar>
-                        <img :src="'http://tinygraphs.com/spaceinvaders/'+uuid()+'?theme=bythepool&numcolors=4&size=220&fmt=svg'" />
+                        <img :src="'http://tinygraphs.com/spaceinvaders/'+uuid()+'?theme=bythepool&numcolors=4&size=220&fmt=svg'" @error="replaceByDefault"  />
+                        <!-- <img :src="'https://www.avatarapi.com/js.aspx?email='+member.email+'&size=40'" /> -->
                       </q-avatar>
                     </q-item-section>
                     <q-item-section style="min-width:250px">
@@ -193,7 +215,7 @@
             Who am I?
           </q-tooltip>
           <q-avatar>
-            <img :src="user.photoURL" />
+            <img :src="user.photoURL" @error="replaceByDefault" />
           </q-avatar>
           <div class="q-pl-sm">{{ user.displayName }}</div>
           <q-menu anchor="bottom left" self="top left" style="content:fit;">
@@ -201,7 +223,7 @@
               <q-item>
                 <q-item-section avatar>
                   <q-avatar>
-                    <img :src="user.photoURL" />
+                    <img :src="user.photoURL" @error="replaceByDefault" />
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
@@ -249,6 +271,7 @@ import { uid } from 'quasar'
 import { mapGetters } from 'vuex'
 import firebase from 'firebase/app'
 require('firebase/firestore')
+// let md5 = require('js-md5')
 
 export default {
   data () {
@@ -300,6 +323,13 @@ export default {
     uuid () {
       return uid()
     },
+    replaceByDefault (e) {
+      console.log('http://tinygraphs.com/spaceinvaders/' + uid() + '?theme=bythepool&numcolors=4&size=220&fmt=svg')
+      e.target.src = 'http://tinygraphs.com/spaceinvaders/' + uid() + '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+    },
+    // getHash (val) {
+    //   return md5(val.trim().toLowerCase())
+    // },
     addContributorBudget (budgets, newBudget, uid) {
       // console.log(this.newInvitation.budgets.indexOf(event.id) !== -1)
       let tempBudgets = JSON.parse(JSON.stringify(budgets))

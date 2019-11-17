@@ -119,29 +119,17 @@ exports.sendInvite = functions.firestore.document("/projects/{projectId}/invites
   if (!userRef.empty) {
     user = userRef.docs[0].data()
     let contributorSnap = snap.ref.parent.parent.collection('/contributors').doc(`/${userRef.docs[0].id}`)
-    if (!contributorSnap.exists) {
-      return contributorSnap.set({
-        uid: userRef.docs[0].id,
-        email: user.email.toLowerCase(),
-        name: user.name,
-        permission: snap.data().permission,
-        budgets: snap.data().budgets,
-        photoURL: user.photoURL
-      }).then(res => {
-        //delete the old invites
-        snap.ref.delete()
-      })
-    } else {
-      let permission = (snap.data().permission === 'admin' || contributorSnap.data().permission === 'admin') ? 'admin' : 'contributor'
-      let budgets = (permission === 'contributor') ? snap.data().budgets.concat(contributorSnap.data().budgets) : []
-      return contributorSnap.update({
-        permission,
-        budgets
-      }).then(res => {
-        //delete the old invites
-        snap.ref.delete()
-      })
-    }
+    return contributorSnap.set({
+      uid: userRef.docs[0].id,
+      email: user.email.toLowerCase(),
+      name: user.name,
+      permission: snap.data().permission,
+      budgets: snap.data().budgets,
+      photoURL: user.photoURL
+    }).then(res => {
+      //delete the old invites
+      snap.ref.delete()
+    })
   }
 
   // check the email is lower case or it won't be found when the user logs in
@@ -825,9 +813,9 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
         console.log(files.length)
         // res.status(200)
         files.forEach(file => {
-          if (file.metadata.name !== `projects/eEETgU4kt32WOHomjBYx/receipts/`) {
-            console.log(file.metadata.name)
-            archive.append(file.createReadStream(), { name: path.parse(file.metadata.name).base })
+          if (file.metadata.name !== `projects/${req.query.projectId}/receipts/`) {
+            console.log(path.parse(file.metadata.name).base.split('-').pop())
+            archive.append(file.createReadStream(), { name: path.parse(file.metadata.name).base.split('-').pop() })
           }
         });
 
