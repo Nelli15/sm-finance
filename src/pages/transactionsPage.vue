@@ -9,6 +9,7 @@
       :row-key="row => row.id"
       :visible-columns="visibleColumns"
       :filter="filter"
+      :filter-method="filterMethod"
       rows-per-page-label="Transactions per page:"
       :pagination.sync="pagination"
       @update:pagination="$q.localStorage.set('transTableRows', $event.rowsPerPage)"
@@ -64,12 +65,13 @@
         <q-tr :props="props" class="text-bold" :class="{ 'bg-red-2': props.row.deleted}">
           <q-td key="selected" :props="props">
             <!-- {{props.selected}} -->
-            <q-checkbox v-model="props.selected" />
+            <q-checkbox v-model="props.selected" dense/>
           </q-td>
           <q-td key="submittedBy" :props="props">
             <q-avatar v-if="props.row.submittedBy">
               <img :src="props.row.submittedBy.photoURL ? props.row.submittedBy.photoURL : 'http://tinygraphs.com/spaceinvaders/' + props.row.submittedBy.uid + '?theme=bythepool&numcolors=4&size=220&fmt=svg'"/>
-              <q-tooltip content-class="bg-accent text-black">
+              <div v-show="false">{{props.row.submittedBy.displayName}}{{props.row.submittedBy.email}}</div>
+                <q-tooltip content-class="bg-accent text-black">
                 <b>{{props.row.submittedBy.displayName}}</b><br>{{props.row.submittedBy.email}}
               </q-tooltip>
             </q-avatar>
@@ -450,6 +452,13 @@ export default {
             message: 'Oops, Something went wrong!'
           })
         })
+    },
+    filterMethod (rows, terms, cols, cellValue) {
+      const lowerTerms = terms ? terms.toLowerCase() : ''
+      let res = rows.filter(
+        row => cols.some(col => (typeof cellValue(col, row) === 'object') ? (Object.values(cellValue(col, row)) + '').toLowerCase().indexOf(lowerTerms) > -1 : (cellValue(col, row) + '').toLowerCase().indexOf(lowerTerms) !== -1)
+      )
+      return res
     }
   },
   computed: {
