@@ -6,12 +6,14 @@
       :data="transactionsFiltered"
       :columns="columns"
       :rows-per-page-options="[5,10,15,20,50,100,200]"
-      row-key="name"
+      :row-key="row => row.id"
       :visible-columns="visibleColumns"
       :filter="filter"
       rows-per-page-label="Transactions per page:"
       :pagination.sync="pagination"
       @update:pagination="$q.localStorage.set('transTableRows', $event.rowsPerPage)"
+      selection="multiple"
+      :selected.sync="rowSelected"
       dense
     >
       <template v-slot:top="props">
@@ -60,6 +62,10 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props" class="text-bold" :class="{ 'bg-red-2': props.row.deleted}">
+          <q-td key="selected" :props="props">
+            <!-- {{props.selected}} -->
+            <q-checkbox v-model="props.selected" />
+          </q-td>
           <q-td key="submittedBy" :props="props">
             <q-avatar v-if="props.row.submittedBy">
               <img :src="props.row.submittedBy.photoURL"/>
@@ -277,6 +283,17 @@
         </q-menu>
       </q-btn>
     </q-page-sticky>
+    <q-page-sticky position="bottom-right" :offset="[18, 18]" style="z-index:100" v-if="rowSelected.length > 0">
+      <q-card class="bg-primary text-white">
+        <q-card-section>
+          Amount ({{project.currency}}): ${{calcSelected}}
+          <q-tooltip content-class="bg-accent text-grey-10">
+          Sum of Selected
+        </q-tooltip>
+        </q-card-section>
+      </q-card>
+    </q-page-sticky>
+    <div style="min-height:60px" />
   </q-page>
 </template>
 
@@ -293,6 +310,7 @@ export default {
   data () {
     return {
       columns: [
+        { name: 'selected', label: '', field: 'selected', align: 'left', sortable: true },
         { name: 'submittedBy', label: 'From', field: 'submittedBy', align: 'left', sortable: true },
         { name: 'number', label: 'Transaction ID', field: 'number', align: 'center', sortable: true },
         { name: 'icon', label: 'Type', field: 'icon', align: 'center' },
@@ -309,7 +327,7 @@ export default {
       ],
       filter: '',
       ccOptions: [],
-      visibleColumns: ['submittedBy', 'icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'actions'],
+      visibleColumns: ['selected', 'submittedBy', 'icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'actions'],
       pagination: {
         sortBy: 'date',
         descending: true,
@@ -317,6 +335,7 @@ export default {
         rowsPerPage: 10
         // rowsNumber: xx if getting data from a server
       },
+      rowSelected: [],
       showArchived: false,
       typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
     }
@@ -518,6 +537,14 @@ export default {
         }
       }
       return transactions
+    },
+    calcSelected () {
+      let total = 0
+      for (var key in this.rowSelected) {
+        // console.log(parseFloat(this.rowSelected[key].amount))
+        total += parseFloat(this.rowSelected[key].amount)
+      }
+      return total.toFixed(2)
     },
     pageLabel () {
       let category = this.$route.params.budgetCategory

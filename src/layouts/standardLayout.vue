@@ -254,7 +254,7 @@
         <q-space/>
         <q-tabs align="right" v-if="isAdmin" indicator-color="primary">
           <q-tab v-for="account in headerAccounts" :key="account.label+'-'+tableKey" :ripple="false" style="cursor:default;">
-            {{account.label}}: <q-badge :class="{ 'bg-green-8': (account.income - account.expenses) > 0, 'bg-red-8': (account.income - account.expenses) < 0, 'bg-black': (account.income - account.expenses) == 0 }" icon="account_balance" :label="'$'+(account.income - account.expenses)" />
+            {{account.label}}: <q-badge :class="{ 'bg-green-8': (account.income - account.expenses) > 0, 'bg-red-8': (account.income - account.expenses) < 0, 'bg-black': (account.income - account.expenses) == 0 }" icon="account_balance" :label="'$'+(account.income - account.expenses).toFixed(2)" />
           </q-tab>
         </q-tabs>
       </q-toolbar>
