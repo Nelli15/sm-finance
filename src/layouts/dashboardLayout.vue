@@ -18,6 +18,7 @@
           flat
           no-caps
         >
+        <!-- {{ user }} -->
           <q-tooltip content-class="bg-accent text-grey-10">
             Who am I?
           </q-tooltip>

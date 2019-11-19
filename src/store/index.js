@@ -34,6 +34,7 @@ export default function (/* { ssrContext } */) {
   firebase.auth().onAuthStateChanged((user) => {
     // console.log(Store)
     if (user) {
+      console.log(user)
       const { displayName, email, uid, photoURL } = user
       const cleanedUser = { displayName, email, photoURL, uid }
       Store.commit('setUser', cleanedUser)
@@ -45,6 +46,11 @@ export default function (/* { ssrContext } */) {
           }
           Store.commit('setUserLoadStatus', true)
         })
+      firebase.$db.doc(`/users/${cleanedUser.uid}`).onSnapshot(userSnap => {
+        if ((cleanedUser.displayName !== user.name) || (cleanedUser.photoURL !== user.photoURL)) {
+          firebase.$db.doc(`/users/${cleanedUser.uid}`).update({ photoURL: cleanedUser.photoURL, name: cleanedUser.displayName })
+        }
+      })
     } else {
       Store.commit('setUser', {})
       Store.commit('setUserLoadStatus', true)

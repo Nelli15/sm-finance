@@ -253,7 +253,7 @@ export default {
       // console.log('submitting form', this.newTrans)
       this.$q.loading.show()
       this.newTrans.cheque = (this.newTrans.type === 'Cheque') ? this.newTrans.cheque : ''
-      this.newTrans.GST = ((this.newTrans.category !== 'Journal') && (this.newTrans.receipt === true)) ? this.newTrans.GST : 0
+      this.newTrans.GST = ((this.newTrans.category === 'Expense') && (this.newTrans.receipt === true)) ? this.newTrans.GST : 0
       this.newTrans.to = (this.newTrans.category === 'Journal') ? this.newTrans.to : 0
       this.newTrans.from = (this.newTrans.category === 'Journal') ? this.newTrans.from : 0
       this.newTrans.budget = (this.newTrans.category !== 'Journal') ? this.newTrans.budget : 0

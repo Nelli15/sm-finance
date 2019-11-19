@@ -281,6 +281,7 @@ exports.sendInvite = functions.firestore.document("/projects/{projectId}/invites
 exports.onUserFirstSignIn = functions.auth.user().onCreate((user) => {
   // console.log(user.uid)/
   //sanitise user
+  console.log(user)
   var userSanitized = {}
   userSanitized.name = user.displayName
   userSanitized.email = user.email
@@ -329,12 +330,15 @@ exports.userUpdated = functions.firestore.document("/users/{uid}")
   var beforeData = change.before.data()
   var afterData = change.after.data()
 
-  if((beforeData.name !== afterData.name)||(beforeData.email !== afterData.email)||(beforeData.photoURL !== afterData.photoURL))
+  if((beforeData.name !== afterData.name) || (beforeData.photoURL !== afterData.photoURL))
   {
-    for(var key in afterData.projects)
-    {
-      db.doc(`/projects/${afterData.projects[key].id}/contributors/${context.params.uid}`).update({name:afterData.name,email:afterData.email,photoURL:afterData.photoURL})
-    }
+    db.collectionGroup(`contributors`).where('uid', '==', context.params.uid).get().then(query => {
+      //update each contributor
+      query.forEach(snap => {
+        console.log('update contributors', { name:afterData.name, photoURL:afterData.photoURL })
+        snap.ref.update({ name:afterData.name, photoURL:afterData.photoURL })
+      })
+    })
     // userSnap.ref.update({name:beforeData.displayName,email:beforeData.email,photoURL:beforeData.photoURL})
   }
   return true
@@ -348,37 +352,37 @@ exports.userUpdated = functions.firestore.document("/users/{uid}")
 //     return true
 // });
 
-exports.onUserStatusChanged = functions.database.ref('/status/{uid}').onUpdate((change, context) => {
-      // Get the data written to Realtime Database
-      const eventStatus = change.after.val();
+// exports.onUserStatusChanged = functions.database.ref('/status/{uid}').onUpdate((change, context) => {
+//       // Get the data written to Realtime Database
+//       const eventStatus = change.after.val();
 
-      // Then use other event data to create a reference to the
-      // corresponding Firestore document.
-      const userStatusFirestoreRef = db.doc(`/status/${context.params.uid}`);
+//       // Then use other event data to create a reference to the
+//       // corresponding Firestore document.
+//       const userStatusFirestoreRef = db.doc(`/status/${context.params.uid}`);
 
-      // It is likely that the Realtime Database change that triggered
-      // this event has already been overwritten by a fast change in
-      // online / offline status, so we'll re-read the current data
-      // and compare the timestamps.
-      change.after.ref.once('value').then(statusSnapshot=>{
-        const status = statusSnapshot.val();
-        console.log(status, eventStatus);
-        // If the current timestamp for this data is newer than
-        // the data that triggered this event, we exit this function.
-        if (status.last_changed > eventStatus.last_changed) {
-          return null;
-        }
+//       // It is likely that the Realtime Database change that triggered
+//       // this event has already been overwritten by a fast change in
+//       // online / offline status, so we'll re-read the current data
+//       // and compare the timestamps.
+//       change.after.ref.once('value').then(statusSnapshot=>{
+//         const status = statusSnapshot.val();
+//         console.log(status, eventStatus);
+//         // If the current timestamp for this data is newer than
+//         // the data that triggered this event, we exit this function.
+//         if (status.last_changed > eventStatus.last_changed) {
+//           return null;
+//         }
 
-        // Otherwise, we convert the last_changed field to a Date
-        eventStatus.last_changed = new Date(eventStatus.last_changed);
+//         // Otherwise, we convert the last_changed field to a Date
+//         eventStatus.last_changed = new Date(eventStatus.last_changed);
 
-        // ... and write it to Firestore.
-        // console.log(eventStatus)
-        userStatusFirestoreRef.update(eventStatus);
-        return true
-      }).catch(err=>{console.log(err)})
-      return true
-  });
+//         // ... and write it to Firestore.
+//         // console.log(eventStatus)
+//         userStatusFirestoreRef.update(eventStatus);
+//         return true
+//       }).catch(err=>{console.log(err)})
+//       return true
+//   });
 
 
 // exports.getReceipt = functions.https.onRequest((req, res) => {
