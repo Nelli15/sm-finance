@@ -93,7 +93,7 @@
                   <q-item v-for="member in admins" :key="member.id" class="shadow-1 rounded-borders">
                     <q-item-section avatar>
                       <q-avatar>
-                        <img :src="member.photoURL" @error="replaceByDefault" />
+                        <img :src="member.photoURL ? member.photoURL : 'http://tinygraphs.com/spaceinvaders/' + member.uid + '?theme=bythepool&numcolors=4&size=220&fmt=svg'" />
                       </q-avatar>
                     </q-item-section>
                     <q-item-section>
@@ -124,7 +124,7 @@
                     <q-item-section avatar>
                       <!-- {{member}} -->
                       <q-avatar>
-                        <img :src="member.photoURL ? member.photoURL : 'http://tinygraphs.com/spaceinvaders/' + uuid() + '?theme=bythepool&numcolors=4&size=220&fmt=svg'" @error="replaceByDefault" />
+                        <img :src="member.photoURL ? member.photoURL : 'http://tinygraphs.com/spaceinvaders/' + member.uid + '?theme=bythepool&numcolors=4&size=220&fmt=svg'" />
                       </q-avatar>
                     </q-item-section>
                     <q-item-section>
@@ -174,7 +174,7 @@
                   <q-item v-for="member in invites" :key="member.id" class="shadow-1 rounded-borders">
                     <q-item-section avatar>
                       <q-avatar>
-                        <img :src="'http://tinygraphs.com/spaceinvaders/'+uuid()+'?theme=bythepool&numcolors=4&size=220&fmt=svg'" @error="replaceByDefault"  />
+                        <img :src="'http://tinygraphs.com/spaceinvaders/'+uuid()+'?theme=bythepool&numcolors=4&size=220&fmt=svg'" />
                         <!-- <img :src="'https://www.avatarapi.com/js.aspx?email='+member.email+'&size=40'" /> -->
                       </q-avatar>
                     </q-item-section>
@@ -215,7 +215,7 @@
             Who am I?
           </q-tooltip>
           <q-avatar>
-            <img :src="user.photoURL" @error="replaceByDefault" />
+            <img :src="user.photoURL ? user.photoURL : 'http://tinygraphs.com/spaceinvaders/' + user.uid + '?theme=bythepool&numcolors=4&size=220&fmt=svg'" />
           </q-avatar>
           <div class="q-pl-sm">{{ user.displayName }}</div>
           <q-menu anchor="bottom left" self="top left" style="content:fit;">
@@ -223,7 +223,7 @@
               <q-item>
                 <q-item-section avatar>
                   <q-avatar>
-                    <img :src="user.photoURL" @error="replaceByDefault" />
+                    <img :src="user.photoURL ? user.photoURL : 'http://tinygraphs.com/spaceinvaders/' + user.uid + '?theme=bythepool&numcolors=4&size=220&fmt=svg'" />
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
@@ -323,10 +323,10 @@ export default {
     uuid () {
       return uid()
     },
-    replaceByDefault (e) {
-      console.log('http://tinygraphs.com/spaceinvaders/' + uid() + '?theme=bythepool&numcolors=4&size=220&fmt=svg')
-      e.target.src = 'http://tinygraphs.com/spaceinvaders/' + uid() + '?theme=bythepool&numcolors=4&size=220&fmt=svg'
-    },
+    // replaceByDefault (e) {
+    //   console.log('http://tinygraphs.com/spaceinvaders/' + uid() + '?theme=bythepool&numcolors=4&size=220&fmt=svg')
+    //   e.target.src = 'http://tinygraphs.com/spaceinvaders/' + uid() + '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+    // },
     // getHash (val) {
     //   return md5(val.trim().toLowerCase())
     // },

@@ -68,7 +68,7 @@
           </q-td>
           <q-td key="submittedBy" :props="props">
             <q-avatar v-if="props.row.submittedBy">
-              <img :src="props.row.submittedBy.photoURL"/>
+              <img :src="props.row.submittedBy.photoURL ? props.row.submittedBy.photoURL : 'http://tinygraphs.com/spaceinvaders/' + props.row.submittedBy.uid + '?theme=bythepool&numcolors=4&size=220&fmt=svg'"/>
               <q-tooltip content-class="bg-accent text-black">
                 <b>{{props.row.submittedBy.displayName}}</b><br>{{props.row.submittedBy.email}}
               </q-tooltip>
