@@ -9,11 +9,12 @@
           </q-avatar>
  -->          SP Finances - {{ project.name }}
         </q-toolbar-title>
-        <q-btn flat icon="people" label="Share" @click="share = !share" v-if="isAdmin">
-          <q-tooltip content-class="bg-accent text-grey-10">
+        <!-- <q-btn flat icon="people" label="Share" to="access" v-if="isAdmin"> -->
+        <!-- <q-btn flat icon="people" label="Share" @click="share = !share" v-if="isAdmin"> -->
+          <!-- <q-tooltip content-class="bg-accent text-grey-10">
             Who can see this?
           </q-tooltip>
-        </q-btn>
+        </q-btn> -->
         <q-dialog v-model="share" v-if="isAdmin">
           <!-- <div v-if="userRoles.superEditor"> -->
           <q-card class="q-pl-md q-pr-lg" style="min-width:800px">
@@ -250,6 +251,8 @@
           <q-route-tab :to="{ name: 'budget' }" icon="reorder" label="Budgets" v-if="isAdmin" />
           <q-route-tab :to="{ name: 'transactions' }" icon="mdi-bank-transfer" label="Transactions" v-if="isAdmin" />
           <q-route-tab :to="{ name: 'petty' }" icon="mdi-cash-register" label="Petty Cash" v-if="isAdmin" />
+          <q-route-tab :to="{ name: 'access' }" icon="people" label="Share" v-if="isAdmin" />
+          <!-- <q-btn flat icon="people" label="Share" to="access" v-if="isAdmin"> -->
         </q-tabs>
         <q-space/>
         <q-tabs align="right" v-if="isAdmin" indicator-color="primary">

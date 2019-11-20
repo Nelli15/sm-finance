@@ -20,7 +20,8 @@ const routes = [
       { path: 'petty', name: 'petty', component: () => import('pages/pettyCashPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) },
       { path: 'transactions', name: 'transactions', component: () => import('pages/transactionsPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) },
       { path: 'transactions/:budgetCategory', component: () => import('pages/transactionsPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) },
-      { path: 'addTransaction', name: 'addTrans', component: () => import('components/sp-trans-form.vue'), beforeEnter: (to, from, next) => isProjectContributor(to, from, next) }
+      { path: 'addTransaction', name: 'addTrans', component: () => import('components/sp-trans-form.vue'), beforeEnter: (to, from, next) => isProjectContributor(to, from, next) },
+      { path: 'access', name: 'access', component: () => import('pages/accessPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) }
     ]
   },
   {
