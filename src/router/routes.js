@@ -56,7 +56,7 @@ async function isAdmin (to, from, next) {
     // console.log('awaiting user check')
     setTimeout(async () => isAdmin(to, from, next), 10)
   } else {
-    console.log('user found', auth.state.user.uid)
+    // console.log('user found', auth.state.user.uid)
     let res = await firebase.firestore().doc(`/projects/${to.params.id}/contributors/${auth.state.user.uid}`).get()
       .catch(err => {
         console.log(err)

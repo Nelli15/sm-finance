@@ -1,14 +1,13 @@
 <template>
   <q-page padding>
     <q-tabs
-        v-model="tabs"
-      >
-        <q-tab name="invites" label="Invite" />
-        <q-tab name="admins" label="Admins" />
-        <q-tab name="contributors" label="Contributors" />
-      </q-tabs>
+      v-model="tabs"
+    >
+      <q-tab name="invites" label="Invite" />
+      <q-tab name="admins" label="Admins" />
+      <q-tab name="contributors" label="Contributors" />
+    </q-tabs>
     <q-card v-show="$q.platform.is.mobile && tabs === 'invites'">
-    <!-- <q-card> -->
       <q-card-section>
         <div class="text-subtitle2">Invite People</div>
           <q-form @submit="addUser">
@@ -18,7 +17,6 @@
             <div v-if="newInvitation.permission === 'contributor'">Accessible Budgets</div>
             <div v-if="newInvitation.permission === 'contributor'" class="q-gutter-xs">
               <q-chip color="primary" text-color="white" dense square v-for="budget in newInvitation.budgets" :key="'budget-'+budget" removable @remove="removeNewInviteBudget(budget)">
-                <!-- {{accounts}} -->
                 {{ budgets[budget] ? budgets[budget].label : budgetCategories[budget] ? budgetCategories[budget].label : accounts[budget].label }}
               </q-chip>
             </div>
@@ -26,7 +24,7 @@
         </q-form>
       </q-card-section>
     </q-card>
-    <q-card v-show="!$q.platform.is.mobile && tabs === 'invites'">
+    <q-card v-show="!$q.platform.is.mobile && tabs === 'invites'" class="mobile-hide">
       <q-card-section>
         <div class="text-subtitle2">Invite People</div>
           <q-input v-model="newInvitation.email" type="email" label="Email" stack-label>
@@ -107,7 +105,7 @@
             </q-tooltip> -->
           </q-td>
           <q-td key="budgets" :props="props" class="q-gutter-xs q-pa-xs" style="white-space: normal;max-width:300px">
-            <q-select :options="budgetOptions" dense autofocus style="min-width:100px;max-width:150px" @input="addInviteBudget(props.row.budgets, $event.id, props.row.uid)" value="" />
+            <q-select :options="budgetOptions" dense style="min-width:100px;max-width:150px" @input="addInviteBudget(props.row.budgets, $event.id, props.row.uid)" value="" />
               <q-chip color="primary" text-color="white" dense square multiline v-for="budget in props.row.budgets" :key="'budget-'+budget" removable @remove="removeInviteBudget(props.row.budgets, budget, props.row.uid)">
                 {{ budgets[budget] ? budgets[budget].label : budgetCategories[budget] ? budgetCategories[budget].label : accounts[budget].label }}
                 <!-- <q-btn flat dense rounded size="xs" icon="close" @click="removeInviteBudget(props.row.budgets, budget, props.row.email)" /> -->
@@ -263,7 +261,7 @@
             </q-tooltip> -->
           </q-td>
           <q-td key="budgets" :props="props" class="q-gutter-xs q-pa-xs" style="white-space: normal;max-width:300px">
-            <q-select :options="budgetOptions" dense autofocus style="min-width:100px;max-width:150px" @input="addContributorBudget(props.row.budgets, $event.id, props.row.uid)" value="" />
+            <q-select :options="budgetOptions" dense style="min-width:100px;max-width:150px" @input="addContributorBudget(props.row.budgets, $event.id, props.row.uid)" value="" />
               <q-chip color="primary" text-color="white" dense square multiline v-for="budget in props.row.budgets" :key="'budget-'+budget" removable @remove="removeContributorBudget(props.row.budgets, budget, props.row.uid)">
                 {{ budgets[budget] ? budgets[budget].label : budgetCategories[budget] ? budgetCategories[budget].label : accounts[budget].label }}
                 <!-- <q-btn flat dense rounded size="xs" icon="close" @click="removeInviteBudget(props.row.budgets, budget, props.row.email)" /> -->
@@ -364,13 +362,6 @@ export default {
   },
   created () {
     // console.log(this.$route.name)
-    this.$store.dispatch('fetchProject', { projectId: this.$route.params.id, uid: this.user.uid })
-    this.$store.dispatch('fetchTransactions', this.$route.params.id)
-    this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
-    this.$store.dispatch('fetchBudgets', this.$route.params.id)
-    this.$store.dispatch('fetchAccounts', this.$route.params.id)
-    this.$store.dispatch('fetchContributors', this.$route.params.id)
-    this.$store.dispatch('fetchInvites', this.$route.params.id)
     this.newInvitation.fromName = this.user.displayName
     this.newInvitation.projectName = this.project.name
     this.adminsPagination.rowsPerPage = this.$q.localStorage.getItem('adminsTableRows')
@@ -389,9 +380,7 @@ export default {
       'budgets',
       'budgetCategories',
       'invites',
-      'pettyTotals',
-      'tableKey',
-      'headerAccounts'
+      'tableKey'
     ])
   },
   methods: {

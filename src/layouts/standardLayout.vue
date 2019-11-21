@@ -252,10 +252,11 @@
           <q-route-tab :to="{ name: 'transactions' }" icon="mdi-bank-transfer" label="Transactions" v-if="isAdmin" />
           <q-route-tab :to="{ name: 'petty' }" icon="mdi-cash-register" label="Petty Cash" v-if="isAdmin" />
           <q-route-tab :to="{ name: 'access' }" icon="people" label="Share" v-if="isAdmin" />
+          <!-- <q-btn @click="share = !share" icon="people" label="Sharing" v-if="isAdmin" class="desktop-hide" /> -->
           <!-- <q-btn flat icon="people" label="Share" to="access" v-if="isAdmin"> -->
         </q-tabs>
         <q-space/>
-        <q-tabs align="right" v-if="isAdmin" indicator-color="primary">
+        <q-tabs align="right" v-if="isAdmin" indicator-color="primary" class="mobile-hide">
           <q-tab v-for="account in headerAccounts" :key="account.label+'-'+tableKey" :ripple="false" style="cursor:default;">
             {{account.label}}: <q-badge :class="{ 'bg-green-8': (account.income - account.expenses) > 0, 'bg-red-8': (account.income - account.expenses) < 0, 'bg-black': (account.income - account.expenses) == 0 }" icon="account_balance" :label="'$'+(account.income - account.expenses).toFixed(2)" />
           </q-tab>

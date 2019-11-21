@@ -34,7 +34,7 @@ export default function (/* { ssrContext } */) {
   firebase.auth().onAuthStateChanged((user) => {
     // console.log(Store)
     if (user) {
-      console.log(user)
+      // console.log(user)
       const { displayName, email, uid, photoURL } = user
       const cleanedUser = { displayName, email, photoURL, uid }
       Store.commit('setUser', cleanedUser)

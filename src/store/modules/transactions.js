@@ -52,7 +52,10 @@ export const actions = {
           transaction.id = doc.id
           transaction.currency = transaction.currency > '' ? transaction.currency : 'AUD'
           transaction.deleted = transaction.deleted ? transaction.deleted : false
-          transaction.receiptURL = await getReceipt(rootState.projects.project.id, rootState.auth.idToken, transaction.id)
+          // console.log(transaction)
+          if (transaction.receipt === true) {
+            transaction.receiptURL = await getReceipt(rootState.projects.project.id, rootState.auth.idToken, transaction.id)
+          }
           return transactions.push(transaction)
         })
         await Promise.all(promises)
