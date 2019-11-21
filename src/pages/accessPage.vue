@@ -116,7 +116,7 @@
             </q-tooltip> -->
           </q-td>
           <q-td key="actions" :props="props" class="text-negative">
-            <q-btn dense icon="delete" color="negative" @click="removeUser(props.row.uid)" />
+            <q-btn dense icon="delete" color="negative" @click="removeInvite(props.row.email)" />
            <!--  ${{ props.row.expenses.toFixed(2) }}
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
