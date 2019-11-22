@@ -449,28 +449,32 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
     .then(async snap => {
       if (snap.exists) {
         var id = req.query.id  
-        console.log('user is a contributor', 'getting file', `projects/${projectId}/receipts/${projectId}-${id}.jpg`)
+        console.log('user is a contributor', 'getting file', `/projects/${projectId}/receipts/${projectId}-${id}.jpg`)
         // console.log(fileName)
         var storage = admin.storage()
         var storageRef = storage.bucket()
-        var file = storageRef.file(`projects/${projectId}/receipts/${projectId}-${id}.jpg`)
+        var file = storageRef.file(`/projects/${projectId}/receipts/${projectId}-${id}.jpg`)
 
         let exists = await file.exists()
         console.log('File Exists?', exists[0])
         if (!exists[0]) {
-          file = storageRef.file(`processed/${projectId}/receipts/${projectId}-${id}.jpg`)
-          let exists = await file.exists()
-          if (!exists[0]) {
+          console.log('file missing: ', 'checking processed folder ', `/processed/${projectId}-${id}.jpg`)
+          file = null
+          file = storageRef.file(`/processed/${projectId}-${id}.jpg`)
+          console.log(file)
+          let exists2 = await file.exists()
+          console.log(exists2)
+          if (!exists2[0]) {
             res.status(404).send("File doesn't exist")
             return false
           }
-          console.log('file found', await file.exists(), `moving to: /projects/${projectId}/receipts/${projectId}-${transId}.jpg`)
-          let result = await file.copy(`/projects/${projectId}/receipts/${projectId}-${transId}.jpg`)
+          console.log('file found', await file.exists(), `moving to: /projects/${projectId}/receipts/${projectId}-${id}.jpg`)
+          let result = await file.copy(`/projects/${projectId}/receipts/${projectId}-${id}.jpg`)
           .catch(err => {
             console.error('Error #6', err)
             return err
           })
-          console.log('File Copied', res)
+          console.log('File Copied', result)
           await file.delete()
           .catch(err => {
             console.error('Error #7', err)
