@@ -458,8 +458,26 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
         let exists = await file.exists()
         console.log('File Exists?', exists[0])
         if (!exists[0]) {
-          res.status(404).send("File doesn't exist")
-          return
+          file = storageRef.file(`processed/${projectId}/receipts/${projectId}-${id}.jpg`)
+          let exists = await file.exists()
+          if (!exists[0]) {
+            res.status(404).send("File doesn't exist")
+            return false
+          }
+          console.log('file found', await file.exists(), `moving to: /projects/${projectId}/receipts/${projectId}-${transId}.jpg`)
+          let result = await file.copy(`/projects/${projectId}/receipts/${projectId}-${transId}.jpg`)
+          .catch(err => {
+            console.error('Error #6', err)
+            return err
+          })
+          console.log('File Copied', res)
+          await file.delete()
+          .catch(err => {
+            console.error('Error #7', err)
+            return err
+          })
+          console.log('Old File deleted')
+          file = result[0]
         }
 
         let d = new Date()
@@ -494,12 +512,14 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
 exports.receiptUploaded = functions.storage.bucket().object()
   .onFinalize(async (object, context) => {
 
-
     const fileBucket = object.bucket; // The Storage bucket that contains the file.
     const filePath = object.name; // File path in the bucket.
     const gsFilePath = `gs://${fileBucket}/${filePath}`
-    console.log('file name: ', filePath)
+
+    if (filePath === 'uploads/undefined-undefined.jpg') return false
+
     if (filePath.substring(0, filePath.lastIndexOf("/")) === 'uploads') {
+      console.log('file name: ', filePath, object.metadata)
       const fileName = filePath.replace(/^.*[\\\/]/, '')
       const contentType = object.contentType; // File content type.
       const metageneration = object.metageneration; // Number of times metadata has been generated. New objects have a value of 1.
@@ -525,7 +545,8 @@ exports.receiptUploaded = functions.storage.bucket().object()
       const fileDir = path.dirname(filePath);
       const tempLocalFile = path.join(os.tmpdir(), baseFileName);
       // let doc = db.collection(`/projects/${metadata.projectId}/transactions/`).doc()
-      const JPEGFilePath = path.normalize(path.format({dir: `/uploads`, name: `${metadata.projectId}-${metadata.transId}`, ext: JPEG_EXTENSION}));
+      const JPEGFilePath = path.normalize(path.format({dir: `/processed`, name: `${metadata.projectId}-${metadata.transId}`, ext: JPEG_EXTENSION}));
+
       let tempLocalJPEGFile = path.join(os.tmpdir(), baseFileName.replace(/\.[^/.]+$/, ""))
       // const metadata = {
       //   contentType: contentType,
@@ -558,6 +579,7 @@ exports.receiptUploaded = functions.storage.bucket().object()
       console.log('Upload Image')
       metadata.contentType = 'image/jpeg'
       metadata.processed = true
+      console.log(metadata, { destination: JPEGFilePath, metadata: metadata })
       await bucket.upload(tempLocalJPEGFile, { destination: JPEGFilePath, metadata: metadata })
         .then(() => {
           // console.log('Creating Transaction Doc ', metadata)
@@ -621,13 +643,14 @@ exports.receiptUploaded = functions.storage.bucket().object()
 
       file.delete()
       return true
-    } else {
-      const fileBucket = object.bucket; // The Storage bucket that contains the file.
-      const filePath = object.name;
-      const bucket = admin.storage().bucket(fileBucket);
-      let file = bucket.file(filePath)
-      console.log(filePath)
-    }
+    } 
+    // else {
+    //   const fileBucket = object.bucket; // The Storage bucket that contains the file.
+    //   const filePath = object.name;
+    //   const bucket = admin.storage().bucket(fileBucket);
+    //   let file = bucket.file(filePath)
+    //   console.log(filePath)
+    // }
   })
 
 // Blurs the given file using ImageMagick, and uploads it to another bucket.
@@ -719,14 +742,14 @@ exports.onTransactionCreate = functions.firestore.document("/projects/{projectId
     console.log('Receipt uploaded')
     // Move reciept image from uploads to receipts bucket
 
-    let file = await admin.storage().bucket().file(`/uploads/${projectId}-${transId}.jpg`)
-    console.log('file found', await file.exists())
+    let file = await admin.storage().bucket().file(`/processed/${projectId}-${transId}.jpg`)
+    console.log('file found', await file.exists(), `moving to: /projects/${projectId}/receipts/${projectId}-${transId}.jpg`)
     let res = await file.copy(`/projects/${projectId}/receipts/${projectId}-${transId}.jpg`)
     .catch(err => {
       console.error('Error #6', err)
       return err
     })
-    console.log('File Copied')
+    console.log('File Copied', res)
     let newFile = res[0]
     await file.delete()
     .catch(err => {

@@ -57,7 +57,7 @@
               </q-item>
               <q-item>
                 <q-item-section>
-                  <q-input outlined prefix="Expected:" :value="'$'+expected" dense>
+                  <q-input outlined prefix="Expected:" :value="'$'+expected.toFixed(2)" dense>
                   </q-input>
                 </q-item-section>
               </q-item>
@@ -126,6 +126,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import { debounce } from 'quasar'
 import firebase from 'firebase/app'
 require('firebase/firestore')
 
@@ -152,6 +153,7 @@ export default {
   },
   created () {
     // this.$store.dispatch('fetchPetty', this.$route.params.id)
+    this.updatePetty = debounce(this.updatePetty, 500)
   },
   computed: {
     ...mapGetters([

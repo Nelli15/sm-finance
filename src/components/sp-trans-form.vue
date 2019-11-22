@@ -2,8 +2,9 @@
   <q-form
     @reset="onReset"
     @submit="onSubmit"
-    @validation-success="onLog('success'+$event)"
-    @validation-error="onLog('err'+$event)"
+    @validation-success="onLog('success '+$event)"
+    @validation-error="onLog('err '+$event)"
+    ref="transForm"
   >
     <q-list style="min-width: 100px; max-width:500px;">
       <q-item class="text-h6 justify-center">
@@ -169,8 +170,6 @@
           v-model="newTrans.amount"
           dense
           :label="'Amount ('+this.project.currency+')'"
-          mask="#.##"
-          reverse-fill-mask
           :rules="[ v => !!v || 'Required value' ]"
           style="width:50%"
           prefix="$"
@@ -180,8 +179,6 @@
           v-model="newTrans.GST"
           dense
           :label="'GST ('+this.project.currency+')'"
-          mask="#.##"
-          reverse-fill-mask
           :rules="[v => parseFloat(v) <= parseFloat(newTrans.amount) * 0.1 || 'GST must be <= 10% of amount', v => !!v || 'Required value' ]"
           style="width:50%"
           prefix="$"
@@ -268,6 +265,7 @@ export default {
           icon: 'cloud_done',
           message: `Transaction: Submitted Successfully`
         })
+        this.$refs.transForm.reset()
         this.$emit('onSubmit', this.newTrans)
       }).catch(err => {
         console.error(err)
@@ -310,7 +308,8 @@ export default {
       }
       this.readOnly = false
       let date = new Date()
-      this.newTrans.date = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`
+      console.log(this.newTrans.date, `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`)
+      this.newTrans.date = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
       this.$refs.transUpload.reset()
     },
     onUploaded (event) {

@@ -61,6 +61,21 @@
           class="q-ml-md"
         />
       </template>
+      <template v-slot:header="props">
+        <q-tr :props="props">
+          <q-th>
+            <q-checkbox dense v-model="props.selected" />
+          </q-th>
+          <!-- {{columnsFiltered}} -->
+          <q-th
+            v-for="col in columnsFiltered"
+            :key="col.name"
+            :props="props"
+          >
+            {{ col.label }}
+          </q-th>
+        </q-tr>
+      </template>
       <template v-slot:body="props">
         <q-tr :props="props" class="text-bold" :class="{ 'bg-red-2': props.row.deleted}">
           <q-td key="selected" :props="props">
@@ -68,7 +83,7 @@
             <q-checkbox v-model="props.selected" dense/>
           </q-td>
           <q-td key="submittedBy" :props="props">
-            <q-avatar v-if="props.row.submittedBy">
+            <q-avatar v-if="props.row.submittedBy" size="md">
               <img :src="props.row.submittedBy.photoURL ? props.row.submittedBy.photoURL : 'http://tinygraphs.com/spaceinvaders/' + props.row.submittedBy.uid + '?theme=bythepool&numcolors=4&size=220&fmt=svg'"/>
               <div v-show="false">{{props.row.submittedBy.displayName}}{{props.row.submittedBy.email}}</div>
                 <q-tooltip content-class="bg-accent text-black">
@@ -246,7 +261,7 @@
           <!-- </q-td> -->
           <q-td key="actions" :props="props" auto-width>
             <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
-            <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL">
+            <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL && props.row.receipt">
               <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
                 Checking for receipt
               </q-tooltip>
@@ -471,6 +486,13 @@ export default {
       'budgetOptions',
       'budgetCategories'
     ]),
+    columnsFiltered () {
+      let columns = []
+      for (var key in this.columns) {
+        if (this.columns[key].name !== 'selected') columns.push(this.columns[key])
+      }
+      return columns
+    },
     transactionsFiltered () {
       let transactions = []
       // check if the budget filter exists
