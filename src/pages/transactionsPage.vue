@@ -213,7 +213,7 @@
               Edit
             </q-tooltip>
           </q-td>
-          <q-td key="desc" :props="props" class="cursor-pointer">
+          <q-td key="desc" :props="props" class="cursor-pointer" style="white-space: normal;min-width:300px">
             {{ props.row.desc }}
             <q-popup-edit v-model="props.row.desc">
               <q-input :value="props.row.desc" @input="updateTransaction(props.row.id, 'desc', $event)"  dense autofocus label="Description" />
@@ -246,16 +246,16 @@
           <!-- </q-td> -->
           <q-td key="actions" :props="props" auto-width>
             <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
-            <q-btn icon="check" round :color="props.row.reviewed ? 'positive' : ''" @click="updateTransaction(props.row.id, 'reviewed', !props.row.reviewed)" outline dense class="q-mr-sm shadow-1">
-              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-                Reviewed?
-              </q-tooltip>
-            </q-btn>
             <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL">
               <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
                 Checking for receipt
               </q-tooltip>
             </q-spinner-gears>
+            <q-btn icon="check" round :color="props.row.reviewed ? 'positive' : ''" @click="updateTransaction(props.row.id, 'reviewed', !props.row.reviewed)" outline dense class="q-mr-sm shadow-1">
+              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+                Reviewed?
+              </q-tooltip>
+            </q-btn>
             <q-btn
               :value="props.row.deleted ? props.row.deleted : false"
               @click="updateTransaction(props.row.id, 'deleted', !props.row.deleted)"

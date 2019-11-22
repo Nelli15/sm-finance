@@ -498,11 +498,13 @@ exports.receiptUploaded = functions.storage.bucket().object()
     const fileBucket = object.bucket; // The Storage bucket that contains the file.
     const filePath = object.name; // File path in the bucket.
     const gsFilePath = `gs://${fileBucket}/${filePath}`
+    console.log('file name: ', filePath)
     if (filePath.substring(0, filePath.lastIndexOf("/")) === 'uploads') {
       const fileName = filePath.replace(/^.*[\\\/]/, '')
       const contentType = object.contentType; // File content type.
       const metageneration = object.metageneration; // Number of times metadata has been generated. New objects have a value of 1.
-      let metadata = object.metadata
+      let metadata = object.metadata ? object.metadata : {}
+      // let metadata = object.metadata
       console.log(metadata)
       if (metadata.processed) {
         if (metadata.processed === true) {
