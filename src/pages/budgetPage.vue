@@ -88,14 +88,14 @@
               Edit
             </q-tooltip>
           </q-td>
-          <q-td key="spent" :props="props">
+          <q-td key="spent" :props="props" :class="{ 'text-negative': parseFloat(props.row.budget) - parseFloat(props.row.expenses) < 0 }">
             ${{ props.row.expenses.toFixed(2) }}
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
           </q-td>
           <q-td key="remaining" :props="props">
-            <q-badge :class="{ 'bg-green-8': (props.row.income - props.row.expenses) > 0, 'bg-red-8': (props.row.income - props.row.expenses) < 0, 'bg-black': (props.row.income - props.row.expenses) == 0 }" :label="'$'+(props.row.income - props.row.expenses).toFixed(2)" />
+            <q-badge :class="{ 'bg-green-8': (props.row.income - props.row.expenses) > 0.01, 'bg-red-8': (props.row.income - props.row.expenses) < -0.01, 'bg-black': (props.row.income - props.row.expenses) < 0.01 && (props.row.income - props.row.expenses) > -0.01 }" :label="'$'+(props.row.income - props.row.expenses).toFixed(2)" />
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
