@@ -107,6 +107,10 @@ module.exports = function (ctx) {
           info: '#31CCEC',
           warning: '#F2C037'
         },
+        cordova: {
+          iosStatusBarPadding: true/false, // add the dynamic top padding on iOS mobile devices
+          backButtonExit: true/false // Quasar handles app exit on mobile phone back button
+        },
         loading: {},
         notify: {
           timeout: 1000,

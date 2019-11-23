@@ -211,7 +211,7 @@
               Auto Calculated
             </q-tooltip>
           </q-td>
-          <q-td key="spent" :props="props">
+          <q-td key="spent" :props="props" :class="{ 'text-negative': parseFloat(props.row.budget) - parseFloat(props.row.expenses) < 0 }">
             ${{ props.row.expenses.toFixed(2) }}
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated

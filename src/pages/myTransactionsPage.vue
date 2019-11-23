@@ -3,7 +3,7 @@
     <!-- {{budgetCategories}} -->
     <q-table
       class="my-sticky-header-table"
-      :data="transactionsFiltered"
+      :data="myTransactionsFiltered"
       :columns="columns"
       :rows-per-page-options="[5,10,15,20,50,100,200]"
       :row-key="row => row.id"
@@ -18,7 +18,7 @@
       dense
     >
       <template v-slot:top="props">
-        <div class="col-4 q-table__title"> Transactions{{ pageLabel > '' ? ' for ' + pageLabel : ''}} </div>
+        <div class="col-4 q-table__title"> My Transactions{{ pageLabel > '' ? ' for ' + pageLabel : ''}} </div>
 
         <q-space />
 
@@ -77,24 +77,15 @@
         </q-tr>
       </template>
       <template v-slot:body="props">
-        <q-tr :props="props" class="text-bold" :class="{ 'bg-red-2': props.row.deleted}">
+        <q-tr :props="props" class="text-bold" :class="{ 'bg-red-2': props.row.deleted, 'bg-orange-2': props.row.deleteRequested && !props.row.deleted }" v-if="!props.row.reviewed">
           <q-td key="selected" :props="props">
             <!-- {{props.selected}} -->
             <q-checkbox v-model="props.selected" dense/>
           </q-td>
-          <q-td key="submittedBy" :props="props">
-            <q-avatar v-if="props.row.submittedBy" size="md">
-              <img :src="props.row.submittedBy.photoURL ? props.row.submittedBy.photoURL : 'http://tinygraphs.com/spaceinvaders/' + props.row.submittedBy.uid + '?theme=bythepool&numcolors=4&size=220&fmt=svg'"/>
-              <div v-show="false">{{props.row.submittedBy.displayName}}{{props.row.submittedBy.email}}</div>
-                <q-tooltip content-class="bg-accent text-black">
-                <b>{{props.row.submittedBy.displayName}}</b><br>{{props.row.submittedBy.email}}
-              </q-tooltip>
-            </q-avatar>
-          </q-td>
           <q-td key="number" :props="props">
             {{ props.row.id }}
           </q-td>
-          <q-td key="icon" :props="props" class="cursor-pointer">
+          <q-td key="icon" :props="props" >
             <!-- {{props.row.type}} -->
             <q-icon v-if="props.row.type === 'Cheque'" name="mdi-checkbook" size="md">
               <q-tooltip>
@@ -116,13 +107,6 @@
                 Bank Card
               </q-tooltip>
             </q-icon>
-            <q-popup-edit v-model="props.row.type">
-              <q-select :value="props.row.type" dense label="Type" :options="typeOptions" @input="updateTransaction(props.row.id, 'type', $event)" />
-            </q-popup-edit>
-            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-              <q-icon name="edit"/>
-              Edit
-            </q-tooltip>
           </q-td>
           <q-td key="category" :props="props">
             <!-- {{props.row.category}} -->
@@ -132,7 +116,7 @@
               {{ props.row.category !== 'Journal' ? getCategoryById(props.row.budget) : '' }}
             </div>
           </q-td>
-          <q-td key="budget" :props="props" class="cursor-pointer">
+          <q-td key="budget" :props="props" >
             <!-- {{ props.row.text }} -->
             <div v-if="props.row.category === 'Expense'">
               {{ budgets[props.row.budget] ? budgets[props.row.budget].label : accounts[props.row.budget] ? accounts[props.row.budget].label : '' }}
@@ -158,7 +142,7 @@
                   :value="budgets[props.row.budget] > '' ? budgets[props.row.budget].label : ''"
                   @input="updateTransaction(props.row.id, 'budget', $event.id)"
                   dense autofocus
-                  label="Budget"
+                  label="Budget Category"
                   :options="budgetOptions"
                 />
               </q-popup-edit>
@@ -167,7 +151,7 @@
                 Edit
               </q-tooltip>
             </div>
-            <div v-if="props.row.category === 'Journal'" class="cursor-pointer">
+            <div v-if="props.row.category === 'Journal'" >
               {{ accounts[props.row.from] ? accounts[props.row.from].label : '' }}
               {{ budgetCategories[props.row.from] ? budgetCategories[props.row.from].label : '' }}
               {{ budgets[props.row.from] ? budgets[props.row.from].label : '' }}
@@ -189,7 +173,7 @@
               </q-tooltip>
             </div>
           </q-td>
-          <q-td key="date" :props="props" class="cursor-pointer">
+          <q-td key="date" :props="props" >
             {{ props.row.date }}
             <q-popup-edit v-model="props.row.date">
               <!-- <q-date
@@ -205,7 +189,7 @@
               Edit
             </q-tooltip>
           </q-td>
-          <q-td key="amount" :props="props" :class="{ 'text-red-8': props.row.category === 'Expense', 'text-green-8': props.row.category === 'Income','text-blue-8': props.row.category === 'Journal', }"  class="cursor-pointer">
+          <q-td key="amount" :props="props" :class="{ 'text-red-8': props.row.category === 'Expense', 'text-green-8': props.row.category === 'Income', 'text-blue-8': props.row.category === 'Journal' }"  >
             <!-- {{ getAmount(props.row.text) }} -->
             <!-- {{props.row}} -->
             {{ parseFloat(props.row.amount).toFixed(2) }}
@@ -228,7 +212,7 @@
               Edit
             </q-tooltip>
           </q-td>
-          <q-td key="desc" :props="props" class="cursor-pointer" style="white-space: normal;min-width:300px">
+          <q-td key="desc" :props="props"  style="white-space: normal;min-width:300px">
             {{ props.row.desc }}
             <q-popup-edit v-model="props.row.desc">
               <q-input :value="props.row.desc" @input="updateTransaction(props.row.id, 'desc', $event)"  dense autofocus label="Description" />
@@ -261,43 +245,132 @@
           <!-- </q-td> -->
           <q-td key="actions" :props="props" auto-width>
             <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
+<!--             <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL && props.row.receipt">
+              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+                Checking for receipt
+              </q-tooltip>
+            </q-spinner-gears> -->
+<!--             <q-btn icon="check" round :color="props.row.reviewed ? 'positive' : ''" @click="updateTransaction(props.row.id, 'reviewed', !props.row.reviewed)" outline dense class="q-mr-sm shadow-1">
+              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+                Reviewed?
+              </q-tooltip>
+            </q-btn> -->
+            <q-btn
+              :value="props.row.deleteRequested ? props.row.deleteRequested : false"
+              @click="updateTransaction(props.row.id, 'deleteRequested', !props.row.deleteRequested)"
+              :icon="props.row.deleteRequested ? 'unarchive' : 'archive'"
+              dense
+              class="q-mr-sm"
+            >
+              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+                Request Delete
+              </q-tooltip>
+            </q-btn>
+            <!-- {{props.row.deleted}} -->
+            <!-- <sp-delete-btn dense :docRef="`/projects/${project.id}/myTransactions/${props.row.id}`" class="q-mr-sm"/> -->
+          </q-td>
+        </q-tr>
+        <q-tr :props="props" class="text-bold" :class="{ 'bg-red-2': props.row.deleted, 'bg-green-2': !props.row.deleted}" v-if="props.row.reviewed">
+          <q-td key="selected" :props="props">
+            <!-- {{props.selected}} -->
+            <q-checkbox v-model="props.selected" dense/>
+          </q-td>
+          <q-td key="number" :props="props">
+            {{ props.row.id }}
+          </q-td>
+          <q-td key="icon" :props="props" >
+            <!-- {{props.row.type}} -->
+            <q-icon v-if="props.row.type === 'Cheque'" name="mdi-checkbook" size="md">
+              <q-tooltip>
+                Cheque
+              </q-tooltip>
+            </q-icon>
+            <q-icon v-if="props.row.type === 'Cash'" name="mdi-cash" size="md">
+              <q-tooltip>
+                Cash
+              </q-tooltip>
+            </q-icon>
+            <q-icon v-if="props.row.type === 'Internet Transfer'" name="mdi-bank-transfer" size="md">
+              <q-tooltip>
+                Internet Transfer
+              </q-tooltip>
+            </q-icon>
+            <q-icon v-if="props.row.type === 'Bank Card'" name="mdi-credit-card" size="md">
+              <q-tooltip>
+                Bank Card
+              </q-tooltip>
+            </q-icon>
+          </q-td>
+          <q-td key="category" :props="props">
+            <!-- {{props.row.category}} -->
+            <!-- {{budgets[props.row.category].category}} -->
+            <!-- {{ props.row.id }} -->
+            <div v-if="props.row.category !== 'Journal'">
+              {{ props.row.category !== 'Journal' ? getCategoryById(props.row.budget) : '' }}
+            </div>
+          </q-td>
+          <q-td key="budget" :props="props" >
+            <!-- {{ props.row.text }} -->
+            <div v-if="props.row.category === 'Expense'">
+              {{ budgets[props.row.budget] ? budgets[props.row.budget].label : accounts[props.row.budget] ? accounts[props.row.budget].label : '' }}
+            </div>
+            <div v-if="props.row.category === 'Income'">
+              <!-- {{ props.row.budget }} -->
+              {{ budgets[props.row.budget] ? budgets[props.row.budget].label : accounts[props.row.budget] ? accounts[props.row.budget].label : '' }}
+            </div>
+            <div v-if="props.row.category === 'Journal'" >
+              {{ accounts[props.row.from] ? accounts[props.row.from].label : '' }}
+              {{ budgetCategories[props.row.from] ? budgetCategories[props.row.from].label : '' }}
+              {{ budgets[props.row.from] ? budgets[props.row.from].label : '' }}
+              <q-icon name="arrow_forward" v-if="props.row.category === 'Journal'" />
+              {{ accounts[props.row.to] ? accounts[props.row.to].label : '' }}
+              {{ budgetCategories[props.row.to] ? budgetCategories[props.row.to].label : '' }}
+              {{ budgets[props.row.to] ? budgets[props.row.to].label : '' }}
+            </div>
+          </q-td>
+          <q-td key="date" :props="props" >
+            {{ props.row.date }}
+          </q-td>
+          <q-td key="amount" :props="props" :class="{ 'text-red-8': props.row.category === 'Expense', 'text-green-8': props.row.category === 'Income','text-blue-8': props.row.category === 'Journal', }"  >
+            {{ parseFloat(props.row.amount).toFixed(2) }}
+          </q-td>
+          <q-td key="GST" :props="props">
+            <!-- {{ getGST(props.row.text) }} -->
+            {{ parseFloat(props.row.GST ? props.row.GST : 0).toFixed(2) }}
+          </q-td>
+          <q-td key="desc" :props="props"  style="white-space: normal;min-width:300px">
+            {{ props.row.desc }}
+          </q-td>
+          <q-td key="cheque" :props="props">
+            {{ props.row.cheque }}
+          </q-td>
+          <q-td key="actions" :props="props" auto-width>
+            <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
             <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL && props.row.receipt">
               <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
                 Checking for receipt
               </q-tooltip>
             </q-spinner-gears>
-            <q-btn icon="check" round :color="props.row.reviewed ? 'positive' : ''" @click="updateTransaction(props.row.id, 'reviewed', !props.row.reviewed)" outline dense class="q-mr-sm shadow-1">
-              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-                Reviewed?
-              </q-tooltip>
-            </q-btn>
-            <q-btn
-              :value="props.row.deleted ? props.row.deleted : false"
-              @click="updateTransaction(props.row.id, 'deleted', !props.row.deleted)"
+<!--             <q-btn
+              :value="props.row.deleteRequested ? props.row.deleteRequested : false"
+              @click="updateTransaction(props.row.id, 'deleteRequested', !props.row.deleteRequested)"
               icon="archive"
               dense
               class="q-mr-sm"
             >
               <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-                Archive
+                Request Delete
               </q-tooltip>
-            </q-btn>
-            <!-- {{props.row.deleted}} -->
-            <sp-delete-btn dense :docRef="`/projects/${project.id}/transactions/${props.row.id}`" class="q-mr-sm"/>
+            </q-btn> -->
           </q-td>
         </q-tr>
       </template>
     </q-table>
     <q-page-sticky position="bottom-left" :offset="[18, 18]" style="z-index:100">
-      <q-btn fab icon="add" color="primary">
+      <q-btn fab icon="add" color="primary" :to="{ 'name': 'addTrans' }">
         <q-tooltip content-class="bg-accent text-grey-10">
           Add Transaction
         </q-tooltip>
-        <q-menu ref="addTransMenu" persistent>
-          <!-- <q-scroll-area> -->
-          <sp-trans-form :projectId="project.id" @onSubmit="$refs.addTransMenu.hide()"/>
-          <!-- </q-scroll-area> -->
-        </q-menu>
       </q-btn>
     </q-page-sticky>
     <q-page-sticky position="bottom-right" :offset="[18, 18]" style="z-index:100" v-if="rowSelected.length > 0">
@@ -328,7 +401,6 @@ export default {
     return {
       columns: [
         { name: 'selected', label: '', field: 'selected', align: 'left', sortable: true },
-        { name: 'submittedBy', label: 'From', field: 'submittedBy', align: 'left', sortable: true },
         { name: 'number', label: 'Transaction ID', field: 'number', align: 'center', sortable: true },
         { name: 'icon', label: 'Type', field: 'icon', align: 'center' },
         { name: 'category', label: 'Category', field: 'category', align: 'left', sortable: true },
@@ -344,7 +416,7 @@ export default {
       ],
       filter: '',
       ccOptions: [],
-      visibleColumns: ['selected', 'submittedBy', 'icon', 'date', 'amount', 'GST', 'type', 'category', 'budget', 'desc', 'actions'],
+      visibleColumns: ['selected', 'icon', 'date', 'amount', 'GST', 'budget', 'desc', 'actions'],
       pagination: {
         sortBy: 'date',
         descending: true,
@@ -359,6 +431,7 @@ export default {
   },
   created () {
     // console.log(this.project.currency)
+    this.$store.dispatch('fetchMyTransactions', { projectId: this.$route.params.id, uid: this.user.uid })
     if (this.project.currency) {
       for (var key in this.columns) {
         if (this.columns[key].label.search('(currency)') !== -1) {
@@ -372,7 +445,7 @@ export default {
   },
   methods: {
     ...mapActions([
-      'updateTransactionByKey'
+      'updateMyTransactionByKey'
     ]),
     filterFn (val, update) {
       if (val === '') {
@@ -437,8 +510,8 @@ export default {
     },
     updateTransaction (trans, key, val) {
       // console.log(trans, key, val)
-      // console.log(parseFloat(this.transactions[this.transactions.findIndex(x => x.id === trans)].amount) * 0.1, parseFloat(val), (parseFloat(val) <= (parseFloat(this.transactions[this.transactions.findIndex(x => x.id === trans)].amount) * 0.1)))
-      if (key === 'GST' && (parseFloat(val) > (parseFloat(this.transactions[this.transactions.findIndex(x => x.id === trans)].amount) * 0.1))) {
+      // console.log(parseFloat(this.myTransactions[this.myTransactions.findIndex(x => x.id === trans)].amount) * 0.1, parseFloat(val), (parseFloat(val) <= (parseFloat(this.myTransactions[this.myTransactions.findIndex(x => x.id === trans)].amount) * 0.1)))
+      if (key === 'GST' && (parseFloat(val) > (parseFloat(this.myTransactions[this.myTransactions.findIndex(x => x.id === trans)].amount) * 0.1))) {
         this.$q.notify({
           color: 'negative',
           textColor: 'white',
@@ -447,7 +520,7 @@ export default {
         })
         return
       }
-      this.updateTransactionByKey({ trans, key, val })
+      this.updateMyTransactionByKey({ trans, key, val })
       firebase.firestore().collection(`/projects/${this.project.id}/transactions`).doc(trans)
         .update({ [key]: val })
         .then(() => {
@@ -480,11 +553,12 @@ export default {
     ...mapGetters([
       'project',
       'idToken',
-      'transactions',
+      'myTransactions',
       'accounts',
       'budgets',
       'budgetOptions',
-      'budgetCategories'
+      'budgetCategories',
+      'user'
     ]),
     columnsFiltered () {
       let columns = []
@@ -493,8 +567,8 @@ export default {
       }
       return columns
     },
-    transactionsFiltered () {
-      let transactions = []
+    myTransactionsFiltered () {
+      let myTransactions = []
       // check if the budget filter exists
       if (this.$route.params.budgetCategory) {
         let budgets = []
@@ -512,62 +586,62 @@ export default {
           }
         } else if (this.accounts[this.$route.params.budgetCategory]) {
           // the filter is an account
-          // find all transactions in the account
-          for (var transKey in this.transactions) {
+          // find all myTransactions in the account
+          for (var transKey in this.myTransactions) {
             // check if the transaction exists in the budgets array
-            console.log(!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived))
-            if (!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived)) {
+            console.log(!this.myTransactions[transKey].deleted || (this.myTransactions[transKey].deleted && this.showArchived))
+            if (!this.myTransactions[transKey].deleted || (this.myTransactions[transKey].deleted && this.showArchived)) {
               // check it's not archieved and if it is archieve check if the archive is showing
-              console.log(this.transactions[transKey], (this.$route.params.budgetCategory === this.transactions[transKey].budget), (this.$route.params.budgetCategory === this.transactions[transKey].to), (this.$route.params.budgetCategory === this.transactions[transKey].from))
-              if (((this.$route.params.budgetCategory === this.transactions[transKey].budget) && (this.transactions[transKey].category !== 'Journal')) ||
-                ((this.$route.params.budgetCategory === this.transactions[transKey].to) && (this.transactions[transKey].category === 'Journal')) ||
-                ((this.$route.params.budgetCategory === this.transactions[transKey].from) && (this.transactions[transKey].category === 'Journal'))) {
-                // add the transactions to the transaction array
-                transactions.push(this.transactions[transKey])
+              console.log(this.myTransactions[transKey], (this.$route.params.budgetCategory === this.myTransactions[transKey].budget), (this.$route.params.budgetCategory === this.myTransactions[transKey].to), (this.$route.params.budgetCategory === this.myTransactions[transKey].from))
+              if (((this.$route.params.budgetCategory === this.myTransactions[transKey].budget) && (this.myTransactions[transKey].category !== 'Journal')) ||
+                ((this.$route.params.budgetCategory === this.myTransactions[transKey].to) && (this.myTransactions[transKey].category === 'Journal')) ||
+                ((this.$route.params.budgetCategory === this.myTransactions[transKey].from) && (this.myTransactions[transKey].category === 'Journal'))) {
+                // add the myTransactions to the transaction array
+                myTransactions.push(this.myTransactions[transKey])
               }
             }
           }
-          return transactions
+          return myTransactions
         } else {
           // the filter is not a category
           // add the budget to the array of budgets
           budgets = [this.$route.params.budgetCategory]
         }
 
-        // find all transactions in the budgets
-        for (transKey in this.transactions) {
+        // find all myTransactions in the budgets
+        for (transKey in this.myTransactions) {
           // check if the transaction exists in the budgets array
-          // if (budgets.includes(this.transactions[transKey].budget)) {
+          // if (budgets.includes(this.myTransactions[transKey].budget)) {
           //   // check it's not archieved and if it is archieve check if the archive is showing
-          //   if (!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived)) {
-          //     // add the transactions to the transaction array
-          //     transactions.push(this.transactions[transKey])
+          //   if (!this.myTransactions[transKey].deleted || (this.myTransactions[transKey].deleted && this.showArchived)) {
+          //     // add the myTransactions to the transaction array
+          //     myTransactions.push(this.myTransactions[transKey])
           //   }
           // }
-          // console.log(!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived))
-          if (!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived)) {
+          // console.log(!this.myTransactions[transKey].deleted || (this.myTransactions[transKey].deleted && this.showArchived))
+          if (!this.myTransactions[transKey].deleted || (this.myTransactions[transKey].deleted && this.showArchived)) {
             // check it's not archieved and if it is archieve check if the archive is showing
-            // console.log(this.transactions[transKey], (this.$route.params.budgetCategory === this.transactions[transKey].budget), (this.$route.params.budgetCategory === this.transactions[transKey].to), (this.$route.params.budgetCategory === this.transactions[transKey].from))
-            if ((budgets.includes(this.transactions[transKey].budget) && (this.transactions[transKey].category !== 'Journal')) ||
-              (budgets.includes(this.transactions[transKey].to) && (this.transactions[transKey].category === 'Journal')) ||
-              (budgets.includes(this.transactions[transKey].from) && (this.transactions[transKey].category === 'Journal'))) {
-              // add the transactions to the transaction array
-              transactions.push(this.transactions[transKey])
+            // console.log(this.myTransactions[transKey], (this.$route.params.budgetCategory === this.myTransactions[transKey].budget), (this.$route.params.budgetCategory === this.myTransactions[transKey].to), (this.$route.params.budgetCategory === this.myTransactions[transKey].from))
+            if ((budgets.includes(this.myTransactions[transKey].budget) && (this.myTransactions[transKey].category !== 'Journal')) ||
+              (budgets.includes(this.myTransactions[transKey].to) && (this.myTransactions[transKey].category === 'Journal')) ||
+              (budgets.includes(this.myTransactions[transKey].from) && (this.myTransactions[transKey].category === 'Journal'))) {
+              // add the myTransactions to the transaction array
+              myTransactions.push(this.myTransactions[transKey])
             }
           }
         }
       } else {
-        // find all transactions in the budgets
-        for (transKey in this.transactions) {
+        // find all myTransactions in the budgets
+        for (transKey in this.myTransactions) {
           // check it's not archieved and if it is archieve check if the archive is showing
-          // console.log(this.transactions[transKey].id, !this.transactions[transKey].deleted, , this.showArchived)
-          if (!this.transactions[transKey].deleted || (this.transactions[transKey].deleted && this.showArchived)) {
-            // add the transactions to the transaction array
-            transactions.push(this.transactions[transKey])
+          // console.log(this.myTransactions[transKey].id, !this.myTransactions[transKey].deleted, , this.showArchived)
+          if (!this.myTransactions[transKey].deleted || (this.myTransactions[transKey].deleted && this.showArchived)) {
+            // add the myTransactions to the transaction array
+            myTransactions.push(this.myTransactions[transKey])
           }
         }
       }
-      return transactions
+      return myTransactions
     },
     calcSelected () {
       let total = 0
@@ -590,12 +664,15 @@ export default {
           this.columns[key].label = this.columns[key].label.replace('(currency)', `(${this.project.currency})`)
         }
       }
+    },
+    user () {
+      this.$store.dispatch('fetchMyTransactions', { projectId: this.$route.params.id, uid: this.user.uid })
     }
   },
   components: {
-    'sp-trans-form': () => import('../components/sp-trans-form.vue'),
-    'sp-receipt': () => import('../components/sp-receipt.vue'),
-    'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
+    // 'sp-trans-form': () => import('../components/sp-trans-form.vue'),
+    'sp-receipt': () => import('../components/sp-receipt.vue')
+    // 'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
   }
 }
 </script>

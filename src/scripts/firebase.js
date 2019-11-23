@@ -1,6 +1,7 @@
 import firebase from 'firebase/app'
 require('firebase/firestore')
 require('firebase/auth')
+import { Platform } from 'quasar'
 
 const config = {
   apiKey: 'AIzaSyCLMhi-e4x78kXS2_SfoyK4jfnkIJnNP00',
@@ -14,20 +15,22 @@ const config = {
 
 firebase.initializeApp(config)
 
-// firebase.firestore().enablePersistence()
-//   .catch(function (err) {
-//     if (err.code === 'failed-precondition') {
-//       // Multiple tabs open, persistence can only be enabled
-//       // in one tab at a a time.
-//       // ...
-//       // console.log(err)
-//     } else if (err.code === 'unimplemented') {
-//       // The current browser does not support all of the
-//       // features required to enable persistence
-//       // ...
-//       // console.log(err)
-//     }
-//   })
+if (Platform.is.cordova) {
+  firebase.firestore().enablePersistence()
+    .catch(function (err) {
+      if (err.code === 'failed-precondition') {
+        // Multiple tabs open, persistence can only be enabled
+        // in one tab at a a time.
+        // ...
+        // console.log(err)
+      } else if (err.code === 'unimplemented') {
+        // The current browser does not support all of the
+        // features required to enable persistence
+        // ...
+        // console.log(err)
+      }
+    })
+}
 
 export default {
   $firebase: firebase,
