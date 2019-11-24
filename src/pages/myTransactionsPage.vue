@@ -244,17 +244,6 @@
             <!-- {{props.row.receiptURL.startsWith('https://')}} -->
           <!-- </q-td> -->
           <q-td key="actions" :props="props" auto-width>
-            <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
-<!--             <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL && props.row.receipt">
-              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-                Checking for receipt
-              </q-tooltip>
-            </q-spinner-gears> -->
-<!--             <q-btn icon="check" round :color="props.row.reviewed ? 'positive' : ''" @click="updateTransaction(props.row.id, 'reviewed', !props.row.reviewed)" outline dense class="q-mr-sm shadow-1">
-              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-                Reviewed?
-              </q-tooltip>
-            </q-btn> -->
             <q-btn
               :value="props.row.deleteRequested ? props.row.deleteRequested : false"
               @click="updateTransaction(props.row.id, 'deleteRequested', !props.row.deleteRequested)"
@@ -266,8 +255,13 @@
                 {{!props.row.deleteRequested ? 'Request Delete' : 'Delete Requested'}}
               </q-tooltip>
             </q-btn>
-            <!-- {{props.row.deleted}} -->
-            <!-- <sp-delete-btn dense :docRef="`/projects/${project.id}/myTransactions/${props.row.id}`" class="q-mr-sm"/> -->
+            <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
+            <q-icon name="img:../statics/icons/no-receipt.png" style="height:25px;width:25px;padding:3.99px" v-if="props.row.receiptURL > '' ? !props.row.receiptURL.startsWith('https://') : true" class="q-mr-sm" />
+            <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL && props.row.receipt">
+              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+                Checking for receipt
+              </q-tooltip>
+            </q-spinner-gears>
           </q-td>
         </q-tr>
         <q-tr :props="props" class="text-bold" :class="{ 'bg-red-2': props.row.deleted, 'bg-green-2': !props.row.deleted}" v-if="props.row.reviewed">
@@ -345,12 +339,13 @@
             {{ props.row.cheque }}
           </q-td>
           <q-td key="actions" :props="props" auto-width>
-            <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
             <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL && props.row.receipt">
               <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
                 Checking for receipt
               </q-tooltip>
             </q-spinner-gears>
+            <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
+            <q-icon name="img:../statics/icons/no-receipt.png" style="height:25px;width:25px;padding:3.99px" v-if="props.row.receiptURL > '' ? !props.row.receiptURL.startsWith('https://') : true" class="q-mr-sm"/>
 <!--             <q-btn
               :value="props.row.deleteRequested ? props.row.deleteRequested : false"
               @click="updateTransaction(props.row.id, 'deleteRequested', !props.row.deleteRequested)"
@@ -378,7 +373,7 @@
         <q-card-section>
           Amount ({{project.currency}}): ${{calcSelected}}
           <q-tooltip content-class="bg-accent text-grey-10">
-          Sum of Selected
+          Sum of {{rowSelected.length}} Selected
         </q-tooltip>
         </q-card-section>
       </q-card>

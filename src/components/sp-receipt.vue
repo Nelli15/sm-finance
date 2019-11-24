@@ -4,7 +4,7 @@
       Receipt
     </q-tooltip>
     <!-- {{props.row.showDialogReceipt}} -->
-    <q-dialog v-model="showDialog">
+    <q-dialog v-model="showDialog" style="max-width:100vw">
       <q-card style="max-width:100%" dark class="bg-black no-scroll">
         <q-card-section class="text-h6">
           Transaction {{ label }} receipt
@@ -12,7 +12,7 @@
         <q-card-section class="no-scroll">
           <!-- {{src}} -->
           <!-- {{receiptUrl}} -->
-          <img :src="url" alt="No Receipt" style="height: 80vh;" />
+          <img :src="url" alt="No Receipt" style="max-height: 80vh;max-width:100%;image-orientation: from-image;" />
         </q-card-section>
       </q-card>
     </q-dialog>

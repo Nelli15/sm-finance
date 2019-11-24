@@ -339,6 +339,13 @@ exports.userUpdated = functions.firestore.document("/users/{uid}")
         snap.ref.update({ name:afterData.name, photoURL:afterData.photoURL })
       })
     })
+    db.collectionGroup(`transactions`).where('submittedBy.uid', '==', context.params.uid).get().then(query => {
+      //update each contributor
+      query.forEach(snap => {
+        console.log('update transactions', { 'submittedBy.displayName': afterData.name, 'submittedBy.photoURL': afterData.photoURL })
+        snap.ref.update({ 'submittedBy.displayName': afterData.name, 'submittedBy.photoURL': afterData.photoURL })
+      })
+    })
     // userSnap.ref.update({name:beforeData.displayName,email:beforeData.email,photoURL:beforeData.photoURL})
   }
   return true

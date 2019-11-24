@@ -266,6 +266,7 @@
           <!-- </q-td> -->
           <q-td key="actions" :props="props" auto-width>
             <sp-receipt :id="props.row.id" :label="props.row.id" :url="props.row.receiptURL" v-if="props.row.receiptURL > '' ? props.row.receiptURL.startsWith('https://') : false" class="q-mr-sm"/>
+            <q-icon name="img:../statics/icons/no-receipt.png" style="height:25px;width:25px;padding:3.99px" v-if="props.row.receiptURL > '' ? !props.row.receiptURL.startsWith('https://') : true" class="q-mr-sm" />
             <q-spinner-gears size="30px" color="primary" v-if="!props.row.receiptURL && props.row.receipt">
               <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
                 Checking for receipt
