@@ -250,6 +250,7 @@
           <q-route-tab :to="{ name: 'summary' }" icon="category" label="Summary" v-if="isAdmin" />
           <q-route-tab :to="{ name: 'budget' }" icon="reorder" label="Budgets" v-if="isAdmin" />
           <q-route-tab :to="{ name: 'transactions' }" icon="mdi-bank-transfer" label="Transactions" v-if="isAdmin" />
+          <q-route-tab :to="{ name: 'myTransactions' }" icon="mdi-bank-transfer" label="Transactions" v-if="isContributor" />
           <q-route-tab :to="{ name: 'petty' }" icon="mdi-cash-register" label="Petty Cash" v-if="isAdmin" />
           <q-route-tab :to="{ name: 'access' }" icon="people" label="Share" v-if="isAdmin" />
           <!-- <q-btn @click="share = !share" icon="people" label="Sharing" v-if="isAdmin" class="desktop-hide" /> -->
@@ -313,6 +314,7 @@ export default {
       'admins',
       'contributors',
       'isAdmin',
+      'isContributor',
       'budgetOptions',
       'accounts',
       'budgets',

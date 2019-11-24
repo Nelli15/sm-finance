@@ -263,7 +263,7 @@
               class="q-mr-sm"
             >
               <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-                Request Delete
+                {{!props.row.deleteRequested ? 'Request Delete' : 'Delete Requested'}}
               </q-tooltip>
             </q-btn>
             <!-- {{props.row.deleted}} -->

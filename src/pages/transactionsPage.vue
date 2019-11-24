@@ -77,7 +77,7 @@
         </q-tr>
       </template>
       <template v-slot:body="props">
-        <q-tr :props="props" class="text-bold" :class="{ 'bg-red-2': props.row.deleted}">
+        <q-tr :props="props" class="text-bold" :class="{ 'bg-red-2': props.row.deleted, 'bg-orange-2': props.row.deleteRequested && !props.row.deleted && !props.row.reviewed }" >
           <q-td key="selected" :props="props">
             <!-- {{props.selected}} -->
             <q-checkbox v-model="props.selected" dense/>
@@ -88,7 +88,12 @@
               <div v-show="false">{{props.row.submittedBy.displayName}}{{props.row.submittedBy.email}}</div>
                 <q-tooltip content-class="bg-accent text-black">
                 <b>{{props.row.submittedBy.displayName}}</b><br>{{props.row.submittedBy.email}}
+                <div v-if="props.row.deleteRequested && !props.row.deleted && !props.row.reviewed" class="text-negative">
+                  "{{props.row.submittedBy.displayName}} requested this be deleted"
+                </div>
               </q-tooltip>
+              <q-badge v-if="props.row.deleteRequested && !props.row.deleted && !props.row.reviewed" floating color="negative" dense style="border-radius: 10px;
+    height: 12px;"></q-badge>
             </q-avatar>
           </q-td>
           <q-td key="number" :props="props">
