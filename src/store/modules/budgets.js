@@ -71,24 +71,24 @@ export const mutations = {
 
       // reset the calculated values of the budgets
       for (key in state.budgetCategories) {
-        state.budgetCategories[key].expenses = 0
-        state.budgetCategories[key].income = 0
-        state.budgetCategories[key].budget = 0
+        // state.budgetCategories[key].expenses = state.budgetCategories[key].expenses ? state.budgetCategories[key].expenses : 0
+        // state.budgetCategories[key].income = state.budgetCategories[key].income ? state.budgetCategories[key].income : 0
+        // state.budgetCategories[key].budget = 0
         state.budgetCategories[key].inUse = false
       }
       for (key in state.budgets) {
-        state.budgets[key].expenses = 0
-        state.budgets[key].income = 0
+        // state.budgets[key].expenses = state.budgets[key].expenses ? state.budgets[key].expenses : 0
+        // state.budgets[key].income = state.budgets[key].income ? state.budgets[key].income : 0
         state.budgets[key].inUse = false
         // console.log(state.budgetCategories[state.budgets[key].category])
         if (state.budgetCategories[state.budgets[key].category]) {
           state.budgetCategories[state.budgets[key].category].inUse = true
-          state.budgetCategories[state.budgets[key].category].budget += state.budgets[key].budget ? parseFloat(state.budgets[key].budget) : 0
+          // state.budgetCategories[state.budgets[key].category].budget += state.budgets[key].budget ? parseFloat(state.budgets[key].budget) : 0
         }
       }
       for (key in state.accounts) {
-        state.accounts[key].expenses = 0
-        state.accounts[key].income = 0
+        // state.accounts[key].expenses = state.accounts[key].expenses ? state.accounts[key].expenses : 0
+        // state.accounts[key].income = state.accounts[key].income ? state.accounts[key].income : 0
         state.accounts[key].inUse = false
       }
       // loop through all the transactions categorising and creating totals
@@ -99,44 +99,44 @@ export const mutations = {
             // calulate the expense transactions
             if (state.accounts[transaction.budget]) {
               state.accounts[transaction.budget].inUse = true
-              state.accounts[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.accounts[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             } else {
               state.budgets[transaction.budget].inUse = true
               state.budgetCategories[state.budgets[transaction.budget].category].inUse = true
-              state.budgets[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-              state.budgetCategories[state.budgets[transaction.budget].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.budgets[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.budgetCategories[state.budgets[transaction.budget].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             }
           } else if (transaction.category === 'Income') {
             // calculate the income transactions
             if (state.accounts[transaction.budget]) {
               state.accounts[transaction.budget].inUse = true
-              state.accounts[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.accounts[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             } else {
               state.budgets[transaction.budget].inUse = true
               state.budgetCategories[state.budgets[transaction.budget].category].inUse = true
-              state.budgets[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-              state.budgetCategories[state.budgets[transaction.budget].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.budgets[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.budgetCategories[state.budgets[transaction.budget].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             }
           } else if (transaction.category === 'Journal') {
             // calculate the journalled transactions
             // console.log(transaction, state.accounts, state.accounts[transaction.from], state.accounts[transaction.to])
             if (state.accounts[transaction.from]) {
               state.accounts[transaction.from].inUse = true
-              state.accounts[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.accounts[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             } else {
               state.budgets[transaction.from].inUse = true
               state.budgetCategories[state.budgets[transaction.from].category].inUse = true
-              state.budgets[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-              state.budgetCategories[state.budgets[transaction.from].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.budgets[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.budgetCategories[state.budgets[transaction.from].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             }
             if (state.accounts[transaction.to]) {
               state.accounts[transaction.to].inUse = true
-              state.accounts[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.accounts[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             } else {
               state.budgets[transaction.to].inUse = true
               state.budgetCategories[state.budgets[transaction.to].category].inUse = true
-              state.budgets[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
-              state.budgetCategories[state.budgets[transaction.to].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.budgets[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
+              // state.budgetCategories[state.budgets[transaction.to].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             }
           }
         }
@@ -170,9 +170,9 @@ export const actions = {
         let promises = categoriesSnap.docs.map(doc => {
           budget = doc.data()
           budget.id = doc.id
-          budget.expenses = 0
-          budget.income = 0
-          budget.budget = 0
+          budget.expenses = budget.expenses ? parseFloat(budget.expenses) : 0
+          budget.income = budget.income ? parseFloat(budget.income) : 0
+          budget.budget = budget.budget ? parseFloat(budget.budget) : 0
           budgets[budget.id] = budget
         })
         await Promise.all(promises)
@@ -190,8 +190,10 @@ export const actions = {
         let promises = budgetsSnap.docs.map(doc => {
           budget = doc.data()
           budget.id = doc.id
-          budget.expenses = 0
-          budget.income = 0
+          budget.budget = budget.budget ? parseFloat(budget.budget) : 0
+          budget.expenses = budget.expenses ? parseFloat(budget.expenses) : 0
+          console.log(budget.id, budget.expenses)
+          budget.income = budget.income ? parseFloat(budget.income) : 0
           budgets[budget.id] = budget
         })
         await Promise.all(promises)
@@ -208,8 +210,8 @@ export const actions = {
         let promises = accountsSnap.docs.map(doc => {
           account = doc.data()
           account.id = doc.id
-          account.expenses = 0
-          account.income = 0
+          account.expenses = account.expenses ? parseFloat(account.expenses) : 0
+          account.income = account.income ? parseFloat(account.income) : 0
           accounts[account.id] = account
         })
         await Promise.all(promises)

@@ -6,15 +6,6 @@ const cors = require('cors')({origin: true});
 const serviceAccount = require("./sp-finance-firebase-adminsdk-6mhpx-7ad8d7a061.json");
 const archiver = require('archiver');
 
-// const config = require('./config.json');
-
-// Get a reference to the Pub/Sub component
-// const {PubSub} = require('@google-cloud/pubsub');
-// const pubsub = new PubSub();
-// Get a reference to the Cloud Storage component
-// const {Storage} = require('@google-cloud/storage');
-// const storage = new Storage();
-
 const spawn = require('child-process-promise').spawn;
 const path = require('path');
 const os = require('os');
@@ -193,90 +184,6 @@ exports.sendInvite = functions.firestore.document("/projects/{projectId}/invites
     }).catch(err=>{console.log(err)})
 })
 
-//Used in 2.0
-// exports.createproject = functions.https.onCall((data, context) => {
-//   // console.log(context.auth)
-//   var newproject = {
-//     "name": "Untitled project",
-//     "style": {"backgroundColor":"#ffffff"}
-//   }
-
-//   // Get a new write batch
-//   var batch = db.batch();
-
-//   //create the project document
-//   var projectDoc = db.collection(`/projects`).doc()
-//   batch.set(projectDoc, newproject)
-
-//   // var treeDoc = projectDoc.collection('/trees').doc('/tree')
-//   // batch.set(treeDoc, {root:[],'No Parent':[]})
-
-//   var contributorDoc = db.doc(`/projects/${projectDoc.id}/contributors/${context.auth.uid}`)
-//   batch.set(contributorDoc, {
-//     name:context.auth.token.name,
-//     email:context.auth.token.email,
-//     permission:'admin',
-//     accepted:true,
-//     uid: context.auth.token.uid
-//   })
-
-//     return batch.commit().then(()=>{
-//         console.log(newproject,projectDoc.id)
-//         // resolve()
-//         return {
-//           projectId: projectDoc.id,
-//           success: true
-//         }
-//     }).catch((err)=>{console.error(err)});
-// });
-
-// //Used in 2.0
-// exports.copyproject = functions.https.onCall((data, context) => {
-//   // console.log(data)
-//   let projectRef = db.doc(`/projects/${data.projectId}`)
-//   let newprojectRef = db.collection(`/projects`).doc()
-//   let newcontributorRef = newprojectRef.collection(`/contributors`).doc(`${context.auth.uid}`)
-//   let stylesRef = projectRef.collection('/styles')
-//   let newStylesRef = newprojectRef.collection('/styles')
-//   return db.runTransaction((transaction) => {
-//     // This code may get re-run multiple times if there are conflicts.
-//     return transaction.get(projectRef).then((projectDoc) => {
-//       if (!projectDoc.exists) {
-//         return false
-//       }
-//       return transaction.get(stylesRef).then((stylesSnap) => {
-//         let projectData = projectDoc.data();
-//         transaction.set(newprojectRef, { 
-//           name: 'Copy of '+projectData.name,
-//           style: projectData.style
-//         });
-
-//         transaction.set(newcontributorRef, {
-//           name:context.auth.token.name,
-//           email:context.auth.token.email,
-//           permission:'admin',
-//           accepted:true,
-//           uid:context.auth.token.uid
-//         })
-//         for (var doc in stylesSnap.docs) {
-//           newStylesRef.doc(stylesSnap.docs[doc].id).set(stylesSnap.docs[doc].data())
-//         }
-//         return true
-//       }).then(() => {
-//         console.log("Transaction successfully committed!");
-//         console.log(newprojectRef.id)
-//         return true
-//       }).catch((error) => {
-//         console.log("Transaction failed: ", error);
-//       });
-//     }).catch((error) => {
-//       console.log("Transaction failed: ", error);
-//     });
-//   }).catch((error) => {
-//     console.log("Transaction failed: ", error);
-//   });
-// })
-
 // Listen for user sign in
 exports.onUserFirstSignIn = functions.auth.user().onCreate((user) => {
   // console.log(user.uid)/
@@ -350,61 +257,6 @@ exports.userUpdated = functions.firestore.document("/users/{uid}")
   }
   return true
 })
-
-// Listen for updates to any `user` document.
-// exports.projectChange = functions.firestore.document('/projects/{projectId}')
-// .onUpdate((change, context) => {
-
-  
-//     return true
-// });
-
-// exports.onUserStatusChanged = functions.database.ref('/status/{uid}').onUpdate((change, context) => {
-//       // Get the data written to Realtime Database
-//       const eventStatus = change.after.val();
-
-//       // Then use other event data to create a reference to the
-//       // corresponding Firestore document.
-//       const userStatusFirestoreRef = db.doc(`/status/${context.params.uid}`);
-
-//       // It is likely that the Realtime Database change that triggered
-//       // this event has already been overwritten by a fast change in
-//       // online / offline status, so we'll re-read the current data
-//       // and compare the timestamps.
-//       change.after.ref.once('value').then(statusSnapshot=>{
-//         const status = statusSnapshot.val();
-//         console.log(status, eventStatus);
-//         // If the current timestamp for this data is newer than
-//         // the data that triggered this event, we exit this function.
-//         if (status.last_changed > eventStatus.last_changed) {
-//           return null;
-//         }
-
-//         // Otherwise, we convert the last_changed field to a Date
-//         eventStatus.last_changed = new Date(eventStatus.last_changed);
-
-//         // ... and write it to Firestore.
-//         // console.log(eventStatus)
-//         userStatusFirestoreRef.update(eventStatus);
-//         return true
-//       }).catch(err=>{console.log(err)})
-//       return true
-//   });
-
-
-// exports.getReceipt = functions.https.onRequest((req, res) => {
-//   var projectId = req.query.projectId
-//   var fileName = req.query.fileName
-//   var storage = admin.storage();
-//   var storageRef = storage.bucket();
-//   var file = storageRef.file(`projects/${projectId}/receipts/${fileName}.jpg`);
-//   // let file = gcs.bucket('my-bucket').file('Capture.PNG');
-//   let readStream = file.createReadStream();
-
-//   res.status(200).setHeader("content-type", "image/jpeg");
-//   readStream.pipe(res);
-//   // res.status(200).sendFile('https://firebasestorage.googleapis.com/v0/b/sp-finance.appspot.com/o/projects%2FprojectId%2Freceipts%2FCapture.PNG?alt=media&token=b3a900c6-5ace-4270-a6a3-1142666a4c58')
-// })
 
 exports.getReceipt = functions.https.onRequest(async (req, res) => {
   // console.log(req.headers.authorization)
@@ -773,6 +625,169 @@ exports.onTransactionCreate = functions.firestore.document("/projects/{projectId
     console.log('No receipt uploaded')
   }
   return true
+})
+
+exports.onTransactionWrite = functions.firestore.document("/projects/{projectId}/transactions/{transId}")
+.onWrite(async (change, context) => {
+  // Get an object with the current document value.
+  let projectId = context.params.projectId
+  let transId = context.params.transId
+  // If the document does not exist, it has been deleted.
+  const newDoc = change.after.exists ? change.after.data() : null;
+
+  // Get an object with the previous document value (for update or delete)
+  const oldDoc = change.before.exists ? change.before.data() : null;
+  if (oldDoc !== null && newDoc !== null) {
+    if ((newDoc.amount === oldDoc.amount) && (newDoc.to === oldDoc.to) && (newDoc.from === oldDoc.from) && (newDoc.budget === oldDoc.budget) && (newDoc.category === oldDoc.category) && (newDoc.deleted === oldDoc.deleted)) {
+      console.log('no change detected')
+      return true
+    }
+  }
+
+  let budgets = []
+
+  if (oldDoc === null) {
+    //create
+
+    // make a list of all the budgets to be updated
+    if (newDoc.category === "Expense" || newDoc.category === "Income") {
+      budgets.push(newDoc.budget)
+    } else if (newDoc.category === "Journal") {
+      budgets.push(newDoc.to)
+      budgets.push(newDoc.from)
+    }
+  } else if (oldDoc !== null && newDoc !== null) {
+    //update
+    // make a list of all the budgets to be updated
+    if (oldDoc.category === "Expense" || oldDoc.category === "Income") {
+      budgets.push(oldDoc.budget)
+    } else if (oldDoc.category === "Journal") {
+      budgets.push(oldDoc.to)
+      budgets.push(oldDoc.from)
+    }
+    if (newDoc.category === "Expense" || newDoc.category === "Income") {
+      budgets.push(newDoc.budget)
+    } else if (newDoc.category === "Journal") {
+      budgets.push(newDoc.to)
+      budgets.push(newDoc.from)
+    }
+  } else {
+    //delete
+    // make a list of all the budgets to be updated
+    if (oldDoc.category === "Expense" || oldDoc.category === "Income") {
+      budgets.push(oldDoc.budget)
+    } else if (oldDoc.category === "Journal") {
+      budgets.push(oldDoc.to)
+      budgets.push(oldDoc.from)
+    }
+  }
+
+  budgets = budgets.filter((val, index, self) => {
+    return self.indexOf(val) === index
+  })
+
+  console.log('updating budgets: ', budgets)
+
+  // loop through all the budgets to update each one
+    for (var budgetKey in budgets) {
+      let budget = budgets[budgetKey]
+      let expenses = 0, income = 0
+      //get all the related transactions and update the expense totals
+      let promises = [db.collection(`/projects/${projectId}/transactions/`).where('category', '==', 'Expense').where('budget', '==', budget).get().then(query => {
+        query.forEach(docRef => {
+          if (!docRef.get('deleted')) {
+            expenses += parseFloat(docRef.get('amount'))
+          }
+        })
+        return true
+      }),
+      db.collection(`/projects/${projectId}/transactions/`).where('category', '==', 'Journal').where('from', '==', budget).get().then(query => {
+        query.forEach(docRef => {
+          if (!docRef.get('deleted')) {
+            expenses += parseFloat(docRef.get('amount'))
+          }
+        })
+        return true
+      }),
+      db.collection(`/projects/${projectId}/transactions/`).where('category', '==', 'Income').where('budget', '==', budget).get().then(query => {
+        query.forEach(docRef => {
+          if (!docRef.get('deleted')) {
+            income += parseFloat(docRef.get('amount'))
+          }
+        })
+        return true
+      }),
+      db.collection(`/projects/${projectId}/transactions/`).where('category', '==', 'Journal').where('to', '==', budget).get().then(query => {
+        query.forEach(docRef => {
+          if (!docRef.get('deleted')) {
+            income += parseFloat(docRef.get('amount'))
+          }
+        })
+        return true
+      })]
+      await Promise.all(promises)
+      db.doc(`/projects/${projectId}/accounts/${budget}`).update({ expenses: expenses, income: income })
+    }
+})
+
+exports.onAccountWrite = functions.firestore.document("/projects/{projectId}/accounts/{accountId}")
+.onWrite(async (change, context) => {
+  // Get an object with the current document value.
+  let projectId = context.params.projectId
+  let accountId = context.params.accountId
+  // If the document does not exist, it has been deleted.
+  const newDoc = change.after.exists ? change.after.data() : null;
+
+  // Get an object with the previous document value (for update or delete)
+  const oldDoc = change.before.exists ? change.before.data() : null;
+
+  if (newDoc.type !== 'budget' && oldDoc.type !== 'budget') return true
+
+  let accounts = []
+
+  if (oldDoc === null) {
+    //create
+
+    // make a list of all the accounts to be updated
+    accounts.push(newDoc.category)
+  } else if (oldDoc !== null && newDoc !== null) {
+    //update
+    // make a list of all the accounts to be updated
+    accounts.push(oldDoc.category)
+    accounts.push(newDoc.category)
+  } else {
+    //delete
+    // make a list of all the accounts to be updated
+    accounts.push(oldDoc.account)
+  }
+
+  accounts = accounts.filter((val, index, self) => {
+    return self.indexOf(val) === index
+  })
+
+  console.log('updating accounts: ', accounts)
+
+  // loop through all the accounts to update each one
+    for (var accountKey in accounts) {
+      let account = accounts[accountKey]
+      let expenses = 0, income = 0, budget = 0, val = 0
+      //get all the related transactions and update the expense totals
+      let promises = [db.collection(`/projects/${projectId}/accounts/`).where('type', '==', 'budget').where('category', '==', account).get().then(query => {
+        query.forEach(docRef => {
+          val = docRef.get('budget')
+          budget += parseFloat(val) > 0 ? parseFloat(val) : 0
+          val = docRef.get('expenses')
+          expenses += parseFloat(val) > 0 ? parseFloat(val) : 0
+          // console.log(parseFloat(val) > 0, expenses)
+          val = docRef.get('income')
+          income += parseFloat(val) > 0 ? parseFloat(val) : 0
+        })
+        return true
+      })]
+      await Promise.all(promises)
+      console.log({ budget: budget, expenses: expenses, income: income })
+      db.doc(`/projects/${projectId}/accounts/${account}`).update({ budget: budget, expenses: expenses, income: income })
+    }
 })
 
 exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
