@@ -192,7 +192,7 @@ export const actions = {
           budget.id = doc.id
           budget.budget = budget.budget ? parseFloat(budget.budget) : 0
           budget.expenses = budget.expenses ? parseFloat(budget.expenses) : 0
-          console.log(budget.id, budget.expenses)
+          // console.log(budget.id, budget.expenses)
           budget.income = budget.income ? parseFloat(budget.income) : 0
           budgets[budget.id] = budget
         })

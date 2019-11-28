@@ -1,6 +1,53 @@
 <template>
   <q-page padding>
     <!-- {{budgetCategories}} -->
+    <!-- {{ budget }} -->
+    <q-banner class="bg-info text-center q-mb-md" rounded v-if="budget && budget.type === 'budget'">
+      <span class="q-mr-lg">
+        <b>Category:</b> {{ budgetCategories[budget.category].label }}
+      </span>
+      <span class="q-mr-lg">
+        <b>Budget:</b> {{ budget.label }}
+      </span>
+      <span class="q-mr-lg">
+        <b>Budgeted:</b> <q-badge class="bg-black" :label="'$'+budget.budget.toFixed(2)" />
+      </span>
+      <span :class="{ 'text-negative': parseFloat(budget.budget) - parseFloat(budget.expenses) < 0 }" class=" q-mr-lg">
+        <b>Spent:</b>
+        <q-badge class="bg-red-8" :label="'$'+budget.expenses.toFixed(2)" />
+      </span>
+      <span class="q-mr-lg">
+        <b>Cash in Hand:</b> <q-badge :class="{ 'bg-green-8': (budget.income - budget.expenses) > 0.01, 'bg-red-8': (budget.income - budget.expenses) < -0.01, 'bg-black': (budget.income - budget.expenses) < 0.01 && (budget.income - budget.expenses) > -0.01 }" :label="'$'+(budget.income - budget.expenses).toFixed(2)" />
+      </span>
+    </q-banner>
+    <q-banner class="bg-secondary text-white text-center q-mb-md" rounded v-if="budget && budget.type === 'account'">
+      <span class="q-mr-lg">
+        <b>Account:</b> {{ budget.label }}
+      </span>
+      <span :class="{ 'text-negative': parseFloat(budget.budget) - parseFloat(budget.expenses) < 0 }" class=" q-mr-lg">
+        <b>In:</b> <q-badge class="bg-black" :label="'$'+budget.income.toFixed(2)" />
+      </span>
+      <span :class="{ 'text-negative': parseFloat(budget.budget) - parseFloat(budget.expenses) < 0 }" class=" q-mr-lg">
+        <b>Out:</b> <q-badge class="bg-red-8" :label="'$'+budget.expenses.toFixed(2)" />
+      </span>
+      <span class="q-mr-lg">
+        <b>Balance:</b> <q-badge :class="{ 'bg-green-8': (budget.income - budget.expenses) > 0.01, 'bg-red-8': (budget.income - budget.expenses) < -0.01, 'bg-black': (budget.income - budget.expenses) < 0.01 && (budget.income - budget.expenses) > -0.01 }" :label="'$'+(budget.income - budget.expenses).toFixed(2)" />
+      </span>
+    </q-banner>
+    <q-banner class="bg-secondary text-white text-center q-mb-md" rounded v-if="budget && budget.type === 'category'">
+      <span class="q-mr-lg">
+        <b>Category:</b> {{ budget.label }}
+      </span>
+      <span class="q-mr-lg">
+        <b>Budgeted:</b> <q-badge class="bg-black" :label="'$'+budget.budget.toFixed(2)" />
+      </span>
+      <span :class="{ 'text-negative': parseFloat(budget.budget) - parseFloat(budget.expenses) < 0 }" class=" q-mr-lg">
+        <b>Spent:</b> <q-badge class="bg-red-8" :label="'$'+budget.expenses.toFixed(2)" />
+      </span>
+      <span class="q-mr-lg">
+        <b>Cash in Hand:</b> <q-badge :class="{ 'bg-green-8': (budget.income - budget.expenses) > 0.01, 'bg-red-8': (budget.income - budget.expenses) < -0.01, 'bg-black': (budget.income - budget.expenses) < 0.01 && (budget.income - budget.expenses) > -0.01 }" :label="'$'+(budget.income - budget.expenses).toFixed(2)" />
+      </span>
+    </q-banner>
     <q-table
       class="my-sticky-header-table"
       :data="transactionsFiltered"
@@ -586,6 +633,19 @@ export default {
     pageLabel () {
       let category = this.$route.params.budgetCategory
       return category > '' ? this.budgets[category] ? this.budgets[category].label : this.budgetCategories[category] ? this.budgetCategories[category].label : this.accounts[category] ? this.accounts[category].label : '' : ''
+    },
+    budget () {
+      if (this.$route.params.budgetCategory) {
+        if (this.budgetCategories[this.$route.params.budgetCategory]) {
+          return this.budgetCategories[this.$route.params.budgetCategory]
+        } else if (this.accounts[this.$route.params.budgetCategory]) {
+          return this.accounts[this.$route.params.budgetCategory]
+        } else {
+          return this.budgets[this.$route.params.budgetCategory]
+        }
+      } else {
+        return false
+      }
     }
   },
   watch: {
