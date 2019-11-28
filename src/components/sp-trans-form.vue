@@ -306,6 +306,7 @@ export default {
         category: 'Expense',
         reviewed: false
       }
+      this.transRef = firebase.firestore().collection(`/projects/${this.project.id}/transactions`).doc()
       this.readOnly = false
       let date = new Date()
       console.log(this.newTrans.date, `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`)
