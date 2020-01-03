@@ -926,6 +926,10 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
   let project = await db.doc(`/projects/${projectId}`).get().catch(err => {console.log(err)})
   console.log(`/projects/${projectId}/accounts`)
   let accounts = await db.collection(`/projects/${projectId}/accounts`).get().catch(err => {console.log(err)})
+  let accountDocs = {}
+  await accounts.forEach(account => {
+    accountDocs[account.id] = account.data()
+  })
   console.log(`/projects/${projectId}/transactions`)
   let transactions = await db.collection(`/projects/${projectId}/transactions`).get().catch(err => {console.log(err)})
   // console.log(transactions)
@@ -933,8 +937,40 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
   let index = 1
   transactions.forEach(transaction => {
     let transData = transaction.data()
-    transArray[index] = [project.get('number'), transaction.id, 0, transData.amount, transData.GST, '', '', '', transData.date, transData.type, accounts.docs[transData.budget], transData.cheque, transData.desc, transData.deleted]
-    index++
+    if (transData.category === 'Expense') {
+      let account = accountDocs[transData.budget]
+      if (account.type !== 'account') {
+        let categoryId = account.category
+        let categoryDoc = accountDocs[categoryId]
+        transArray[index] = [project.get('number'), transaction.id, 0, transData.amount, transData.GST, '', '', '', transData.date, transData.type, categoryDoc.label, transData.cheque, transData.desc, transData.deleted]
+        index++
+      } 
+      // else {
+      //   transArray[index] = [project.get('number'), transaction.id, 0, transData.amount, transData.GST, '', '', '', transData.date, transData.type, account.label, transData.cheque, transData.desc, transData.deleted]
+      //   index++
+      // }
+    } else if (transData.category === 'Journal') {
+      console.log(transData, accountDocs[transData.to].type, accountDocs[transData.from].type)
+      if (accountDocs[transData.to].type === 'account' && accountDocs[transData.from].type === 'account') {
+        transArray[index] = [
+          project.get('number'),
+          transaction.id,
+          0,
+          transData.from === 'pettyCash' ? (-1 * parseFloat(transData.amount)) : transData.amount,
+          transData.GST,
+          '',
+          '',
+          '',
+          transData.date,
+          transData.type,
+          'Petty Cash',
+          transData.cheque,
+          transData.desc,
+          transData.deleted
+        ]
+        index++
+      } 
+    }
   })
   console.log(transArray.map(e => e.join(",")).join("\n"))
   res.status(200).send(transArray.map(e => e.join(",")).join("\n"))
