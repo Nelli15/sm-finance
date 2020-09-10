@@ -7,22 +7,70 @@ const routes = [
     path: '/dashboard',
     component: () => import('layouts/dashboardLayout.vue'),
     children: [
-      { path: '', name: 'dashboard', component: () => import('pages/dashboardPage.vue'), beforeEnter: (to, from, next) => isLoggedIn(to, from, next) }
+      {
+        path: '',
+        name: 'dashboard',
+        component: () => import('pages/dashboardPage.vue'),
+        beforeEnter: (to, from, next) => isLoggedIn(to, from, next)
+      }
     ]
   },
   {
     path: '/project/:id',
     component: () => import('layouts/standardLayout.vue'),
     children: [
-      { path: 'summary', name: 'summary', component: () => import('pages/summaryPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) },
-      { path: 'budget', name: 'budget', component: () => import('pages/budgetPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) },
-      { path: 'budget/:budgetCategory', component: () => import('pages/budgetPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) },
-      { path: 'petty', name: 'petty', component: () => import('pages/pettyCashPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) },
-      { path: 'transactions', name: 'transactions', component: () => import('pages/transactionsPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) },
-      { path: 'myTransactions', name: 'myTransactions', component: () => import('pages/myTransactionsPage.vue'), beforeEnter: (to, from, next) => isProjectContributor(to, from, next) },
-      { path: 'transactions/:budgetCategory', component: () => import('pages/transactionsPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) },
-      { path: 'addTransaction', name: 'addTrans', component: () => import('components/sp-trans-form.vue'), beforeEnter: (to, from, next) => isProjectContributor(to, from, next) },
-      { path: 'access', name: 'access', component: () => import('pages/accessPage.vue'), beforeEnter: (to, from, next) => isAdmin(to, from, next) }
+      {
+        path: 'summary',
+        name: 'summary',
+        component: () => import('pages/summaryPage.vue'),
+        beforeEnter: (to, from, next) => isAdmin(to, from, next)
+      },
+      {
+        path: 'budget',
+        name: 'budget',
+        component: () => import('pages/budgetPage.vue'),
+        beforeEnter: (to, from, next) => isAdmin(to, from, next)
+      },
+      {
+        path: 'budget/:budgetCategory',
+        component: () => import('pages/budgetPage.vue'),
+        beforeEnter: (to, from, next) => isAdmin(to, from, next)
+      },
+      {
+        path: 'petty',
+        name: 'petty',
+        component: () => import('pages/pettyCashPage.vue'),
+        beforeEnter: (to, from, next) => isAdmin(to, from, next)
+      },
+      {
+        path: 'transactions',
+        name: 'transactions',
+        component: () => import('pages/transactionsPage.vue'),
+        beforeEnter: (to, from, next) => isAdmin(to, from, next)
+      },
+      {
+        path: 'myTransactions',
+        name: 'myTransactions',
+        component: () => import('pages/myTransactionsPage.vue'),
+        beforeEnter: (to, from, next) => isProjectContributor(to, from, next)
+      },
+      {
+        path: 'transactions/:budgetCategory',
+        component: () => import('pages/transactionsPage.vue'),
+        beforeEnter: (to, from, next) => isAdmin(to, from, next)
+      },
+      {
+        path: 'addTransaction',
+        name: 'addTrans',
+        component: () => import('components/sp-trans-form.vue'),
+        beforeEnter: (to, from, next) => isProjectContributor(to, from, next)
+      },
+      {
+        path: 'access',
+        name: 'access',
+        component: () => import('pages/accessPage.vue'),
+        beforeEnter: (to, from, next) => isAdmin(to, from, next)
+      }
     ]
   },
   {
@@ -43,12 +91,10 @@ const routes = [
 ]
 
 // Always leave this as last one
-if (process.env.MODE !== 'ssr') {
-  routes.push({
-    path: '*',
-    component: () => import('pages/Error404.vue')
-  })
-}
+routes.push({
+  path: '*',
+  component: () => import('pages/Error404.vue')
+})
 
 export default routes
 
@@ -58,7 +104,10 @@ async function isAdmin (to, from, next) {
     setTimeout(async () => isAdmin(to, from, next), 10)
   } else {
     // console.log('user found', auth.state.user.uid)
-    let res = await firebase.firestore().doc(`/projects/${to.params.id}/contributors/${auth.state.user.uid}`).get()
+    let res = await firebase
+      .firestore()
+      .doc(`/projects/${to.params.id}/contributors/${auth.state.user.uid}`)
+      .get()
       .catch(err => {
         console.log(err)
         next('/login')
@@ -78,7 +127,10 @@ async function isProjectContributor (to, from, next) {
     setTimeout(async () => isProjectContributor(to, from, next), 10)
   } else {
     // console.log('user found', auth.state.user.uid)
-    let res = await firebase.firestore().doc(`/projects/${to.params.id}/contributors/${auth.state.user.uid}`).get()
+    let res = await firebase
+      .firestore()
+      .doc(`/projects/${to.params.id}/contributors/${auth.state.user.uid}`)
+      .get()
       .catch(err => {
         console.log(err)
         next('/login')
@@ -86,8 +138,10 @@ async function isProjectContributor (to, from, next) {
     // console.log(res)
     if (res) {
       if (!res.exists) next('/login')
-      else if (res.get('permission') !== 'admin' && res.get('permission') !== 'contributor') next('/dashboard')
-      else next()
+      else if (
+        res.get('permission') !== 'admin' &&
+        res.get('permission') !== 'contributor'
+      ) { next('/dashboard') } else next()
     }
   }
 }
@@ -102,7 +156,7 @@ async function isLoggedIn (to, from, next) {
   //   if (!auth.state.user.uid) next('/login')
   //   else next()
   // }
-  firebase.auth().onAuthStateChanged((user) => {
+  firebase.auth().onAuthStateChanged(user => {
     if (user) {
       next()
     } else {

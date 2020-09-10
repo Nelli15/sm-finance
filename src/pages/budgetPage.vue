@@ -5,13 +5,15 @@
       :data="budgetsFiltered"
       :columns="columns"
       title="Budget"
-      :rows-per-page-options="[5,6,7,8,9,10,15,20,50,100]"
+      :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
       row-key="name"
       :key="tableKey"
       :filter="filter"
       rows-per-page-label="Budgets per page:"
       :pagination.sync="pagination"
-      @update:pagination="$q.localStorage.set('budgetTableRows', $event.rowsPerPage)"
+      @update:pagination="
+        $q.localStorage.set('budgetTableRows', $event.rowsPerPage)
+      "
       dense
     >
       <template v-slot:top="props">
@@ -22,7 +24,8 @@
         <!-- <div v-if="$q.screen.gt.xs" class="col">
           <q-toggle v-for="column in columns" v-model="visibleColumns" :val="column.name" :label="column.label" :key="column.name" />
         </div>
- -->    <!-- <q-select
+ -->
+        <!-- <q-select
           v-model="visibleColumns"
           multiple
           borderless
@@ -36,14 +39,22 @@
           style="min-width: 150px"
         /> -->
 
-        <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+        <q-input
+          borderless
+          dense
+          debounce="300"
+          v-model="filter"
+          placeholder="Search"
+        >
           <template v-slot:append>
             <q-icon name="search" />
           </template>
         </q-input>
 
         <q-btn
-          flat round dense
+          flat
+          round
+          dense
           :icon="props.inFullscreen ? 'fullscreen_exit' : 'fullscreen'"
           @click="props.toggleFullscreen"
           class="q-ml-md"
@@ -56,20 +67,47 @@
             <!-- {{budgetCategories}}{{props.row.id}} -->
             {{ budgetCategories[props.row.category].label }}
             <q-popup-edit v-model="props.row.category">
-              <q-select :value="props.row.category > '' ? budgets[props.row.category] ? budgets[props.row.category].label : budgetCategories[props.row.category].label: ''" @input="updateBudget(props.row.id, 'category', $event.id)" dense autofocus label="Budget Category" :options="budgetCategoryOptions" />
+              <q-select
+                :value="
+                  props.row.category > ''
+                    ? budgets[props.row.category]
+                      ? budgets[props.row.category].label
+                      : budgetCategories[props.row.category].label
+                    : ''
+                "
+                @input="updateBudget(props.row.id, 'category', $event.id)"
+                dense
+                autofocus
+                label="Budget Category"
+                :options="budgetCategoryOptions"
+              />
             </q-popup-edit>
-            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-              <q-icon name="edit"/>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+            >
+              <q-icon name="edit" />
               Edit
             </q-tooltip>
           </q-td>
           <q-td key="label" :props="props" class="cursor-pointer">
             {{ props.row.label }}
             <q-popup-edit v-model="props.row.label">
-              <q-input :value="props.row.label > '' ? props.row.label : ''" @input="updateBudget(props.row.id, 'label', $event)" dense autofocus label="Budget Label" />
+              <q-input
+                :value="props.row.label > '' ? props.row.label : ''"
+                @input="updateBudget(props.row.id, 'label', $event)"
+                dense
+                autofocus
+                label="Budget Label"
+              />
             </q-popup-edit>
-            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-              <q-icon name="edit"/>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+            >
+              <q-icon name="edit" />
               Edit
             </q-tooltip>
           </q-td>
@@ -77,55 +115,100 @@
             ${{ parseFloat(props.row.budget).toFixed(2) }}
             <q-popup-edit v-model="props.row.budget">
               <!-- <q-input v-model="props.row.budget" dense autofocus label="Budgeted Amount"> -->
-              <q-input :value="props.row.budget > '' ? props.row.budget : ''" @input="updateBudget(props.row.id, 'budget', $event)" dense autofocus label="Budgeted Amount">
+              <q-input
+                :value="props.row.budget > '' ? props.row.budget : ''"
+                @input="updateBudget(props.row.id, 'budget', $event)"
+                dense
+                autofocus
+                label="Budgeted Amount"
+              >
                 <template v-slot:prepend>
                   $
                 </template>
               </q-input>
             </q-popup-edit>
-            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-              <q-icon name="edit"/>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+            >
+              <q-icon name="edit" />
               Edit
             </q-tooltip>
           </q-td>
-          <q-td key="spent" :props="props" :class="{ 'text-negative': parseFloat(props.row.budget) - parseFloat(props.row.expenses) < 0 }">
+          <q-td
+            key="spent"
+            :props="props"
+            :class="{
+              'text-negative':
+                parseFloat(props.row.budget) - parseFloat(props.row.expenses) <
+                0
+            }"
+          >
             ${{ props.row.expenses.toFixed(2) }}
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
           </q-td>
           <q-td key="remaining" :props="props">
-            <q-badge :class="{ 'bg-green-8': (props.row.income - props.row.expenses) > 0.01, 'bg-red-8': (props.row.income - props.row.expenses) < -0.01, 'bg-black': (props.row.income - props.row.expenses) < 0.01 && (props.row.income - props.row.expenses) > -0.01 }" :label="'$'+(props.row.income - props.row.expenses).toFixed(2)" />
+            <q-badge
+              :class="{
+                'bg-green-8': props.row.income - props.row.expenses > 0.01,
+                'bg-red-8': props.row.income - props.row.expenses < -0.01,
+                'bg-black':
+                  props.row.income - props.row.expenses < 0.01 &&
+                  props.row.income - props.row.expenses > -0.01
+              }"
+              :label="'$' + (props.row.income - props.row.expenses).toFixed(2)"
+            />
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
           </q-td>
           <q-td key="buttons" :props="props">
-            <q-btn :to="{ name: 'transactions', params: { budgetCategory: props.row.id } }" dense class="q-mr-sm">
+            <q-btn
+              :to="{
+                name: 'transactions',
+                params: { budgetCategory: props.row.id }
+              }"
+              dense
+              class="q-mr-sm"
+            >
               Transactions
               <q-tooltip content-class="bg-accent text-black">
                 View this Budgets Transactions
               </q-tooltip>
             </q-btn>
             <q-btn v-if="props.row.inUse" dense color="negative">
-              <q-icon name="delete_forever"/>
+              <q-icon name="delete_forever" />
               <q-tooltip content-class="bg-accent text-black">
                 Cannot Delete Budget while in use
               </q-tooltip>
             </q-btn>
-            <sp-delete-btn dense v-if="!props.row.inUse" :docRef="`/projects/${project.id}/transactions/${props.row.id}`"/>
+            <sp-delete-btn
+              dense
+              v-if="!props.row.inUse"
+              :docRef="`/projects/${project.id}/transactions/${props.row.id}`"
+            />
           </q-td>
         </q-tr>
       </template>
     </q-table>
-    <q-page-sticky position="bottom-left" :offset="[18, 18]" style="z-index:100">
+    <q-page-sticky
+      position="bottom-left"
+      :offset="[18, 18]"
+      style="z-index:100"
+    >
       <q-btn fab icon="add" color="primary" direction="up">
         <q-tooltip content-class="bg-accent text-black">
           Add Account
         </q-tooltip>
         <q-menu ref="addBudgetMenu" persistent>
           <!-- <q-scroll-area> -->
-          <sp-budget-form :projectId="$route.params.id" @onSubmit="$refs.addBudgetMenu.hide()"/>
+          <sp-budget-form
+            :projectId="$route.params.id"
+            @onSubmit="$refs.addBudgetMenu.hide()"
+          />
           <!-- </q-scroll-area> -->
         </q-menu>
       </q-btn>
@@ -140,21 +223,58 @@ import firebase from 'firebase/app'
 require('firebase/firestore')
 
 const columns = [
-  { name: 'category', align: 'left', label: 'Category', field: 'category', sortable: true },
-  { name: 'label', align: 'left', label: 'Label', field: 'label', sortable: true },
-  { name: 'budgeted', align: 'center', label: 'Budgeted (AUD)', field: 'budgeted', sortable: true },
-  { name: 'spent', align: 'center', label: 'Spent (AUD)', field: 'spent', sortable: true },
-  { name: 'remaining', align: 'center', label: 'Cash in Hand (AUD)', field: 'remaining', sortable: true },
+  {
+    name: 'category',
+    align: 'left',
+    label: 'Category',
+    field: 'category',
+    sortable: true
+  },
+  {
+    name: 'label',
+    align: 'left',
+    label: 'Label',
+    field: 'label',
+    sortable: true
+  },
+  {
+    name: 'budgeted',
+    align: 'center',
+    label: 'Budgeted (AUD)',
+    field: 'budgeted',
+    sortable: true
+  },
+  {
+    name: 'spent',
+    align: 'center',
+    label: 'Spent (AUD)',
+    field: 'spent',
+    sortable: true
+  },
+  {
+    name: 'remaining',
+    align: 'center',
+    label: 'Cash in Hand (AUD)',
+    field: 'remaining',
+    sortable: true
+  },
   { name: 'buttons', label: 'Actions', field: 'buttons', align: 'right' }
 ]
 
 export default {
-  data () {
+  data() {
     return {
       // data,
       columns,
       filter: '',
-      visibleColumns: ['category', 'name', 'budgeted', 'spent', 'remaining', 'actions'],
+      visibleColumns: [
+        'category',
+        'name',
+        'budgeted',
+        'spent',
+        'remaining',
+        'actions'
+      ],
       pagination: {
         sortBy: 'label',
         descending: false,
@@ -164,20 +284,30 @@ export default {
       }
     }
   },
-  created () {
+  created() {
     // this.$store.dispatch('fetchTransactions', this.$route.params.id)
     // this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    // this.$store.dispatch('fetchProject', { projectId: this.$route.params.id, uid: this.user.uid })
+    // this.$store.dispatch('fetchTransactions', this.$route.params.id)
+    this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
+    this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    // this.$store.dispatch('fetchAccounts', this.$route.params.id)
+    // this.$store.dispatch('fetchContributors', this.$route.params.id)
+    // this.$store.dispatch('fetchInvites', this.$route.params.id)
     this.updateBudget = debounce(this.updateBudget, 1000)
-    this.pagination.rowsPerPage = this.$q.localStorage.getItem('budgetTableRows')
+    this.pagination.rowsPerPage = this.$q.localStorage.getItem(
+      'budgetTableRows'
+    )
   },
   methods: {
-    ...mapActions([
-      'updateBudgetByKey'
-    ]),
-    updateBudget (budgetId, key, val) {
+    ...mapActions(['updateBudgetByKey']),
+    updateBudget(budgetId, key, val) {
       // console.log(budgetId, key, val)
       this.updateBudgetByKey({ budgetId, key, val })
-      firebase.firestore().collection(`/projects/${this.project.id}/accounts`).doc(budgetId)
+      firebase
+        .firestore()
+        .collection(`/projects/${this.project.id}/accounts`)
+        .doc(budgetId)
         .update({ [key]: val })
         .then(() => {
           // console.log('updated')
@@ -187,7 +317,8 @@ export default {
             icon: 'cloud_done',
             message: 'Budget: Updated Successfully'
           })
-        }).catch(err => {
+        })
+        .catch(err => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
@@ -207,13 +338,20 @@ export default {
       'budgetOptions',
       'budgetCategoryOptions'
     ]),
-    budgetsFiltered () {
+    budgetsFiltered() {
       if (this.$route.params.budgetCategory) {
         let budgets = []
         // console.log(this.budgets)
         for (var key in this.budgets) {
-          console.log(this.$route.params.budgetCategory, '===', this.budgets, key)
-          if (this.$route.params.budgetCategory === this.budgets[key].category) {
+          console.log(
+            this.$route.params.budgetCategory,
+            '===',
+            this.budgets,
+            key
+          )
+          if (
+            this.$route.params.budgetCategory === this.budgets[key].category
+          ) {
             budgets.push(this.budgets[key])
           }
         }

@@ -2,7 +2,7 @@
   <q-page padding>
     <!-- DASHBOARD -->
     <!-- {{ projects }} -->
-   <!--  <q-banner class="bg-secondary text-white text-center" rounded v-for="project in projects" :key="project.id" style="max-width:250px">
+    <!--  <q-banner class="bg-secondary text-white text-center" rounded v-for="project in projects" :key="project.id" style="max-width:250px">
       <div class="text-h4">{{ project.name }}</div>
       <div class="text-subtitle1  q-pb-md">{{ project.number }}</div>
       <div class="text-h6">{{ project.participants }} Participants</div>
@@ -17,11 +17,15 @@
       card-style="height:100vh;"
     >
       <template v-slot:top>
-        <div class="text-h4"> Projects </div>
+        <div class="text-h4">Projects</div>
         <q-space />
-        <q-btn :icon="!grid?'o_view_module':'view_headline'" @click="grid = !grid" dense>
+        <q-btn
+          :icon="!grid ? 'o_view_module' : 'view_headline'"
+          @click="grid = !grid"
+          dense
+        >
           <q-tooltip>
-            {{grid?'View List':'View Grid'}}
+            {{ grid ? 'View List' : 'View Grid' }}
           </q-tooltip>
         </q-btn>
       </template>
@@ -33,27 +37,57 @@
               <q-input v-model="props.row.category" dense autofocus counter label="Budget Category" />
             </q-popup-edit> -->
           </q-td>
-          <q-td key="number" :props="props" v-if="props.row.permission === 'admin'">
+          <q-td
+            key="number"
+            :props="props"
+            v-if="props.row.permission === 'admin'"
+          >
             {{ props.row.number }}
           </q-td>
-          <q-td key="participants" :props="props" v-if="props.row.permission === 'admin'">
+          <q-td
+            key="participants"
+            :props="props"
+            v-if="props.row.permission === 'admin'"
+          >
             {{ props.row.participants }} Participants
           </q-td>
-          <q-td key="currency" :props="props" v-if="props.row.permission === 'admin'">
+          <q-td
+            key="currency"
+            :props="props"
+            v-if="props.row.permission === 'admin'"
+          >
             Project Currency ({{ props.row.currency }})
           </q-td>
           <q-td key="export" :props="props">
-            <q-btn icon="view_list" label="Open" @click="onProjectOpen(props.row.id, props.row.permission)">
+            <q-btn
+              icon="view_list"
+              label="Open"
+              @click="onProjectOpen(props.row.id, props.row.permission)"
+            >
               <q-tooltip>
                 Open the Project
               </q-tooltip>
             </q-btn>
-            <q-btn icon="import_export" label="Export CSV" @click.stop="onCSVExport(props.row.id)" :loading="exportCSVLoading" :disabled="exportCSVLoading" v-if="props.row.permission === 'admin'">
+            <q-btn
+              icon="import_export"
+              label="Export CSV"
+              @click.stop="onCSVExport(props.row.id)"
+              :loading="exportCSVLoading"
+              :disabled="exportCSVLoading"
+              v-if="props.row.permission === 'admin'"
+            >
               <q-tooltip>
                 Export Transactions in a .csv file
               </q-tooltip>
             </q-btn>
-            <q-btn icon="import_export" label="Export Receipts" @click.stop="onZipExport(props.row.id)" :loading="exportZipLoading" :disabled="exportZipLoading" v-if="props.row.permission === 'admin'">
+            <q-btn
+              icon="import_export"
+              label="Export Receipts"
+              @click.stop="onZipExport(props.row.id)"
+              :loading="exportZipLoading"
+              :disabled="exportZipLoading"
+              v-if="props.row.permission === 'admin'"
+            >
               <q-tooltip>
                 Export Receipts images in a .zip file
               </q-tooltip>
@@ -62,15 +96,24 @@
         </q-tr>
       </template>
       <template v-slot:item="props">
-        <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3 grid-style-transition">
-          <q-card class="bg-secondary text-white cursor-pointer" @click="onProjectOpen(props.row.id, props.row.permission)">
+        <div
+          class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3 grid-style-transition"
+        >
+          <q-card
+            class="bg-secondary text-white cursor-pointer"
+            @click="onProjectOpen(props.row.id, props.row.permission)"
+          >
             <q-card-section>
               <q-item>
                 <q-item-section>
-                  <q-item-label class="text-h6">{{ props.row.name }}</q-item-label>
+                  <q-item-label class="text-h6">{{
+                    props.row.name
+                  }}</q-item-label>
                 </q-item-section>
                 <q-item-section side v-if="props.row.permission === 'admin'">
-                  <q-item-label class="text-white">({{ props.row.number }})</q-item-label>
+                  <q-item-label class="text-white"
+                    >({{ props.row.number }})</q-item-label
+                  >
                 </q-item-section>
               </q-item>
             </q-card-section>
@@ -81,7 +124,9 @@
                   <q-item-label>Participants </q-item-label>
                 </q-item-section>
                 <q-item-section side v-if="props.row.permission === 'admin'">
-                  <q-item-label class="text-white">{{ props.row.participants }}</q-item-label>
+                  <q-item-label class="text-white">{{
+                    props.row.participants
+                  }}</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item>
@@ -89,23 +134,50 @@
                   <q-item-label>Currency</q-item-label>
                 </q-item-section>
                 <q-item-section side v-if="props.row.permission === 'admin'">
-                  <q-item-label class="text-white">{{ props.row.currency }}</q-item-label>
+                  <q-item-label class="text-white">{{
+                    props.row.currency
+                  }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
             <q-separator />
             <q-card-actions align="center" class="bg-secondary text-black">
-              <q-btn icon="import_export" label="Add Transaction" style="width:100%" class="bg-white text-black" v-if="props.row.permission === 'contributor'">
+              <q-btn
+                icon="import_export"
+                label="Add Transaction"
+                style="width:100%"
+                class="bg-white text-black"
+                v-if="props.row.permission === 'contributor'"
+              >
                 <q-tooltip>
                   Export transactions in a .csv file
                 </q-tooltip>
               </q-btn>
-              <q-btn icon="import_export" label="Export CSV" @click.stop="onCSVExport(props.row.id)" :loading="exportCSVLoading" :disabled="exportCSVLoading" style="width:45%" class="bg-white text-black" v-if="props.row.permission === 'admin'">
+              <q-btn
+                icon="import_export"
+                label="Export CSV"
+                @click.stop="onCSVExport(props.row.id)"
+                :loading="exportCSVLoading"
+                :disabled="exportCSVLoading"
+                style="width:45%"
+                class="bg-white text-black"
+                v-if="props.row.permission === 'admin'"
+              >
                 <q-tooltip>
                   Export transactions in a .csv file
                 </q-tooltip>
               </q-btn>
-              <q-btn icon="import_export" label="Export Zip" @click.stop="onZipExport(props.row.id)" :loading="exportZipLoading" :disabled="exportZipLoading" style="width:45%" class="bg-white text-black" v-if="props.row.permission === 'admin'">
+              <q-btn
+                icon="import_export"
+                label="Export Zip"
+                @click.stop="onZipExport(props.row.id)"
+                :loading="exportZipLoading"
+                :percentage="loading"
+                dark-percentage
+                style="width:45%"
+                class="bg-white text-black"
+                v-if="props.row.permission === 'admin'"
+              >
                 <q-tooltip>
                   Export receipt images in a .zip file
                 </q-tooltip>
@@ -121,8 +193,12 @@
 <script>
 // import firebase from 'firebase/app'
 // require('firebase/firestore')
+import { $firestore, $storage } from './../scripts/firebase.js'
 import { mapGetters } from 'vuex'
 import { saveAs } from 'file-saver'
+// const fs = require('fs')
+// const downloadsFolder = require('downloads-folder')
+import JSZip from 'JSZip'
 
 const columns = [
   { name: 'name', align: 'left', label: 'Project', field: 'name' },
@@ -133,12 +209,14 @@ const columns = [
 ]
 
 export default {
-  data () {
+  data() {
     return {
       columns,
       grid: true,
       exportZipLoading: false,
-      exportCSVLoading: false
+      exportCSVLoading: false,
+      loading: 0
+      // blob: {}
       // project: {
       //   name: 'Gold Coast Schoolies',
       //   id: '12345',
@@ -147,41 +225,70 @@ export default {
       // }
     }
   },
-  created () {
+  created() {
     // this.$store.dispatch('fetchProjects', this.$route.params.id)
   },
   methods: {
-    onProjectOpen (projectId, permission) {
+    onProjectOpen(projectId, permission) {
       if (permission === 'contributor') {
         this.$router.push(`/project/${projectId}/addTransaction`)
       } else {
         this.$router.push(`/project/${projectId}/summary`)
       }
     },
-    async onZipExport (projectId) {
+    async onZipExport(projectId) {
       this.exportZipLoading = true
+      this.loading = 0
       // console.log(projectId, this.idToken)
       if (projectId > '') {
+        // var storageRef = $storage.ref()
+        // var projectRef = storageRef
+        //   .child('projects')
+        //   .child(projectId)
+        //   .child('reciepts')
+        // const transactions = await $firestore
+        //   .collection(`/projects/${projectId}/transactions`)
+        //   .where('receipt', '==', true)
+        //   .get()
+        // transactions.forEach(async trans => {
+        //   const fileName = `${projectId}-${trans.id}.jpg`
+        //   const url = await projectRef.child(fileName).getDownloadURL()
+        //   console.log(url)
+        // })
         const src = `/downloadReceiptsZip/?projectId=${projectId}`
         const options = {
           headers: {
             Authorization: `Bearer ${this.idToken}`
           }
         }
-        let res = await fetch(src, options)
-          .catch(() => {
-            console.log('error occured')
-            this.exportZipLoading = false
-            this.$q.notify({
-              color: 'negative',
-              textColor: 'white',
-              icon: 'error',
-              message: 'Oops, Something went wrong!'
-            })
+        let res = await fetch(src, options).catch(() => {
+          console.log('error occured')
+          this.exportZipLoading = false
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
           })
-        console.log(res.status)
-        let blob = await res.blob()
-        // console.log(blob)
+        })
+        console.log(res.status, res)
+        let links = await res.json()
+        let zip = new JSZip()
+        let counter = 0
+        for (var link in links) {
+          counter++
+          this.loading = Math.round((counter / Object.keys(links).length) * 100)
+          console.log('Getting Images: ' + this.loading + '%')
+          const res = await fetch(links[link][0], {
+            // mode: 'no-cors',
+            // headers: { 'Access-Control-Allow-Origin': '*' },
+            // credentials: 'omit'
+          })
+          // console.log(await res.blob())
+          zip.file(link, await res.blob())
+        }
+        console.log('Getting Images: ' + this.loading + '%')
+        const blob = await zip.generateAsync({ type: 'blob' })
         saveAs(blob, 'receipts.zip')
         this.exportZipLoading = false
         this.$q.notify({
@@ -192,7 +299,7 @@ export default {
         })
       }
     },
-    async onCSVExport (projectId) {
+    async onCSVExport(projectId) {
       this.exportCSVLoading = true
       // console.log(projectId, this.idToken)
       if (projectId > '') {
@@ -202,17 +309,16 @@ export default {
             Authorization: `Bearer ${this.idToken}`
           }
         }
-        let res = await fetch(src, options)
-          .catch(() => {
-            console.log('error occured')
-            this.exportCSVLoading = false
-            this.$q.notify({
-              color: 'negative',
-              textColor: 'white',
-              icon: 'error',
-              message: 'Oops, Something went wrong!'
-            })
+        let res = await fetch(src, options).catch(() => {
+          console.log('error occured')
+          this.exportCSVLoading = false
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
           })
+        })
         console.log(res.status)
         let blob = await res.blob()
         // console.log(blob)
@@ -228,10 +334,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
-      'projects',
-      'idToken'
-    ])
+    ...mapGetters(['projects', 'idToken'])
   }
 }
 </script>

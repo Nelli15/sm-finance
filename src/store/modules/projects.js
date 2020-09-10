@@ -1,5 +1,4 @@
-import firebase from 'firebase/app'
-require('firebase/firestore')
+import { $firestore } from './../../scripts/firebase.js'
 import Vue from 'vue'
 
 function waitForUid (payload, rootState, dispatch) {
@@ -15,13 +14,13 @@ function waitForUid (payload, rootState, dispatch) {
 
 const state = {
   project: {},
-  projects: [],
+  projects: {},
   projectsTableKey: 1
 }
 
 export const getters = {
   project: state => state.project,
-  projects: state => state.projects,
+  projects: state => toArray(state.projects),
   isAdmin: state => {
     if (state.project) {
       if (state.project.permissions) {
@@ -48,14 +47,22 @@ export const getters = {
           // console.log(getters.budgets)
           // console.log(state.project.permissions.budgets[budget])
           if (getters.budgets[state.project.permissions.budgets[budget]]) {
-            budgets.push(getters.budgets[state.project.permissions.budgets[budget]])
+            budgets.push(
+              getters.budgets[state.project.permissions.budgets[budget]]
+            )
           }
         }
         for (budget in state.project.permissions.budgets) {
           // console.log(getters.budgetCategories)
           // console.log(state.project.permissions.budgets[budget])
-          if (getters.budgetCategories[state.project.permissions.budgets[budget]]) {
-            budgets.push(getters.budgetCategories[state.project.permissions.budgets[budget]])
+          if (
+            getters.budgetCategories[state.project.permissions.budgets[budget]]
+          ) {
+            budgets.push(
+              getters.budgetCategories[
+                state.project.permissions.budgets[budget]
+              ]
+            )
           }
         }
         return budgets
@@ -80,6 +87,12 @@ export const mutations = {
   },
   updateProjects (state, payload) {
     Vue.set(state.projects, payload.index, payload.project)
+  },
+  setProjectKey (state, payload) {
+    Vue.set(state.project, payload.key, payload.val)
+    if (state.projects[payload.projectId]) {
+      Vue.set(state.projects[payload.projectId], payload.key, payload.val)
+    }
   }
 }
 
@@ -87,7 +100,8 @@ export const actions = {
   fetchProject ({ dispatch, commit, rootState }, payload) {
     console.log('fetching project')
     let project = {}
-    firebase.firestore().doc(`/projects/${payload.projectId}`)
+    $firestore
+      .doc(`/projects/${payload.projectId}`)
       .onSnapshot(async projectSnap => {
         project = projectSnap.data()
         project.id = projectSnap.id
@@ -98,45 +112,35 @@ export const actions = {
   },
   fetchProjects ({ commit }, payload) {
     // console.log(payload)
-    firebase.firestore().collectionGroup('contributors').where('uid', '==', payload)
+    $firestore
+      .collectionGroup('contributors')
+      .where('uid', '==', payload)
       .onSnapshot(async projectsSnap => {
-        // console.log('# projects', projectsSnap.size)
-        let projects = [], project = {}
+        let projects = [],
+          project = {}
         var promises = projectsSnap.docs.map(userDoc => {
-          return new Promise((resolve, reject) => {
-            userDoc.ref.parent.parent.onSnapshot(projectDoc => {
-              // console.log(projectDoc)
-              project = projectDoc.data()
-              project.id = projectDoc.id
-              project.permission = userDoc.data().permission
-              // if (project.permission === 'contributor') {
-
-              // project.budgets = userDoc.data().budgets
-              // }
-              // console.log(project)
-              if (state.projects.findIndex(x => x.id === project.id) !== -1) {
-                commit('updateProjects', { index: state.projects.findIndex(x => x.id === project.id), project })
-                resolve()
-              } else {
-                projects.push(project)
-                resolve()
-              }
+          userDoc.ref.parent.parent.onSnapshot(projectDoc => {
+            project = projectDoc.data()
+            project.id = projectDoc.id
+            project.permission = userDoc.data().permission
+            commit('updateProjects', {
+              index: project.id,
+              project
             })
           })
         })
-        await Promise.all(promises)
-        console.log(projects.length)
-        if (projects.length > 0) {
-          commit('setProjects', projects)
-        }
       })
   },
   fetchPermissions ({ commit }, payload) {
     // console.log(payload)
-    firebase.firestore().doc(`/projects/${payload.projectId}/contributors/${payload.uid}`)
+    $firestore
+      .doc(`/projects/${payload.projectId}/contributors/${payload.uid}`)
       .onSnapshot(async contributorSnap => {
         commit('setPermissions', contributorSnap.data())
       })
+  },
+  updateProjectByKey ({ commit }, payload) {
+    commit('setProjectKey', payload)
   }
 }
 
@@ -145,4 +149,14 @@ export default {
   getters,
   mutations,
   actions
+}
+
+function toArray (object) {
+  if (!object) {
+    return []
+  }
+  if (Object.keys(object).length <= 0) {
+    return []
+  }
+  return Object.keys(object).map(i => object[i])
 }

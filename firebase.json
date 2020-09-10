@@ -1,22 +1,36 @@
 {
   "hosting": {
-    "public": "dist/spa",
+    "public": "dist/pwa",
+    "site": "sp-finance",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": [ {
-      "source": "/receipt",
-      "function": "getReceipt"
+    "rewrites": [{
+        "source": "/receipt",
+        "function": "getReceipt"
+      },
+      {
+        "source": "/downloadReceiptsZip",
+        "function": "downloadReceiptsZip"
+      },
+      {
+        "source": "/downloadCSV",
+        "function": "downloadCSV"
+      }
+    ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
     },
-    {
-      "source": "/downloadReceiptsZip",
-      "function": "downloadReceiptsZip"
+    "firestore": {
+      "port": 8080
     },
-    {
-      "source": "/downloadCSV",
-      "function": "downloadCSV"
-    }]
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    }
   }
 }

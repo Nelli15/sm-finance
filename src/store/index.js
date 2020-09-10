@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import firebase from '../scripts/firebase'
+import { $auth, $firestore } from '../scripts/firebase'
 import auth from './modules/auth.js'
 import petty from './modules/petty'
 import projects from './modules/projects'
@@ -31,24 +31,29 @@ export default function (/* { ssrContext } */) {
     strict: process.env.DEV
   })
 
-  firebase.auth().onAuthStateChanged((user) => {
+  $auth.onAuthStateChanged(user => {
     // console.log(Store)
     if (user) {
       // console.log(user)
       const { displayName, email, uid, photoURL } = user
       const cleanedUser = { displayName, email, photoURL, uid }
       Store.commit('setUser', cleanedUser)
-      firebase.auth().currentUser.getIdToken(/* forceRefresh */ true)
-        .then((idToken) => {
-          Store.commit('setIdToken', idToken)
-          if (Store.state.projects.project) {
-            Store.dispatch('fetchTransactions', Store.state.projects.project.id)
-          }
-          Store.commit('setUserLoadStatus', true)
-        })
-      firebase.$db.doc(`/users/${cleanedUser.uid}`).onSnapshot(userSnap => {
-        if ((cleanedUser.displayName !== user.name) || (cleanedUser.photoURL !== user.photoURL)) {
-          firebase.$db.doc(`/users/${cleanedUser.uid}`).update({ photoURL: cleanedUser.photoURL, name: cleanedUser.displayName })
+      $auth.currentUser.getIdToken(/* forceRefresh */ true).then(idToken => {
+        Store.commit('setIdToken', idToken)
+        if (Store.state.projects.project) {
+          Store.dispatch('fetchTransactions', Store.state.projects.project.id)
+        }
+        Store.commit('setUserLoadStatus', true)
+      })
+      $firestore.doc(`/users/${cleanedUser.uid}`).onSnapshot(userSnap => {
+        if (
+          cleanedUser.displayName !== user.name ||
+          cleanedUser.photoURL !== user.photoURL
+        ) {
+          $firestore.doc(`/users/${cleanedUser.uid}`).update({
+            photoURL: cleanedUser.photoURL,
+            name: cleanedUser.displayName
+          })
         }
       })
     } else {
