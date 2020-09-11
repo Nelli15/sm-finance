@@ -1,10 +1,19 @@
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
+const environment = require('./src/environments/environment.js')
+
+const context = {
+  admin,
+  environment
+}
+
+//import functions
+import updateCatAmounts from './src/modules/dist/updateCatAmounts.js'
+
 // const validator = require('validator');
 const nodemailer = require('nodemailer')
 const cors = require('cors')({ origin: true })
 const serviceAccount = require('./sp-finance-firebase-adminsdk-6mhpx-7ad8d7a061.json')
-const archiver = require('archiver')
 
 const spawn = require('child-process-promise').spawn
 const path = require('path')
@@ -892,69 +901,7 @@ exports.onTransactionWrite = functions.firestore
 // TODO: work out what this does
 exports.onAccountWrite = functions.firestore
   .document('/projects/{projectId}/accounts/{accountId}')
-  .onWrite(async (change, context) => {
-    //
-
-    // Get an object with the current document value.
-    let projectId = context.params.projectId
-    let accountId = context.params.accountId
-
-    // If the document does not exist, it has been deleted.
-    const newDoc = change.after.exists ? change.after.data() : null
-
-    // Get an object with the previous document value (for update or delete)
-    const oldDoc = change.before.exists ? change.before.data() : null
-
-    // nothing to do if the account is of type account or category so return
-    if (newDoc.type !== 'budget') {
-      return true
-    }
-
-    // get the relevant accountcategories that need updating
-
-    //     // accounts = accounts.filter((val, index, self) => {
-    //     //   return self.indexOf(val) === index
-    //     // })
-
-    console.log('updating account Category Totals: ', accounts)
-
-    // loop through all the accounts to update each one
-    for (var accountKey in accounts) {
-      let account = accounts[accountKey]
-      let expenses = 0,
-        income = 0,
-        budget = 0,
-        val = 0
-
-      // get all the related transactions and update the expense totals
-      let promises = [
-        db
-          .collection(`/projects/${projectId}/accounts/`)
-          .where('type', '==', 'budget')
-          .where('category', '==', account)
-          .get()
-          .then(query => {
-            query.forEach(docRef => {
-              val = docRef.get('budget')
-              budget += parseFloat(val) > 0 ? parseFloat(val) : 0
-              val = docRef.get('expenses')
-              expenses += parseFloat(val) > 0 ? parseFloat(val) : 0
-              // console.log(parseFloat(val) > 0, expenses)
-              val = docRef.get('income')
-              income += parseFloat(val) > 0 ? parseFloat(val) : 0
-            })
-            return true
-          })
-      ]
-      await Promise.all(promises)
-      // console.log({ budget: budget, expenses: expenses, income: income })
-      db.doc(`/projects/${projectId}/accounts/${account}`).update({
-        budget: budget,
-        expenses: expenses,
-        income: income
-      })
-    }
-  })
+  .onWrite(updateCatAmounts(context))
 
 // doesn't work due to issue with max size of transfer, 10MB i think
 exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
@@ -1015,25 +962,6 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
     .get()
     .then(async snap => {
       if (snap.exists) {
-        // var id = req.query.id
-        // console.log('user is a contributor', 'getting file')
-
-        // var archive = archiver('zip')
-
-        // archive.on('error', function (err) {
-        //   res.status(500).send({ error: err.message })
-        // })
-
-        // // on stream closed we can end the request
-        // archive.on('end', function () {
-        //   console.log('Archive wrote %d bytes', archive.pointer())
-        // })
-
-        // // set the archive name
-        // res.attachment('download.zip')
-
-        // // this is the streaming magic
-        // archive.pipe(res)
         let d = new Date()
         let date = d.setHours(d.getHours() + 1)
 
