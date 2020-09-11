@@ -237,7 +237,10 @@ export default {
       }
     },
     async onZipExport(projectId) {
-      this.exportZipLoading = true
+      // this.exportZipLoading = true
+      this.$q.loading.show({
+        message: 'Preparing Download'
+      })
       this.loading = 0
       // console.log(projectId, this.idToken)
       if (projectId > '') {
@@ -271,14 +274,22 @@ export default {
             message: 'Oops, Something went wrong!'
           })
         })
-        console.log(res.status, res)
+        // console.log(res.status, res)
         let links = await res.json()
         let zip = new JSZip()
         let counter = 0
         for (var link in links) {
           counter++
-          this.loading = Math.round((counter / Object.keys(links).length) * 100)
-          console.log('Getting Images: ' + this.loading + '%')
+          this.loading = ((counter / Object.keys(links).length) * 100).toFixed(
+            2
+          )
+          this.$q.loading.show({
+            message: `Downloading Receipts: ${counter} of ${
+              Object.keys(links).length
+            } - ${this.loading}%`,
+            delay: 0
+          })
+          // console.log('Getting Images: ' + this.loading + '%')
           const res = await fetch(links[link][0], {
             // mode: 'no-cors',
             // headers: { 'Access-Control-Allow-Origin': '*' },
@@ -287,10 +298,33 @@ export default {
           // console.log(await res.blob())
           zip.file(link, await res.blob())
         }
-        console.log('Getting Images: ' + this.loading + '%')
-        const blob = await zip.generateAsync({ type: 'blob' })
+        this.$q.loading.show({
+          message:
+            'Zipping everything up, depending on the number of receipts this may take a few minutes. Do not leave this page or refresh',
+          delay: 0
+        })
+        // console.log('Getting Images: ' + this.loading + '%')
+
+        const blob = await zip.generateAsync(
+          {
+            type: 'blob'
+          },
+          metadata => {
+            this.$q.loading.show({
+              message: `Zipping File: ${
+                metadata.currentFile
+              } - ${metadata.percent.toFixed(2)}% `,
+              delay: 0
+            })
+          }
+        )
+        this.$q.loading.show({
+          message: 'Saving File',
+          delay: 0
+        })
         saveAs(blob, 'receipts.zip')
         this.exportZipLoading = false
+        this.$q.loading.hide()
         this.$q.notify({
           color: 'positive',
           textColor: 'white',
@@ -319,7 +353,7 @@ export default {
             message: 'Oops, Something went wrong!'
           })
         })
-        console.log(res.status)
+        // console.log(res.status)
         let blob = await res.blob()
         // console.log(blob)
         saveAs(blob, 'transactions.csv')

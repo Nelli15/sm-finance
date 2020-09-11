@@ -1,5 +1,6 @@
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
+
 const environment = require('./src/environments/environment.js')
 
 const context = {
@@ -8,7 +9,9 @@ const context = {
 }
 
 //import functions
-import updateCatAmounts from './src/modules/dist/updateCatAmounts.js'
+const updateCatAmounts = require('./src/modules/updateCatAmounts.js')
+const updateBudgetAmounts = require('./src/modules/updateBudgetAmounts.js')
+const getTransReceipt = require('./src/modules/getTransReceipt.js')
 
 // const validator = require('validator');
 const nodemailer = require('nodemailer')
@@ -33,8 +36,8 @@ const Buffer = require('safe-buffer').Buffer
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://sp-finance.firebaseio.com',
-  storageBucket: 'gs://sp-finance.appspot.com'
+  databaseURL: environment.firebase.databaseURL,
+  storageBucket: environment.firebase.storageBucket
 })
 
 var db = admin.firestore()
@@ -51,7 +54,7 @@ const mailTransport = nodemailer.createTransport({
 // TODO: Change this to your app or company name to customize the email sent.
 const APP_NAME = 'Summer Project Finance'
 
-function deleteCollection (db, collectionPath, batchSize) {
+function deleteCollection(db, collectionPath, batchSize) {
   var collectionRef = db.collection(collectionPath)
   var query = collectionRef.orderBy('__name__').limit(batchSize)
 
@@ -60,7 +63,7 @@ function deleteCollection (db, collectionPath, batchSize) {
   })
 }
 
-function deleteQueryBatch (db, query, batchSize, resolve, reject) {
+function deleteQueryBatch(db, query, batchSize, resolve, reject) {
   query
     .get()
     .then(snapshot => {
@@ -98,7 +101,7 @@ exports.sendInvite = functions.firestore
   .document('/projects/{projectId}/invites/{email}')
   .onCreate(async (snap, context) => {
     // Sends a welcome email to the given user.
-    function sendInviteEmail (email, displayName, project, from, permission) {
+    function sendInviteEmail(email, displayName, project, from, permission) {
       const mailOptions = {
         from: `${APP_NAME} <noreply@firebase.com>`,
         to: email
@@ -681,7 +684,7 @@ const blurImage = async (file, blurredBucketName) => {
   return unlink(tempLocalPath)
 }
 
-async function detectText (bucketName, filename) {
+async function detectText(bucketName, filename) {
   let text
 
   console.log(`Looking for text in image gs://${bucketName}/${filename}`)
@@ -720,183 +723,12 @@ exports.onTransactionDelete = functions.firestore
 
 exports.onTransactionCreate = functions.firestore
   .document('/projects/{projectId}/transactions/{transId}')
-  .onCreate(async (snap, context) => {
-    // on transaction create get the receipt and rename and move it to the appropriate location
-    let projectId = context.params.projectId
-    let transId = context.params.transId
-    let snapdata = snap.data()
-
-    console.log('Project', projectId, 'Transaction', transId)
-
-    if (snapdata.receipt === true) {
-      console.log('Receipt uploaded')
-      // Move reciept image from uploads to receipts bucket
-
-      let file = await admin
-        .storage()
-        .bucket()
-        .file(`/processed/${projectId}-${transId}.jpg`)
-      console.log(
-        'file found',
-        await file.exists(),
-        `moving to: /projects/${projectId}/receipts/${projectId}-${transId}.jpg`
-      )
-      let res = await file
-        .copy(`/projects/${projectId}/receipts/${projectId}-${transId}.jpg`)
-        .catch(err => {
-          console.error('Error #6', err)
-          return err
-        })
-      console.log('File Copied', res)
-      let newFile = res[0]
-      await file.delete().catch(err => {
-        console.error('Error #7', err)
-        return err
-      })
-      console.log('Old File deleted')
-    } else {
-      console.log('No receipt uploaded')
-    }
-    return true
-  })
+  .onCreate(getTransReceipt(context))
 
 // TODO: make this use optimistic locking
 exports.onTransactionWrite = functions.firestore
   .document('/projects/{projectId}/transactions/{transId}')
-  .onWrite(async (change, context) => {
-    // Get an object with the current document value.
-    let projectId = context.params.projectId
-    let transId = context.params.transId
-    // If the document does not exist, it has been deleted.
-    const newDoc = change.after.exists ? change.after.data() : null
-
-    // Get an object with the previous document value (for update or delete)
-    const oldDoc = change.before.exists ? change.before.data() : null
-    if (oldDoc !== null && newDoc !== null) {
-      if (
-        newDoc.amount === oldDoc.amount &&
-        newDoc.to === oldDoc.to &&
-        newDoc.from === oldDoc.from &&
-        newDoc.budget === oldDoc.budget &&
-        newDoc.category === oldDoc.category &&
-        newDoc.deleted === oldDoc.deleted
-      ) {
-        console.log('no change detected')
-        return true
-      }
-    }
-
-    let budgets = []
-
-    if (oldDoc === null) {
-      // create
-
-      // make a list of all the budgets to be updated
-      if (newDoc.category === 'Expense' || newDoc.category === 'Income') {
-        budgets.push(newDoc.budget)
-      } else if (newDoc.category === 'Journal') {
-        budgets.push(newDoc.to)
-        budgets.push(newDoc.from)
-      }
-    } else if (oldDoc !== null && newDoc !== null) {
-      // update
-      // make a list of all the budgets to be updated
-      if (oldDoc.category === 'Expense' || oldDoc.category === 'Income') {
-        budgets.push(oldDoc.budget)
-      } else if (oldDoc.category === 'Journal') {
-        budgets.push(oldDoc.to)
-        budgets.push(oldDoc.from)
-      }
-      if (newDoc.category === 'Expense' || newDoc.category === 'Income') {
-        budgets.push(newDoc.budget)
-      } else if (newDoc.category === 'Journal') {
-        budgets.push(newDoc.to)
-        budgets.push(newDoc.from)
-      }
-    } else {
-      // delete
-      // make a list of all the budgets to be updated
-      if (oldDoc.category === 'Expense' || oldDoc.category === 'Income') {
-        budgets.push(oldDoc.budget)
-      } else if (oldDoc.category === 'Journal') {
-        budgets.push(oldDoc.to)
-        budgets.push(oldDoc.from)
-      }
-    }
-
-    budgets = budgets.filter((val, index, self) => {
-      return self.indexOf(val) === index
-    })
-
-    console.log('updating budgets: ', budgets)
-
-    // loop through all the budgets to update each one
-    for (var budgetKey in budgets) {
-      let budget = budgets[budgetKey]
-      let expenses = 0,
-        income = 0
-      // get all the related transactions and update the expense totals
-      let promises = [
-        db
-          .collection(`/projects/${projectId}/transactions/`)
-          .where('category', '==', 'Expense')
-          .where('budget', '==', budget)
-          .get()
-          .then(query => {
-            query.forEach(docRef => {
-              if (!docRef.get('deleted')) {
-                expenses += parseFloat(docRef.get('amount'))
-              }
-            })
-            return true
-          }),
-        db
-          .collection(`/projects/${projectId}/transactions/`)
-          .where('category', '==', 'Journal')
-          .where('from', '==', budget)
-          .get()
-          .then(query => {
-            query.forEach(docRef => {
-              if (!docRef.get('deleted')) {
-                expenses += parseFloat(docRef.get('amount'))
-              }
-            })
-            return true
-          }),
-        db
-          .collection(`/projects/${projectId}/transactions/`)
-          .where('category', '==', 'Income')
-          .where('budget', '==', budget)
-          .get()
-          .then(query => {
-            query.forEach(docRef => {
-              if (!docRef.get('deleted')) {
-                income += parseFloat(docRef.get('amount'))
-              }
-            })
-            return true
-          }),
-        db
-          .collection(`/projects/${projectId}/transactions/`)
-          .where('category', '==', 'Journal')
-          .where('to', '==', budget)
-          .get()
-          .then(query => {
-            query.forEach(docRef => {
-              if (!docRef.get('deleted')) {
-                income += parseFloat(docRef.get('amount'))
-              }
-            })
-            return true
-          })
-      ]
-      await Promise.all(promises)
-      db.doc(`/projects/${projectId}/accounts/${budget}`).update({
-        expenses: expenses,
-        income: income
-      })
-    }
-  })
+  .onWrite(updateBudgetAmounts(context))
 
 // TODO: work out what this does
 exports.onAccountWrite = functions.firestore
@@ -992,7 +824,9 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
           // const metadata = await file.getMetadata().catch(err => {
           //   console.error(err)
           // })
-          receipts[file.metadata.name] = data
+          let filename = file.metadata.name.split('-')
+
+          receipts[filename[filename.length]] = data
           // console.log(file.metadata)
         }
 
@@ -1162,7 +996,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
 })
 
 exports.createProject = functions.https.onCall(async (data, context) => {
-  console.log(context.auth)
+  // console.log(context.auth)
   let projectRef = admin
     .firestore()
     .collection(`/projects`)
@@ -1216,7 +1050,7 @@ exports.createProject = functions.https.onCall(async (data, context) => {
   })
 })
 
-function invite (from, project) {
+function invite(from, project) {
   return `<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><!-- NAME: SELL PRODUCTS --><!--[if gte mso 15]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><style type="text/css">p{margin:10px 0;padding:0;}table{border-collapse:collapse;}h1,h2,h3,h4,h5,h6{display:block;margin:0;padding:0;}img,a img{border:0;height:auto;outline:none;text-decoration:none;}body,#bodyTable,#bodyCell{height:100%;margin:0;padding:0;width:100%;}.mcnPreviewText{display:none !important;}#outlook a{padding:0;}img{-ms-interpolation-mode:bicubic;}table{mso-table-lspace:0pt;mso-table-rspace:0pt;}.ReadMsgBody{width:100%;}.ExternalClass{width:100%;}p,a,li,td,blockquote{mso-line-height-rule:exactly;}a[href^=tel],a[href^=sms]{color:inherit;cursor:default;text-decoration:none;}p,a,li,td,body,table,blockquote{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;}.ExternalClass,.ExternalClass p,.ExternalClass td,.ExternalClass div,.ExternalClass span,.ExternalClass font{line-height:100%;}a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !important;font-size:inherit !important;font-family:inherit !important;font-weight:inherit !important;line-height:inherit !important;}.templateContainer{max-width:600px !important;}a.mcnButton{display:block;}.mcnImage,.mcnRetinaImage{vertical-align:bottom;}.mcnTextContent{word-break:break-word;}.mcnTextContent img{height:auto !important;}.mcnDividerBlock{table-layout:fixed !important;}h1{color:#222222;font-family:Helvetica;font-size:40px;font-style:normal;font-weight:bold;line-height:150%;letter-spacing:normal;text-align:center;}h2{color:#222222;font-family:Helvetica;font-size:34px;font-style:normal;font-weight:bold;line-height:150%;letter-spacing:normal;text-align:left;}h3{color:#444444;font-family:Helvetica;font-size:22px;font-style:normal;font-weight:bold;line-height:150%;letter-spacing:normal;text-align:left;}h4{color:#949494;font-family:Georgia;font-size:20px;font-style:italic;font-weight:normal;line-height:125%;letter-spacing:normal;text-align:left;}#templateHeader{background-color:#F7F7F7;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:45px;padding-bottom:45px;}.headerContainer{background-color:transparent;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0;padding-bottom:0;}.headerContainer .mcnTextContent,.headerContainer .mcnTextContent p{color:#757575;font-family:Helvetica;font-size:16px;line-height:150%;text-align:left;}.headerContainer .mcnTextContent a,.headerContainer .mcnTextContent p a{color:#007C89;font-weight:normal;text-decoration:underline;}#templateBody{background-color:#FFFFFF;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:36px;padding-bottom:45px;}.bodyContainer{background-color:transparent;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0;padding-bottom:0;}.bodyContainer .mcnTextContent,.bodyContainer .mcnTextContent p{color:#757575;font-family:Helvetica;font-size:16px;line-height:150%;text-align:left;}.bodyContainer .mcnTextContent a,.bodyContainer .mcnTextContent p a{color:#007C89;font-weight:normal;text-decoration:underline;}#templateFooter{background-color:#333333;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0px;padding-bottom:0px;}.footerContainer{background-color:transparent;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0;padding-bottom:0;}.footerContainer .mcnTextContent,.footerContainer .mcnTextContent p{color:#FFFFFF;font-family:Helvetica;font-size:12px;line-height:150%;text-align:center;}.footerContainer .mcnTextContent a,.footerContainer .mcnTextContent p a{color:#FFFFFF;font-weight:normal;text-decoration:underline;}@media only screen and (min-width:768px){.templateContainer{width:600px !important;}}@media only screen and (max-width: 480px){body,table,td,p,a,li,blockquote{-webkit-text-size-adjust:none !important;}}@media only screen and (max-width: 480px){body{width:100% !important;min-width:100% !important;}}@media only screen and (max-width: 480px){.mcnRetinaImage{max-width:100% !important;}}@media only screen and (max-width: 480px){.mcnImage{width:100% !important;}}@media only screen and (max-width: 480px){.mcnCartContainer,.mcnCaptionTopContent,.mcnRecContentContainer,.mcnCaptionBottomContent,.mcnTextContentContainer,.mcnBoxedTextContentContainer,.mcnImageGroupContentContainer,.mcnCaptionLeftTextContentContainer,.mcnCaptionRightTextContentContainer,.mcnCaptionLeftImageContentContainer,.mcnCaptionRightImageContentContainer,.mcnImageCardLeftTextContentContainer,.mcnImageCardRightTextContentContainer,.mcnImageCardLeftImageContentContainer,.mcnImageCardRightImageContentContainer{max-width:100% !important;width:100% !important;}}@media only screen and (max-width: 480px){.mcnBoxedTextContentContainer{min-width:100% !important;}}@media only screen and (max-width: 480px){.mcnImageGroupContent{padding:9px !important;}}@media only screen and (max-width: 480px){.mcnCaptionLeftContentOuter .mcnTextContent,.mcnCaptionRightContentOuter .mcnTextContent{padding-top:9px !important;}}@media only screen and (max-width: 480px){.mcnImageCardTopImageContent,.mcnCaptionBottomContent:last-child .mcnCaptionBottomImageContent,.mcnCaptionBlockInner .mcnCaptionTopContent:last-child .mcnTextContent{padding-top:18px !important;}}@media only screen and (max-width: 480px){.mcnImageCardBottomImageContent{padding-bottom:9px !important;}}@media only screen and (max-width: 480px){.mcnImageGroupBlockInner{padding-top:0 !important;padding-bottom:0 !important;}}@media only screen and (max-width: 480px){.mcnImageGroupBlockOuter{padding-top:9px !important;padding-bottom:9px !important;}}@media only screen and (max-width: 480px){.mcnTextContent,.mcnBoxedTextContentColumn{padding-right:18px !important;padding-left:18px !important;}}@media only screen and (max-width: 480px){.mcnImageCardLeftImageContent,.mcnImageCardRightImageContent{padding-right:18px !important;padding-bottom:0 !important;padding-left:18px !important;}}@media only screen and (max-width: 480px){.mcpreview-image-uploader{display:none !important;width:100% !important;}}@media only screen and (max-width: 480px){h1{font-size:30px !important;line-height:125% !important;}}@media only screen and (max-width: 480px){h2{font-size:26px !important;line-height:125% !important;}}@media only screen and (max-width: 480px){h3{font-size:20px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){h4{font-size:18px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.mcnBoxedTextContentContainer .mcnTextContent,.mcnBoxedTextContentContainer .mcnTextContent p{font-size:14px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.headerContainer .mcnTextContent,.headerContainer .mcnTextContent p{font-size:16px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.bodyContainer .mcnTextContent,.bodyContainer .mcnTextContent p{font-size:16px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.footerContainer .mcnTextContent,.footerContainer .mcnTextContent p{font-size:14px !important;line-height:150% !important;}}</style></head><body style="height: 100%;margin: 0;padding: 0;width: 100%;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!----><center><table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;height: 100%;margin: 0;padding: 0;width: 100%;"><tbody><tr><td align="center" valign="top" id="bodyCell" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;height: 100%;margin: 0;padding: 0;width: 100%;"><!-- BEGIN TEMPLATE // --><table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td align="center" valign="top" id="templateHeader" data-template-container="" style="background:#F7F7F7 none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #000000;background-image: url('https://firebasestorage.googleapis.com/v0/b/sp-finance.appspot.com/o/assets%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&amp;token=34eac538-a272-4039-be17-c77a05c27da7');background-repeat: no-repeat;background-position: bottom;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 45px;padding-bottom: 45px;"><!--[if (gte mso 9)|(IE)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;"><tr><td align="center" valign="top" width="600" style="width:600px;"><![endif]--><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;max-width: 600px !important;"><tbody><tr><td valign="top" class="headerContainer" style="background:transparent none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: transparent;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0;padding-bottom: 0;"><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnImageBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnImageBlockOuter"><tr><td valign="top" style="padding: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" class="mcnImageBlockInner"><table align="left" width="100%" border="0" cellpadding="0" cellspacing="0" class="mcnImageContentContainer" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td class="mcnImageContent" valign="top" style="padding-right: 9px;padding-left: 9px;padding-top: 0;padding-bottom: 0;text-align: center;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"></td></tr></tbody></table></td></tr></tbody></table><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnTextBlockOuter"><tr><td valign="top" class="mcnTextBlockInner" style="padding-top: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!--[if mso]><table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;"><tr><![endif]--><!--[if mso]><td valign="top" width="600" style="width:600px;"><![endif]--><table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer"><tbody><tr><td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: left;"><h1 style="display: block;margin: 0;padding: 0;color: #222222;font-family: Helvetica;font-size: 40px;font-style: normal;font-weight: bold;line-height: 150%;letter-spacing: normal;text-align: center;">You have been invited to Summer Projects Finance</h1></td></tr></tbody></table><!--[if mso]></td><![endif]--><!--[if mso]></tr></table><![endif]--></td></tr></tbody></table></td></tr></tbody></table><!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]--></td></tr><tr><td align="center" valign="top" id="templateBody" data-template-container="" style="background:#FFFFFF none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #FFFFFF;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 36px;padding-bottom: 45px;"><!--[if (gte mso 9)|(IE)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;"><tr><td align="center" valign="top" width="600" style="width:600px;"><![endif]--><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;max-width: 600px !important;"><tbody><tr><td valign="top" class="bodyContainer" style="background:transparent none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: transparent;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0;padding-bottom: 0;"><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnTextBlockOuter"><tr><td valign="top" class="mcnTextBlockInner" style="padding-top: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!--[if mso]><table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;"><tr><![endif]--><!--[if mso]><td valign="top" width="600" style="width:600px;"><![endif]--><table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer"><tbody><tr><td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: left;"><h3 style="text-align: center;display: block;margin: 0;padding: 0;color: #444444;font-family: Helvetica;font-size: 22px;font-style: normal;font-weight: bold;line-height: 150%;letter-spacing: normal;">${from} has invited you to contribute to the ${project} project on the Summer Project Finance App.</h3></td></tr></tbody></table><!--[if mso]></td><![endif]--><!--[if mso]></tr></table><![endif]--></td></tr></tbody></table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnButtonBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnButtonBlockOuter"><tr><td style="padding-top: 0;padding-right: 18px;padding-bottom: 18px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" valign="top" align="center" class="mcnButtonBlockInner"><table border="0" cellpadding="0" cellspacing="0" class="mcnButtonContentContainer" style="border-collapse: separate !important;border-radius: 3px;background-color: #26a69a;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td align="center" valign="middle" class="mcnButtonContent" style="font-family: Helvetica;font-size: 18px;padding: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><a class="mcnButton " title="Get Started" href="https://sp-finance.web.app" target="_blank" style="font-weight: bold;letter-spacing: -0.5px;line-height: 100%;text-align: center;text-decoration: none;color: #FFFFFF;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;display: block;">Get Started</a></td></tr></tbody></table></td></tr></tbody></table><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnTextBlockOuter"><tr><td valign="top" class="mcnTextBlockInner" style="padding-top: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!--[if mso]><table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;"><tr><![endif]--><!--[if mso]><td valign="top" width="600" style="width:600px;"><![endif]--><table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer"><tbody><tr><td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: left;"><h6 style="text-align: center;display: block;margin: 0;padding: 0;color: #444444;font-family: Helvetica;font-size: 16px;font-style: normal;font-weight: normal;line-height: 150%;letter-spacing: normal;">The Summer Projects Finance App is used to keep track of all of the receipts and transactions on a Power to Change Summer Project. 
 If you are a student you will be provided with a form that will allow you to upload receipts and other transactions that you make. Please check with your finance person or project leaders if you have any questions.

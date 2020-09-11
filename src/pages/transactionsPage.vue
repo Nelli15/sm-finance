@@ -972,6 +972,7 @@ export default {
         })
         return
       }
+
       this.updateTransactionByKey({ trans, key, val })
       firebase
         .firestore()

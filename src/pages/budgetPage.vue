@@ -188,7 +188,7 @@
             <sp-delete-btn
               dense
               v-if="!props.row.inUse"
-              :docRef="`/projects/${project.id}/transactions/${props.row.id}`"
+              :docRef="`/projects/${project.id}/accounts/${props.row.id}`"
             />
           </q-td>
         </q-tr>

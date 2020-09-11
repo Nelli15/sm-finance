@@ -1,5 +1,5 @@
 [{
-  "origin": ["https://sp-finance.web.app/*"],
+  "origin": ["https://sp-finance.web.app/*", "https://beta-sp-finance.web.app/*"],
   "method": ["GET"],
   "maxAgeSeconds": 3600
 }]

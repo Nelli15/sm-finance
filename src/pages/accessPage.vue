@@ -1,6 +1,5 @@
 <template>
   <q-page padding>
-    {{ admins }}
     <q-tabs v-model="tabs">
       <q-tab name="invites" label="Invite" />
       <q-tab name="admins" label="Admins" />
@@ -278,23 +277,8 @@
         </q-tr>
       </template>
     </q-table>
-    <!-- <q-table
-      v-show="tabs === 'admins'"
-      class="my-sticky-header-table"
-      :data="admins"
-      :columns="adminsColumns"
-      :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
-      row-key="name"
-      :key="'admins' + tableKey"
-      :filter="adminsFilter"
-      rows-per-page-label="Users per page:"
-      :pagination.sync="adminsPagination"
-      dense
-      @update:pagination="
-        $q.localStorage.set('adminsTableRows', $event.rowsPerPage)
-      "
-    > -->
     <q-table
+      v-show="tabs === 'admins'"
       class="my-sticky-header-table"
       :data="admins"
       :columns="adminsColumns"
@@ -309,6 +293,21 @@
         $q.localStorage.set('adminsTablePagination', $event.rowsPerPage)
       "
     >
+      <!-- <q-table
+      class="my-sticky-header-table"
+      :data="admins"
+      :columns="adminsColumns"
+      :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
+      row-key="name"
+      :key="'admins' + tableKey"
+      :filter="adminsFilter"
+      rows-per-page-label="Users per page:"
+      :pagination.sync="adminsPagination"
+      dense
+      @update:pagination="
+        $q.localStorage.set('adminsTablePagination', $event.rowsPerPage)
+      "
+    > -->
       <template v-slot:top="props">
         <div class="col-4 q-table__title">Admins</div>
 
