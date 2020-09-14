@@ -101,7 +101,20 @@
       "
     >
       <template v-slot:top="props">
-        <div class="col-4 q-table__title">Accounts</div>
+        <div class="col-4 q-table__title">
+          Accounts
+          <q-icon name="help_outline" size="xs" color="grey-7">
+            <q-tooltip
+              max-width="150px"
+              anchor="center right"
+              self="center left"
+              content-class="bg-cyan-2 text-black"
+            >
+              Accounts are physical or digital locations where money is stored.
+              Typically a bank account, bank card or petty cash.
+            </q-tooltip>
+          </q-icon>
+        </div>
 
         <q-space />
 
@@ -215,7 +228,7 @@
             <sp-delete-btn
               dense
               v-if="!props.row.inUse"
-              :docRef="`/projects/${project.id}/transactions/${props.row.id}`"
+              :docRef="`/projects/${project.id}/accounts/${props.row.id}`"
             />
           </q-td>
         </q-tr>
@@ -239,7 +252,21 @@
       "
     >
       <template v-slot:top="props">
-        <div class="col-4 q-table__title">Categories</div>
+        <div class="col-4 q-table__title">
+          Categories
+          <q-icon name="help_outline" size="xs" color="grey-7">
+            <q-tooltip
+              max-width="150px"
+              anchor="center right"
+              self="center left"
+              content-class="bg-cyan-2 text-black"
+            >
+              Categories are the budget categories included in your budget for
+              SP National (National Summer Projects). To add a category that was
+              not included in the budget for SP National see Budgets.
+            </q-tooltip>
+          </q-icon>
+        </div>
 
         <q-space />
 

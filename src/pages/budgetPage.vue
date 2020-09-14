@@ -17,7 +17,21 @@
       dense
     >
       <template v-slot:top="props">
-        <div class="col-2 q-table__title">Budgets</div>
+        <div class="col-2 q-table__title">
+          Budgets
+          <q-icon name="help_outline" size="xs" color="grey-7">
+            <q-tooltip
+              max-width="150px"
+              anchor="center right"
+              self="center left"
+              content-class="bg-cyan-2 text-black"
+            >
+              Budgets are a sub category under a category. They must be linked
+              to a category. They are used for tracking where money is within
+              your Project.
+            </q-tooltip>
+          </q-icon>
+        </div>
 
         <q-space />
 

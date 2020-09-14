@@ -7,7 +7,24 @@
     </q-tabs>
     <q-card v-show="$q.platform.is.mobile && tabs === 'invites'">
       <q-card-section>
-        <div class="text-subtitle2">Invite People</div>
+        <div class="text-subtitle2">
+          Invite People
+          <q-icon name="help_outline" size="xs" color="grey-7">
+            <q-tooltip
+              max-width="150px"
+              anchor="center right"
+              self="center left"
+              content-class="bg-cyan-2 text-black"
+            >
+              Invite people to access the Project. There are two levels of
+              permissions available.
+              <b>-Admins</b>, who have access to view, edit, and delete all
+              elements of the project. <b>-Contributors</b>, who can only see
+              the transactions that they have submitted and submit transactions
+              for the budgets that they have been given access to.
+            </q-tooltip>
+          </q-icon>
+        </div>
         <q-form @submit="addUser">
           <q-input
             v-model="newInvitation.email"
@@ -75,7 +92,26 @@
       class="mobile-hide"
     >
       <q-card-section>
-        <div class="text-subtitle2">Invite People</div>
+        <div class="text-subtitle2">
+          Invite People
+          <q-icon name="help_outline" size="xs" color="grey-7">
+            <q-tooltip
+              max-width="150px"
+              anchor="center right"
+              self="center left"
+              content-class="bg-cyan-2 text-black"
+            >
+              Invite people to access the Project. There are two levels of
+              permissions available.
+              <br />
+              <b>- Admins</b>, who have access to view, edit, and delete all
+              elements of the project. <br />
+              <b>- Contributors</b>, who can only see the transactions that they
+              have submitted and submit transactions for the budgets that they
+              have been given access to.
+            </q-tooltip>
+          </q-icon>
+        </div>
         <q-input
           v-model="newInvitation.email"
           type="email"
@@ -159,7 +195,21 @@
       "
     >
       <template v-slot:top="props">
-        <div class="col-4 q-table__title">Invites</div>
+        <div class="col-4 q-table__title">
+          Invites
+          <q-icon name="help_outline" size="xs" color="grey-7">
+            <q-tooltip
+              max-width="150px"
+              anchor="center right"
+              self="center left"
+              content-class="bg-cyan-2 text-black"
+            >
+              The following members have been given access to the project but
+              have not currently logged in to accept the invitiation. To accept
+              the invite, get the user to log in with the email listed below.
+            </q-tooltip>
+          </q-icon>
+        </div>
 
         <q-space />
 
@@ -309,7 +359,20 @@
       "
     > -->
       <template v-slot:top="props">
-        <div class="col-4 q-table__title">Admins</div>
+        <div class="col-4 q-table__title">
+          Admins
+          <q-icon name="help_outline" size="xs" color="grey-7">
+            <q-tooltip
+              max-width="150px"
+              anchor="center right"
+              self="center left"
+              content-class="bg-cyan-2 text-black"
+            >
+              Admins are users who have access to view, edit, and delete all
+              elements of the project.
+            </q-tooltip>
+          </q-icon>
+        </div>
 
         <q-space />
 
@@ -396,7 +459,21 @@
       "
     >
       <template v-slot:top="props">
-        <div class="col-4 q-table__title">Contributors</div>
+        <div class="col-4 q-table__title">
+          Contributors
+          <q-icon name="help_outline" size="xs" color="grey-7">
+            <q-tooltip
+              max-width="150px"
+              anchor="center right"
+              self="center left"
+              content-class="bg-cyan-2 text-black"
+            >
+              Contributors are users who only have access to submit transactions
+              to the specified budgets only. They also have access to see the
+              transactions that they have submitted.
+            </q-tooltip>
+          </q-icon>
+        </div>
 
         <q-space />
 

@@ -1,5 +1,22 @@
 <template>
   <q-page>
+    <q-card>
+      <q-card-section class="text-center text-h5"
+        >Petty Cash Calculator
+        <q-icon name="help_outline" size="xs" color="grey-7">
+          <q-tooltip
+            max-width="150px"
+            anchor="center right"
+            self="center left"
+            content-class="bg-cyan-2 text-black"
+          >
+            Calculates the amount of Petty Cash that you have and compares it to
+            the expected amount of Petty Cash. Enter the number of each note and
+            coin that you have in the fields below to get started.
+          </q-tooltip>
+        </q-icon>
+      </q-card-section>
+    </q-card>
     <q-tab-panels v-model="tab" animated>
       <q-tab-panel name="calculator" class="row items-start q-gutter-md">
         <q-card class="my-card shadow-0">
@@ -18,6 +35,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.dollars.hundreds', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
             <q-input
@@ -30,6 +52,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.dollars.fifties', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
             <q-input
@@ -42,6 +69,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.dollars.twenties', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
             <q-input
@@ -54,6 +86,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.dollars.tens', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
             <q-input
@@ -66,6 +103,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.dollars.fives', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
           </q-card-section>
@@ -86,6 +128,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.dollars.twos', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
             <q-input
@@ -98,6 +145,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.dollars.ones', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
             <q-input
@@ -110,6 +162,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.cents.fifties', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
             <q-input
@@ -122,6 +179,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.cents.twenties', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
             <q-input
@@ -134,6 +196,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.cents.tens', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
             <q-input
@@ -146,6 +213,11 @@
               style="max-width:250px"
               dense
               @input="updatePetty('petty.cents.fives', $event)"
+              :rules="[
+                val =>
+                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  `Cannot be negative`
+              ]"
             >
             </q-input>
           </q-card-section>
@@ -160,25 +232,59 @@
               </q-item>
               <q-separator />
               <q-item>
-                <q-item-section>
-                  <q-input outlined prefix="Total:" :value="'$' + total" dense>
-                  </q-input>
+                <q-item-section class="text-bold q-pl-sm">
+                  Total in Petty Cash: ${{ parseFloat(total).toFixed(2) }}
+                  <!-- <q-input outlined prefix="Total:" :value="'$' + total" dense> -->
+                  <!-- </q-input> -->
                 </q-item-section>
               </q-item>
               <q-item>
-                <q-item-section>
-                  <q-input
+                <q-item-section class="text-bold q-pl-sm">
+                  Expected: ${{ expected.toFixed(2) }}
+                  <!-- <q-input
                     outlined
                     prefix="Expected:"
                     :value="'$' + expected.toFixed(2)"
                     dense
                   >
-                  </q-input>
+                  </q-input> -->
                 </q-item-section>
               </q-item>
               <q-item>
-                <q-item-section>
-                  <q-input
+                <q-item-section
+                  class="text-bold q-pl-sm"
+                  :class="{
+                    'bg-positive':
+                      Number(
+                        (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                      ) > -0.05 &&
+                      Number(
+                        (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                      ) < 0.05,
+                    'bg-negative text-white':
+                      Number(
+                        (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                      ) <= -0.05 ||
+                      Number(
+                        (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                      ) >= 0.05
+                  }"
+                >
+                  Difference: ${{ (total - expected).toFixed(2) }}
+                  {{
+                    Number(
+                      (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                    ) <= -0.05
+                      ? '(Money is missing from Petty Cash)'
+                      : ''
+                  }}{{
+                    Number(
+                      (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                    ) >= 0.05
+                      ? '(Petty Cash has more money than expected)'
+                      : ''
+                  }}
+                  <!-- <q-input
                     outlined
                     prefix="Difference: "
                     :value="'$' + (total - expected).toFixed(2)"
@@ -193,7 +299,7 @@
                         `Petty Cash has too much money`
                     ]"
                   >
-                  </q-input>
+                  </q-input> -->
                 </q-item-section>
               </q-item>
             </q-list>
@@ -327,6 +433,7 @@ export default {
   methods: {
     ...mapActions(['updatePettyByKey']),
     updatePetty(key, val) {
+      if (val < 0) return
       console.log('updatePetty', `/projects/`, this.project.id)
       this.updatePettyByKey({ key, val })
       firebase

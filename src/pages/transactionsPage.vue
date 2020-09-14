@@ -134,6 +134,24 @@
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
           Transactions{{ pageLabel > '' ? ' for ' + pageLabel : '' }}
+          <q-icon name="help_outline" size="xs" color="grey-7">
+            <q-tooltip
+              max-width="150px"
+              anchor="center right"
+              self="center left"
+              content-class="bg-cyan-2 text-black"
+            >
+              Transactions record the transfer of money into, out of, and within
+              a project. A transaction should be recorded each time money is
+              moved. There are three types of transactions. <br />
+              <b>-Income</b>, records when a project recieves money from
+              something, usually SP National<br />
+              <b>-Journal</b>, records money being moved amoungst accounts and
+              budgets without leaving the project.<br />
+              <b>-Expense</b>, records money leaving the project. eg. buying
+              groceries, or returning money to SP National
+            </q-tooltip>
+          </q-icon>
         </div>
 
         <q-space />
