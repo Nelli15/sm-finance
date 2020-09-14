@@ -7,7 +7,11 @@ const state = {
   budgetCategories: {},
   budgets: {},
   accounts: {},
-  tableKey: 0
+  tableKey: 0,
+  accountsLoading: false,
+  catLoading: false,
+  budgetsLoading: false,
+  loading: false
 }
 
 export const getters = {
@@ -16,28 +20,31 @@ export const getters = {
   accounts: state => state.accounts,
   tableKey: state => state.tableKey,
   budgetOptions: state => {
-    let result = {}, budgetOptions = []
+    let result = {},
+      budgetOptions = []
     Object.assign(result, state.accounts, state.budgets)
     for (var key in result) {
       budgetOptions.push(result[key])
     }
-    return budgetOptions.sort((a, b) => (a.label > b.label) ? 1 : -1)
+    return budgetOptions.sort((a, b) => (a.label > b.label ? 1 : -1))
   },
   budgetsArray: state => {
-    let result = {}, budgetOptions = []
+    let result = {},
+      budgetOptions = []
     Object.assign(result, state.budgets)
     for (var key in result) {
       budgetOptions.push(result[key])
     }
-    return budgetOptions.sort((a, b) => (a.label > b.label) ? 1 : -1)
+    return budgetOptions.sort((a, b) => (a.label > b.label ? 1 : -1))
   },
   budgetCategoryOptions: state => {
-    let result = {}, budgetOptions = []
+    let result = {},
+      budgetOptions = []
     Object.assign(result, state.budgetCategories)
     for (var key in result) {
       budgetOptions.push(result[key])
     }
-    return budgetOptions.sort((a, b) => (a.label > b.label) ? 1 : -1)
+    return budgetOptions.sort((a, b) => (a.label > b.label ? 1 : -1))
   },
   headerAccounts: state => {
     let accounts = []
@@ -46,27 +53,35 @@ export const getters = {
         accounts.push(state.accounts[key])
       }
     }
-    return accounts.sort((a, b) => (a.label > b.label) ? 1 : -1)
-  }
+    return accounts.sort((a, b) => (a.label > b.label ? 1 : -1))
+  },
+  loading: state =>
+    state.loading ||
+    state.accountsLoading ||
+    state.catLoading ||
+    state.budgetsLoading
 }
 
 export const mutations = {
-  setBudgetCategories (state, payload) {
+  setBudgetCategories(state, payload) {
     state.budgetCategories = payload
   },
-  setBudgets (state, payload) {
+  setBudgets(state, payload) {
     state.budgets = payload
   },
-  setAccounts (state, payload) {
+  setAccounts(state, payload) {
     state.accounts = payload
   },
-  populateBudgets (state, rootState) {
+  populateBudgets(state, rootState) {
     // console.log(rootState)
     let transaction = {}
     // console.log(Object.keys(state.budgets).length)
-    if ((Object.keys(state.accounts).length > 0) &&
-      (Object.keys(state.budgets).length > 0) &&
-      (Object.keys(state.budgetCategories).length > 0)) {
+    if (
+      Object.keys(state.accounts).length > 0 &&
+      Object.keys(state.budgets).length > 0 &&
+      Object.keys(state.budgetCategories).length > 0
+    ) {
+      state.loading = true
       let key
 
       // reset the calculated values of the budgets
@@ -102,7 +117,9 @@ export const mutations = {
               // state.accounts[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             } else {
               state.budgets[transaction.budget].inUse = true
-              state.budgetCategories[state.budgets[transaction.budget].category].inUse = true
+              state.budgetCategories[
+                state.budgets[transaction.budget].category
+              ].inUse = true
               // state.budgets[transaction.budget].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
               // state.budgetCategories[state.budgets[transaction.budget].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             }
@@ -113,7 +130,9 @@ export const mutations = {
               // state.accounts[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             } else {
               state.budgets[transaction.budget].inUse = true
-              state.budgetCategories[state.budgets[transaction.budget].category].inUse = true
+              state.budgetCategories[
+                state.budgets[transaction.budget].category
+              ].inUse = true
               // state.budgets[transaction.budget].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
               // state.budgetCategories[state.budgets[transaction.budget].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             }
@@ -125,7 +144,9 @@ export const mutations = {
               // state.accounts[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             } else {
               state.budgets[transaction.from].inUse = true
-              state.budgetCategories[state.budgets[transaction.from].category].inUse = true
+              state.budgetCategories[
+                state.budgets[transaction.from].category
+              ].inUse = true
               // state.budgets[transaction.from].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
               // state.budgetCategories[state.budgets[transaction.from].category].expenses += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             }
@@ -134,7 +155,9 @@ export const mutations = {
               // state.accounts[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             } else {
               state.budgets[transaction.to].inUse = true
-              state.budgetCategories[state.budgets[transaction.to].category].inUse = true
+              state.budgetCategories[
+                state.budgets[transaction.to].category
+              ].inUse = true
               // state.budgets[transaction.to].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
               // state.budgetCategories[state.budgets[transaction.to].category].income += parseFloat(transaction.amount) ? parseFloat(transaction.amount) : 0
             }
@@ -147,26 +170,43 @@ export const mutations = {
       //   // console.log(state.budgetCategories[state.budgets[budgetKey].category].budget)
       // }
       state.tableKey += 1
+      state.loading = false
     }
   },
-  setBudgetKey (state, payload) {
+  setBudgetKey(state, payload) {
     state.budgets[payload.budgetId][payload.key] = payload.val
   },
-  setCategoryKey (state, payload) {
+  setCategoryKey(state, payload) {
     state.budgetCategories[payload.budgetId][payload.key] = payload.val
   },
-  setAccountKey (state, payload) {
+  setAccountKey(state, payload) {
     state.accounts[payload.accountId][payload.key] = payload.val
+  },
+  setAccountsLoading(state, payload) {
+    state.accountsLoading = payload
+  },
+  setCatLoading(state, payload) {
+    state.catLoading = payload
+  },
+  setBudgetsLoading(state, payload) {
+    state.budgetsLoading = payload
   }
 }
 
 export const actions = {
-  fetchBudgetCategories ({ commit, dispatch }, payload) {
+  fetchBudgetCategories({ commit, dispatch }, payload) {
     // console.log('Fetch Budget Categories', payload)
-    firebase.firestore().collection(`/projects/${payload}/accounts`).where('type', '==', 'category')
+    commit('setCatLoading', true)
+
+    firebase
+      .firestore()
+      .collection(`/projects/${payload}/accounts`)
+      .where('type', '==', 'category')
       .onSnapshot(async categoriesSnap => {
+        commit('setCatLoading', true)
         // console.log('Fetch Budget Categories')
-        let budgets = {}, budget = {}
+        let budgets = {},
+          budget = {}
         let promises = categoriesSnap.docs.map(doc => {
           budget = doc.data()
           budget.id = doc.id
@@ -178,15 +218,25 @@ export const actions = {
         await Promise.all(promises)
         commit('setBudgetCategories', budgets)
         dispatch('fetchPopulateBudgets')
+        commit('setCatLoading', false)
+
         // dispatch('fetchPopulateBudgets')
       })
   },
-  fetchBudgets ({ commit, dispatch }, payload) {
+  fetchBudgets({ commit, dispatch }, payload) {
     // console.log('Fetch Budgets', payload)
-    firebase.firestore().collection(`/projects/${payload}/accounts`).where('type', '==', 'budget')
+    commit('setBudgetsLoading', true)
+
+    firebase
+      .firestore()
+      .collection(`/projects/${payload}/accounts`)
+      .where('type', '==', 'budget')
       .onSnapshot(async budgetsSnap => {
+        commit('setBudgetsLoading', true)
+
         // console.log('Fetch Budgets')
-        let budgets = {}, budget = {}
+        let budgets = {},
+          budget = {}
         let promises = budgetsSnap.docs.map(doc => {
           budget = doc.data()
           budget.id = doc.id
@@ -199,14 +249,23 @@ export const actions = {
         await Promise.all(promises)
         commit('setBudgets', budgets)
         dispatch('fetchPopulateBudgets')
+        commit('setBudgetsLoading', false)
       })
   },
-  fetchAccounts ({ commit, dispatch }, payload) {
+  fetchAccounts({ commit, dispatch }, payload) {
     // console.log('Fetch Budgets', payload)
-    firebase.firestore().collection(`/projects/${payload}/accounts`).where('type', '==', 'account')
+    commit('setAccountsLoading', true)
+
+    firebase
+      .firestore()
+      .collection(`/projects/${payload}/accounts`)
+      .where('type', '==', 'account')
       .onSnapshot(async accountsSnap => {
+        commit('setAccountsLoading', true)
+
         // console.log('Fetch accounts')
-        let accounts = {}, account = {}
+        let accounts = {},
+          account = {}
         let promises = accountsSnap.docs.map(doc => {
           account = doc.data()
           account.id = doc.id
@@ -217,18 +276,19 @@ export const actions = {
         await Promise.all(promises)
         commit('setAccounts', accounts)
         dispatch('fetchPopulateBudgets')
+        commit('setAccountsLoading', false)
       })
   },
-  fetchPopulateBudgets ({ rootState, commit }) {
+  fetchPopulateBudgets({ rootState, commit }) {
     commit('populateBudgets', rootState)
   },
-  updateBudgetByKey ({ commit }, payload) {
+  updateBudgetByKey({ commit }, payload) {
     commit('setBudgetKey', payload)
   },
-  updateCategoryByKey ({ commit }, payload) {
+  updateCategoryByKey({ commit }, payload) {
     commit('setCategoryKey', payload)
   },
-  updateAccountByKey ({ commit }, payload) {
+  updateAccountByKey({ commit }, payload) {
     commit('setAccountKey', payload)
   }
 }

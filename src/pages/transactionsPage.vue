@@ -130,6 +130,7 @@
       selection="multiple"
       :selected.sync="rowSelected"
       dense
+      :loading="loading"
     >
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
@@ -907,16 +908,21 @@ export default {
       typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
     }
   },
+  preFetch({ store, currentRoute }) {
+    store.dispatch('fetchTransactions', currentRoute.params.id)
+    store.dispatch('fetchBudgetCategories', currentRoute.params.id)
+    store.dispatch('fetchBudgets', currentRoute.params.id)
+    store.dispatch('fetchAccounts', currentRoute.params.id)
+  },
   created() {
     // console.log(this.project.currency)
     // this.$store.dispatch('fetchProject', { projectId: this.$route.params.id, uid: this.user.uid })
 
-    this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
-    this.$store.dispatch('fetchBudgets', this.$route.params.id)
-    this.$store.dispatch('fetchAccounts', this.$route.params.id)
+    // this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
+    // this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    // this.$store.dispatch('fetchAccounts', this.$route.params.id)
     // this.$store.dispatch('fetchContributors', this.$route.params.id)
     // this.$store.dispatch('fetchInvites', this.$route.params.id)
-    this.$store.dispatch('fetchTransactions', this.$route.params.id)
     if (this.project.currency) {
       for (var key in this.columns) {
         if (this.columns[key].label.search('(currency)') !== -1) {
@@ -1071,7 +1077,8 @@ export default {
       'accounts',
       'budgets',
       'budgetOptions',
-      'budgetCategories'
+      'budgetCategories',
+      'loading'
     ]),
     columnsFiltered() {
       let columns = []

@@ -18,6 +18,9 @@
       {
         "source": "/downloadCSV",
         "function": "downloadCSV"
+      }, {
+        "source": "**",
+        "destination": "/index.html"
       }
     ]
   },
