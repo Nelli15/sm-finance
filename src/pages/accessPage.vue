@@ -238,7 +238,7 @@
         <q-tr :props="props" class="text-bold">
           <q-td key="name" :props="props" class="cursor-pointer">
             <q-avatar class="q-pr-md" size="md">
-              <img
+              <!-- <img
                 :src="
                   props.row.photoURL
                     ? props.row.photoURL
@@ -246,7 +246,36 @@
                       props.row.uid +
                       '?theme=bythepool&numcolors=4&size=220&fmt=svg'
                 "
-              />
+              /> -->
+              <q-img
+                :src="
+                  props.row.photoURL
+                    ? props.row.photoURL
+                    : 'https://api.adorable.io/avatars/100/' +
+                      props.row.uid +
+                      '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                "
+                alt="Profile Picture"
+              >
+                <template v-slot:error>
+                  <q-img
+                    :src="
+                      'https://api.adorable.io/avatars/100/' +
+                        props.row.uid +
+                        '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                    "
+                    alt="Profile Picture"
+                  >
+                    <template v-slot:error>
+                      <div
+                        class="absolute-full flex flex-center bg-negative text-white"
+                      >
+                        Cannot load image
+                      </div>
+                    </template>
+                  </q-img>
+                </template>
+              </q-img>
             </q-avatar>
             <!-- <q-popup-edit v-model="props.row.label">
               <q-input :value="props.row.label > '' ? props.row.label : ''" @input="updateAccount(props.row.id, 'label', $event)" dense autofocus label="Budget Label" />
@@ -401,15 +430,35 @@
         <q-tr :props="props" class="text-bold">
           <q-td key="name" :props="props" class="cursor-pointer">
             <q-avatar class="q-pr-md" size="md">
-              <img
+              <q-img
                 :src="
                   props.row.photoURL
                     ? props.row.photoURL
-                    : 'http://tinygraphs.com/spaceinvaders/' +
+                    : 'https://api.adorable.io/avatars/100/' +
                       props.row.uid +
                       '?theme=bythepool&numcolors=4&size=220&fmt=svg'
                 "
-              />
+                alt="Profile Picture"
+              >
+                <template v-slot:error>
+                  <q-img
+                    :src="
+                      'https://api.adorable.io/avatars/100/' +
+                        props.row.uid +
+                        '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                    "
+                    alt="Profile Picture"
+                  >
+                    <template v-slot:error>
+                      <div
+                        class="absolute-full flex flex-center bg-negative text-white"
+                      >
+                        Cannot load image
+                      </div>
+                    </template>
+                  </q-img>
+                </template>
+              </q-img>
             </q-avatar>
             {{ props.row.name ? props.row.name : 'Anonymous' }}
             <!-- <q-popup-edit v-model="props.row.label">
@@ -502,15 +551,35 @@
         <q-tr :props="props" class="text-bold">
           <q-td key="name" :props="props" class="cursor-pointer">
             <q-avatar class="q-pr-md" size="md">
-              <img
+              <q-img
                 :src="
                   props.row.photoURL
                     ? props.row.photoURL
-                    : 'http://tinygraphs.com/spaceinvaders/' +
+                    : 'https://api.adorable.io/avatars/100/' +
                       props.row.uid +
                       '?theme=bythepool&numcolors=4&size=220&fmt=svg'
                 "
-              />
+                alt="Profile Picture"
+              >
+                <template v-slot:error>
+                  <q-img
+                    :src="
+                      'https://api.adorable.io/avatars/100/' +
+                        props.row.uid +
+                        '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                    "
+                    alt="Profile Picture"
+                  >
+                    <template v-slot:error>
+                      <div
+                        class="absolute-full flex flex-center bg-negative text-white"
+                      >
+                        Cannot load image
+                      </div>
+                    </template>
+                  </q-img>
+                </template>
+              </q-img>
             </q-avatar>
             {{ props.row.name ? props.row.name : 'Anonymous' }}
             <!-- <q-popup-edit v-model="props.row.label">

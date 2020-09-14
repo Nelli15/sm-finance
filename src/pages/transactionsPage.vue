@@ -144,12 +144,14 @@
               Transactions record the transfer of money into, out of, and within
               a project. A transaction should be recorded each time money is
               moved. There are three types of transactions. <br />
-              <b>-Income</b>, records when a project recieves money from
-              something, usually SP National<br />
-              <b>-Journal</b>, records money being moved amoungst accounts and
-              budgets without leaving the project.<br />
-              <b>-Expense</b>, records money leaving the project. eg. buying
-              groceries, or returning money to SP National
+              <b class="text-green-8">-Income (Green)</b>, records when a
+              project recieves money from something, usually SP National<br />
+              <b class="text-blue-8">-Journal (Blue)</b>, records money being
+              moved amoungst accounts and budgets without leaving the
+              project.<br />
+              <b class="text-red-8">-Expense (Red)</b>, records money leaving
+              the project. eg. buying groceries, or returning money to SP
+              National
             </q-tooltip>
           </q-icon>
         </div>
@@ -227,7 +229,7 @@
           </q-td>
           <q-td key="submittedBy" :props="props">
             <q-avatar v-if="props.row.submittedBy" size="md">
-              <img
+              <!-- <img
                 :src="
                   props.row.submittedBy.photoURL
                     ? props.row.submittedBy.photoURL
@@ -235,7 +237,36 @@
                       props.row.submittedBy.uid +
                       '?theme=bythepool&numcolors=4&size=220&fmt=svg'
                 "
-              />
+              /> -->
+              <q-img
+                :src="
+                  props.row.submittedBy.photoURL
+                    ? props.row.submittedBy.photoURL
+                    : 'https://api.adorable.io/avatars/100/' +
+                      props.row.submittedBy.uid +
+                      '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                "
+                alt="Profile Picture"
+              >
+                <template v-slot:error>
+                  <q-img
+                    :src="
+                      'https://api.adorable.io/avatars/100/' +
+                        props.row.submittedBy.uid +
+                        '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                    "
+                    alt="Profile Picture"
+                  >
+                    <template v-slot:error>
+                      <div
+                        class="absolute-full flex flex-center bg-negative text-white"
+                      >
+                        Cannot load image
+                      </div>
+                    </template>
+                  </q-img>
+                </template>
+              </q-img>
               <div v-show="false">
                 {{ props.row.submittedBy.displayName
                 }}{{ props.row.submittedBy.email }}
@@ -879,12 +910,13 @@ export default {
   created() {
     // console.log(this.project.currency)
     // this.$store.dispatch('fetchProject', { projectId: this.$route.params.id, uid: this.user.uid })
-    this.$store.dispatch('fetchTransactions', this.$route.params.id)
-    // this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
-    // this.$store.dispatch('fetchBudgets', this.$route.params.id)
-    // this.$store.dispatch('fetchAccounts', this.$route.params.id)
+
+    this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
+    this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    this.$store.dispatch('fetchAccounts', this.$route.params.id)
     // this.$store.dispatch('fetchContributors', this.$route.params.id)
     // this.$store.dispatch('fetchInvites', this.$route.params.id)
+    this.$store.dispatch('fetchTransactions', this.$route.params.id)
     if (this.project.currency) {
       for (var key in this.columns) {
         if (this.columns[key].label.search('(currency)') !== -1) {

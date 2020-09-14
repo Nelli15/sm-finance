@@ -13,15 +13,17 @@ module.exports = ({ admin, environment }) => async (snap, context) => {
 
     let file = await admin
       .storage()
-      .bucket()
-      .file(`/processed/${projectId}-${transId}.jpg`)
+      .bucket('gs://sp-finance-upload')
+      .file(`processed/${projectId}-${transId}.jpg`)
     console.log(
       'file found',
       await file.exists(),
       `moving to: /projects/${projectId}/receipts/${projectId}-${transId}.jpg`
     )
     let res = await file
-      .copy(`/projects/${projectId}/receipts/${projectId}-${transId}.jpg`)
+      .copy(
+        `gs://sp-finance.appspot.com/projects/${projectId}/receipts/${projectId}-${transId}.jpg`
+      )
       .catch(err => {
         console.error('Error #6', err)
         return err

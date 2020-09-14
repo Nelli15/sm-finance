@@ -9,7 +9,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
   // Get an object with the previous document value (for update or delete)
   const oldDoc = change.before.exists ? change.before.data() : null
 
-  // check for valid change
+  // check for relevant change
   if (oldDoc !== null && newDoc !== null) {
     if (
       newDoc.amount === oldDoc.amount &&
@@ -23,8 +23,6 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       return true
     }
   }
-
-  let budgets = []
 
   if (oldDoc === null) {
     // create
@@ -40,32 +38,36 @@ module.exports = ({ admin, environment }) => async (change, context) => {
   } else if (oldDoc !== null && newDoc !== null) {
     // update
     // make a list of all the budgets to be updated
-    if (oldDoc.category === 'Income') {
-      await updateBudget(db, projectId, oldDoc.budget, oldDoc.amount, 0)
-    } else if (oldDoc.category === 'Expense') {
-      await updateBudget(db, projectId, oldDoc.budget, 0, oldDoc.amount)
-    } else if (oldDoc.category === 'Journal') {
-      await updateBudget(db, projectId, oldDoc.to, oldDoc.amount, 0)
-      await updateBudget(db, projectId, oldDoc.from, 0, oldDoc.amount)
+    if (!oldDoc.deleted) {
+      if (oldDoc.category === 'Income') {
+        await updateBudget(db, projectId, oldDoc.budget, -oldDoc.amount, 0)
+      } else if (oldDoc.category === 'Expense') {
+        await updateBudget(db, projectId, oldDoc.budget, 0, -oldDoc.amount)
+      } else if (oldDoc.category === 'Journal') {
+        await updateBudget(db, projectId, oldDoc.to, -oldDoc.amount, 0)
+        await updateBudget(db, projectId, oldDoc.from, 0, -oldDoc.amount)
+      }
     }
-    if (newDoc.category === 'Income') {
-      await updateBudget(db, projectId, newDoc.budget, newDoc.amount, 0)
-    } else if (newDoc.category === 'Expense') {
-      await updateBudget(db, projectId, newDoc.budget, 0, newDoc.amount)
-    } else if (newDoc.category === 'Journal') {
-      await updateBudget(db, projectId, newDoc.to, newDoc.amount, 0)
-      await updateBudget(db, projectId, newDoc.from, 0, newDoc.amount)
+    if (!newDoc.deleted) {
+      if (newDoc.category === 'Income') {
+        await updateBudget(db, projectId, newDoc.budget, newDoc.amount, 0)
+      } else if (newDoc.category === 'Expense') {
+        await updateBudget(db, projectId, newDoc.budget, 0, newDoc.amount)
+      } else if (newDoc.category === 'Journal') {
+        await updateBudget(db, projectId, newDoc.to, newDoc.amount, 0)
+        await updateBudget(db, projectId, newDoc.from, 0, newDoc.amount)
+      }
     }
   } else {
     // delete
     // make a list of all the budgets to be updated
     if (oldDoc.category === 'Income') {
-      await updateBudget(db, projectId, oldDoc.budget, oldDoc.amount, 0)
+      await updateBudget(db, projectId, oldDoc.budget, -oldDoc.amount, 0)
     } else if (oldDoc.category === 'Expense') {
-      await updateBudget(db, projectId, oldDoc.budget, 0, oldDoc.amount)
+      await updateBudget(db, projectId, oldDoc.budget, 0, -oldDoc.amount)
     } else if (oldDoc.category === 'Journal') {
-      await updateBudget(db, projectId, oldDoc.to, oldDoc.amount, 0)
-      await updateBudget(db, projectId, oldDoc.from, 0, oldDoc.amount)
+      await updateBudget(db, projectId, oldDoc.to, -oldDoc.amount, 0)
+      await updateBudget(db, projectId, oldDoc.from, 0, -oldDoc.amount)
     }
   }
 }
@@ -80,16 +82,10 @@ function updateBudget(db, projectId, budgetId, income, expense) {
     const doc = await t.get(ref)
     const data = doc.data()
     let newData = { income: 0, expenses: 0 }
-    newData.income = data.income
-      ? parseFloat(data.income)
-      : 0 + income
-      ? parseFloat(income)
-      : 0
+    newData.income = data.income ? parseFloat(data.income) + income : 0 + income
     newData.expenses = data.expenses
-      ? parseFloat(data.expenses)
+      ? parseFloat(data.expenses) + expense
       : 0 + expense
-      ? parseFloat(expense)
-      : 0
     t.update(ref, newData)
   })
 }
