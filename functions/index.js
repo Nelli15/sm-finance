@@ -387,7 +387,7 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
 
   try {
     const decodedIdToken = await admin.auth().verifyIdToken(idToken)
-    console.log('ID Token correctly decoded', decodedIdToken)
+    console.log('ID Token correctly decoded')
     req.user = decodedIdToken
     // next();
     // return;
@@ -398,7 +398,8 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
   }
 
   // user is authorised
-  console.log(req.user, req.query)
+  console.log('User Authorised:')
+  // ,req.user, req.query)
 
   var projectId = req.query.projectId
 
@@ -412,11 +413,14 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
           'getting file',
           `/projects/${projectId}/receipts/${projectId}-${id}.jpg`
         )
+        //(bucket)gs://sp-finance.appspot.com/(file)projects/ZtJyQ7iBf3gsLtjfD3b6/receipts/ZtJyQ7iBf3gsLtjfD3b6-b4qZI7AUFJACAQyAKVpT.jpg
         // console.log(fileName)
         var storage = admin.storage()
         var storageRef = storage.bucket()
+        // console.log(await storageRef.exists())
+
         var file = storageRef.file(
-          `/projects/${projectId}/receipts/${projectId}-${id}.jpg`
+          `projects/${projectId}/receipts/${projectId}-${id}.jpg`
         )
 
         let exists = await file.exists()
@@ -428,10 +432,13 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
             `/processed/${projectId}-${id}.jpg`
           )
           file = null
-          file = storageRef.file(`/processed/${projectId}-${id}.jpg`)
-          console.log(file)
+          file = storage
+            .bucket('gs://sp-finance-uploads')
+            .file(`processed/${projectId}-${id}.jpg`)
+          // console.log(file)
           let exists2 = await file.exists()
-          console.log(exists2)
+          console.log('File Exists in Processed?', exists2[0])
+
           if (!exists2[0]) {
             res.status(404).send("File doesn't exist")
             return false
@@ -442,7 +449,9 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
             `moving to: /projects/${projectId}/receipts/${projectId}-${id}.jpg`
           )
           let result = await file
-            .copy(`/projects/${projectId}/receipts/${projectId}-${id}.jpg`)
+            .copy(
+              `gs://sp-finance.appspot.com/projects/${projectId}/receipts/${projectId}-${id}.jpg`
+            )
             .catch(err => {
               console.error('Error #6', err)
               return err
@@ -485,7 +494,7 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
 })
 
 exports.receiptUploaded = functions.storage
-  .bucket()
+  .bucket('sp-finance-uploads')
   .object()
   .onFinalize(async (object, context) => {
     const fileBucket = object.bucket // The Storage bucket that contains the file.
@@ -523,7 +532,7 @@ exports.receiptUploaded = functions.storage
       // let doc = db.collection(`/projects/${metadata.projectId}/transactions/`).doc()
       const JPEGFilePath = path.normalize(
         path.format({
-          dir: `/processed`,
+          dir: `processed`,
           name: `${metadata.projectId}-${metadata.transId}`,
           ext: JPEG_EXTENSION
         })

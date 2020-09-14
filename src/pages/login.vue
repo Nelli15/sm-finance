@@ -2,7 +2,7 @@
   <div style="background-color:black;height:100vh;">
     <img
       style="min-height:100vh;min-width:100vw; max-width: 100vw;max-height:100vh; opacity: 0.5;filter: alpha(opacity=50); position: absolute;top:0px"
-      src="https://firebasestorage.googleapis.com/v0/b/sp-finance.appspot.com/o/assets%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=34eac538-a272-4039-be17-c77a05c27da7"
+      src="https://firebasestorage.googleapis.com/v0/b/sp-finance-longterm-assets/o/backgrounds%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=c2a47e65-594b-4c4c-8f58-0ea46dd0f34e"
     />
     <div class="text-center text-white" style="padding-top:15vh; z-index:1;">
       <div class="text-h4">Welcome to the Summer Projects Finances App!</div>

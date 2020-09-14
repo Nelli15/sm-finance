@@ -301,7 +301,7 @@ export default {
         type: 'Cash',
         date: '',
         amount: '',
-        GST: 0,
+        GST: '0',
         cheque: '',
         receipt: false,
         desc: '',
@@ -329,8 +329,8 @@ export default {
       .padStart(2, '0')}/${(date.getMonth() + 1)
       .toString()
       .padStart(2, '0')}/${date.getFullYear()}`
-    // this.$store.dispatch('fetchTransactions', this.$route.params.id)
-    // this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    this.$store.dispatch('fetchAccounts', this.$route.params.id)
+    this.$store.dispatch('fetchBudgets', this.$route.params.id)
   },
   methods: {
     onLog(event) {

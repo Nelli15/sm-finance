@@ -66,24 +66,23 @@ import 'firebase/storage'
 // import uid from 'uuidv4'
 export default {
   name: 'q-firebase-uploader',
-  mixins: [ QUploaderBase ],
+  mixins: [QUploaderBase],
   props: {
     metadata: Object
   },
-  data () {
-    return {
-    }
+  data() {
+    return {}
   },
   methods: {
     // [REQUIRED]
     // abort and clean up any process
     // that is in progress
-    abort () {
+    abort() {
       // ...
     },
 
     // [REQUIRED]
-    upload () {
+    upload() {
       if (this.canUpload === false) {
         return
       }
@@ -95,33 +94,30 @@ export default {
         // meta.customMetadata = this.metadata
         const uploadTask = firebase
           .storage()
-          .ref()
+          .refFromURL('gs://sp-finance-uploads')
           .child(ref)
           .put(file, this.metadata)
         this.$emit('uploading', { file })
-        uploadTask.on(
-          'state_changed',
-          {
-            next: (snap) => {
-              this.isUploading = true
-              // console.log(snap)
-              // this.loading = true
-              this.uploadSize = snap.totalBytes
-              this.uploadedSize = snap.bytesTransferred
-              this.__updateFile(file, 'uploading', snap.bytesTransferred)
-              // this.Size = sp.bytesTransferred
-            },
-            error: (err) => {
-              // console.log(err)
-              this.$emit('failed', { file, err })
-            },
-            complete: () => {
-              // console.log('completed')
-              // this.loading = false
-              this.__updateFile(file, 'uploaded')
-            }
+        uploadTask.on('state_changed', {
+          next: snap => {
+            this.isUploading = true
+            // console.log(snap)
+            // this.loading = true
+            this.uploadSize = snap.totalBytes
+            this.uploadedSize = snap.bytesTransferred
+            this.__updateFile(file, 'uploading', snap.bytesTransferred)
+            // this.Size = sp.bytesTransferred
+          },
+          error: err => {
+            // console.log(err)
+            this.$emit('failed', { file, err })
+          },
+          complete: () => {
+            // console.log('completed')
+            // this.loading = false
+            this.__updateFile(file, 'uploaded')
           }
-        )
+        })
 
         uploadTask.then(snap => {
           console.log(snap)
