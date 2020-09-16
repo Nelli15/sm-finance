@@ -12,15 +12,11 @@
             label="Project Label"
           />
         </q-popup-edit>
-        <q-tooltip
-          anchor="bottom middle"
-          self="top middle"
-          content-class="bg-accent text-black"
-        >
-          <q-icon name="edit" />
-          Edit
-        </q-tooltip> </q-badge
-      ><br />
+        <q-tooltip anchor="bottom middle" self="top middle" content-class="bg-accent text-black">
+          <q-icon name="edit" />Edit
+        </q-tooltip>
+      </q-badge>
+      <br />
       <q-badge class="bg-secondary text-subtitle1 q-mb-sm">
         {{ project.number > '' ? project.number : 'Project Code' }}
         <q-popup-edit v-model="project.number" max-width="100px">
@@ -33,15 +29,11 @@
             input-style="max-width:100px;"
           />
         </q-popup-edit>
-        <q-tooltip
-          anchor="bottom middle"
-          self="top middle"
-          content-class="bg-accent text-black"
-        >
-          <q-icon name="edit" />
-          Edit
-        </q-tooltip> </q-badge
-      ><br />
+        <q-tooltip anchor="bottom middle" self="top middle" content-class="bg-accent text-black">
+          <q-icon name="edit" />Edit
+        </q-tooltip>
+      </q-badge>
+      <br />
       <q-badge class="bg-secondary text-h6">
         {{ project.participants }} Participants
         <q-popup-edit v-model="project.participants">
@@ -53,15 +45,11 @@
             label="Participants"
           />
         </q-popup-edit>
-        <q-tooltip
-          anchor="bottom middle"
-          self="top middle"
-          content-class="bg-accent text-black"
-        >
-          <q-icon name="edit" />
-          Edit
-        </q-tooltip> </q-badge
-      ><br />
+        <q-tooltip anchor="bottom middle" self="top middle" content-class="bg-accent text-black">
+          <q-icon name="edit" />Edit
+        </q-tooltip>
+      </q-badge>
+      <br />
       <q-badge class="bg-secondary text-subtitle-1">
         Project Currency ({{ project.currency }})
         <q-popup-edit v-model="project.currency">
@@ -73,13 +61,8 @@
             label="Currency"
           />
         </q-popup-edit>
-        <q-tooltip
-          anchor="bottom middle"
-          self="top middle"
-          content-class="bg-accent text-black"
-        >
-          <q-icon name="edit" />
-          Edit
+        <q-tooltip anchor="bottom middle" self="top middle" content-class="bg-accent text-black">
+          <q-icon name="edit" />Edit
         </q-tooltip>
       </q-badge>
     </q-banner>
@@ -121,7 +104,7 @@
         <!-- <div v-if="$q.screen.gt.xs" class="col">
           <q-toggle v-for="column in columns" v-model="visibleColumns" :val="column.name" :label="column.label" :key="column.name" />
         </div>
- -->
+        -->
         <!-- <q-select
           v-model="visibleColumns"
           multiple
@@ -134,15 +117,9 @@
           :options="columns"
           option-value="name"
           style="min-width: 150px"
-        /> -->
+        />-->
 
-        <q-input
-          borderless
-          dense
-          debounce="300"
-          v-model="accountsFilter"
-          placeholder="Search"
-        >
+        <q-input borderless dense debounce="300" v-model="accountsFilter" placeholder="Search">
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -175,23 +152,21 @@
               self="center left"
               content-class="bg-accent text-black"
             >
-              <q-icon name="edit" />
-              Edit
+              <q-icon name="edit" />Edit
             </q-tooltip>
           </q-td>
-          <q-td key="income" :props="props" class="text-positive">
-            <!-- {{props.row.budget}} -->
+          <!-- <q-td key="income" :props="props" class="text-positive">
             ${{ props.row.income.toFixed(2) }}
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
-          </q-td>
-          <q-td key="expenses" :props="props" class="text-negative">
+          </q-td>-->
+          <!-- <q-td key="expenses" :props="props" class="text-negative">
             ${{ props.row.expenses.toFixed(2) }}
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
             </q-tooltip>
-          </q-td>
+          </q-td>-->
           <q-td key="balance" :props="props">
             <q-badge
               :class="{
@@ -201,9 +176,7 @@
               }"
               :label="'$' + (props.row.income - props.row.expenses).toFixed(2)"
             />
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip>
+            <q-tooltip content-class="bg-accent text-black">Auto Calculated</q-tooltip>
           </q-td>
           <q-td key="actions" :props="props">
             <q-toggle
@@ -211,19 +184,13 @@
               @input="updateAccount(props.row.id, 'inHeader', $event)"
               icon="view_compact"
             >
-              <q-tooltip content-class="bg-accent text-black">
-                View in Header
-              </q-tooltip>
+              <q-tooltip content-class="bg-accent text-black">View in Header</q-tooltip>
             </q-toggle>
             <!-- <q-btn :to="'budget/'+props.row.id" dense class="q-mr-sm">Budgets</q-btn> -->
-            <q-btn :to="'transactions/' + props.row.id" dense class="q-mr-sm"
-              >Transactions</q-btn
-            >
+            <q-btn :to="'transactions/' + props.row.id" dense class="q-mr-sm">Transactions</q-btn>
             <q-btn v-if="props.row.inUse" dense color="negative">
               <q-icon name="delete_forever" />
-              <q-tooltip content-class="bg-accent text-black">
-                Cannot Delete Budget while in use
-              </q-tooltip>
+              <q-tooltip content-class="bg-accent text-black">Cannot Delete Budget while in use</q-tooltip>
             </q-btn>
             <sp-delete-btn
               dense
@@ -273,7 +240,7 @@
         <!-- <div v-if="$q.screen.gt.xs" class="col">
           <q-toggle v-for="column in columns" v-model="visibleColumns" :val="column.name" :label="column.label" :key="column.name" />
         </div>
- -->
+        -->
         <!-- <q-select
           v-model="visibleColumns"
           multiple
@@ -286,15 +253,9 @@
           :options="columns"
           option-value="name"
           style="min-width: 150px"
-        /> -->
+        />-->
 
-        <q-input
-          borderless
-          dense
-          debounce="300"
-          v-model="summaryFilter"
-          placeholder="Search"
-        >
+        <q-input borderless dense debounce="300" v-model="summaryFilter" placeholder="Search">
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -327,16 +288,13 @@
               self="center left"
               content-class="bg-accent text-black"
             >
-              <q-icon name="edit" />
-              Edit
+              <q-icon name="edit" />Edit
             </q-tooltip>
           </q-td>
           <q-td key="budgeted" :props="props">
             <!-- {{props.row.budget}} -->
             ${{ props.row.budget.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip>
+            <q-tooltip content-class="bg-accent text-black">Auto Calculated</q-tooltip>
           </q-td>
           <q-td
             key="spent"
@@ -348,9 +306,7 @@
             }"
           >
             ${{ props.row.expenses.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip>
+            <q-tooltip content-class="bg-accent text-black">Auto Calculated</q-tooltip>
           </q-td>
           <q-td key="remaining" :props="props">
             <q-badge
@@ -361,22 +317,14 @@
               }"
               :label="'$' + (props.row.income - props.row.expenses).toFixed(2)"
             />
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip>
+            <q-tooltip content-class="bg-accent text-black">Auto Calculated</q-tooltip>
           </q-td>
           <q-td key="actions" :props="props">
-            <q-btn :to="'budget/' + props.row.id" dense class="q-mr-sm"
-              >Budgets</q-btn
-            >
-            <q-btn :to="'transactions/' + props.row.id" dense class="q-mr-sm"
-              >Transactions</q-btn
-            >
+            <q-btn :to="'budget/' + props.row.id" dense class="q-mr-sm">Budgets</q-btn>
+            <q-btn :to="'transactions/' + props.row.id" dense class="q-mr-sm">Transactions</q-btn>
             <q-btn v-if="props.row.inUse" dense color="negative">
               <q-icon name="delete_forever" />
-              <q-tooltip content-class="bg-accent text-black">
-                Cannot Delete Budget while in use
-              </q-tooltip>
+              <q-tooltip content-class="bg-accent text-black">Cannot Delete Budget while in use</q-tooltip>
             </q-btn>
             <sp-delete-btn
               dense
@@ -387,21 +335,12 @@
         </q-tr>
       </template>
     </q-table>
-    <q-page-sticky
-      position="bottom-left"
-      :offset="[18, 18]"
-      style="z-index:100"
-    >
+    <q-page-sticky position="bottom-left" :offset="[18, 18]" style="z-index:100">
       <q-btn fab icon="add" color="primary" direction="up">
-        <q-tooltip content-class="bg-accent text-black">
-          Add Account
-        </q-tooltip>
+        <q-tooltip content-class="bg-accent text-black">Add Account</q-tooltip>
         <q-menu ref="addCategoryMenu" persistent>
           <!-- <q-scroll-area> -->
-          <sp-budget-form
-            :projectId="$route.params.id"
-            @onSubmit="$refs.addCategoryMenu.hide()"
-          />
+          <sp-budget-form :projectId="$route.params.id" @onSubmit="$refs.addCategoryMenu.hide()" />
           <!-- </q-scroll-area> -->
         </q-menu>
       </q-btn>
@@ -421,30 +360,30 @@ const columns = [
     align: 'left',
     label: 'Label',
     field: 'label',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'budgeted',
     align: 'center',
     label: 'Budgeted (AUD)',
     field: 'budgeted',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'spent',
     align: 'center',
     label: 'Spent (AUD)',
     field: 'spent',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'remaining',
     align: 'center',
     label: 'Cash in Hand (AUD)',
     field: 'remaining',
-    sortable: true
+    sortable: true,
   },
-  { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
+  { name: 'actions', label: 'Actions', field: 'actions', align: 'right' },
 ]
 
 const accountColumns = [
@@ -453,30 +392,30 @@ const accountColumns = [
     align: 'left',
     label: 'Label',
     field: 'label',
-    sortable: true
+    sortable: true,
   },
-  {
-    name: 'income',
-    align: 'center',
-    label: 'In (AUD)',
-    field: 'income',
-    sortable: true
-  },
-  {
-    name: 'expenses',
-    align: 'center',
-    label: 'Out (AUD)',
-    field: 'expenses',
-    sortable: true
-  },
+  // {
+  //   name: 'income',
+  //   align: 'center',
+  //   label: 'In (AUD)',
+  //   field: 'income',
+  //   sortable: true
+  // },
+  // {
+  //   name: 'expenses',
+  //   align: 'center',
+  //   label: 'Out (AUD)',
+  //   field: 'expenses',
+  //   sortable: true
+  // },
   {
     name: 'balance',
     align: 'center',
     label: 'Balance (AUD)',
     field: 'balance',
-    sortable: true
+    sortable: true,
   },
-  { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
+  { name: 'actions', label: 'Actions', field: 'actions', align: 'right' },
 ]
 
 export default {
@@ -492,22 +431,22 @@ export default {
         'budgeted',
         'spent',
         'remaining',
-        'actions'
+        'actions',
       ],
       pagination: {
         sortBy: 'label',
         descending: false,
         page: 1,
-        rowsPerPage: 10
+        rowsPerPage: 10,
         // rowsNumber: xx if getting data from a server
       },
       accountsPagination: {
         sortBy: 'label',
         descending: false,
         page: 1,
-        rowsPerPage: 10
+        rowsPerPage: 10,
         // rowsNumber: xx if getting data from a server
-      }
+      },
       // project: {
       //   name: 'Gold Coast Schoolies',
       //   id: '12345',
@@ -538,7 +477,7 @@ export default {
     ...mapActions([
       'updateCategoryByKey',
       'updateAccountByKey',
-      'updateProjectByKey'
+      'updateProjectByKey',
     ]),
     updateCategory(budgetId, key, val) {
       // console.log(budgetId, key, val)
@@ -553,16 +492,16 @@ export default {
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Category: Updated Successfully'
+            message: 'Category: Updated Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
     },
@@ -579,16 +518,16 @@ export default {
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Account: Updated Successfully'
+            message: 'Account: Updated Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
     },
@@ -603,19 +542,19 @@ export default {
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Project: Updated Successfully'
+            message: 'Project: Updated Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
-    }
+    },
   },
   computed: {
     ...mapGetters(['project', 'budgetCategories', 'accounts', 'tableKey']),
@@ -634,11 +573,11 @@ export default {
         accounts.push(this.accounts[account])
       }
       return accounts
-    }
+    },
   },
   components: {
     'sp-budget-form': () => import('./../components/sp-budget-form.vue'),
-    'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
-  }
+    'sp-delete-btn': () => import('../components/sp-delete-btn.vue'),
+  },
 }
 </script>
