@@ -24,29 +24,33 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         const data = doc.data()
         let newData = {
           expenses: 0,
-          income: 0,
+          balance: 0,
           budget: 0
         }
         if (oldDoc && oldDoc.category === newDoc.category) {
           console.log('updated')
-          console.log(
-            data.expenses ? parseFloat(data.expenses) : 0,
-            newDoc.expenses ? parseFloat(newDoc.expenses) : 0,
-            oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0
-          )
+          // console.log(
+          //   data.expenses ? parseFloat(data.expenses) : 0,
+          //   newDoc.expenses ? parseFloat(newDoc.expenses) : 0,
+          //   oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0
+          // )
           // category hasn't changed. modify the totals by the amount to changed by
           newData.expenses =
             (data.expenses ? parseFloat(data.expenses) : 0) +
             (newDoc.expenses ? parseFloat(newDoc.expenses) : 0) -
             (oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0)
-          newData.income =
-            (data.income ? parseFloat(data.income) : 0) +
-            (newDoc.income ? parseFloat(newDoc.income) : 0) -
-            (oldDoc.income ? parseFloat(oldDoc.income) : 0)
+          // newData.income =
+          //   (data.income ? parseFloat(data.income) : 0) +
+          //   (newDoc.income ? parseFloat(newDoc.income) : 0) -
+          //   (oldDoc.income ? parseFloat(oldDoc.income) : 0)
           newData.budget =
             (data.budget ? parseFloat(data.budget) : 0) +
             (newDoc.budget ? parseFloat(newDoc.budget) : 0) -
             (oldDoc.budget ? parseFloat(oldDoc.budget) : 0)
+          newData.balance =
+            (data.balance ? parseFloat(data.balance) : 0) +
+            (newDoc.balance ? parseFloat(newDoc.balance) : 0) -
+            (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)
         } else {
           console.log('new')
 
@@ -54,12 +58,15 @@ module.exports = ({ admin, environment }) => async (change, context) => {
           newData.expenses =
             (data.expenses ? parseFloat(data.expenses) : 0) +
             (newDoc.expenses ? parseFloat(newDoc.expenses) : 0)
-          newData.income =
-            (data.income ? parseFloat(data.income) : 0) +
-            (newDoc.income ? parseFloat(newDoc.income) : 0)
+          // newData.income =
+          //   (data.income ? parseFloat(data.income) : 0) +
+          //   (newDoc.income ? parseFloat(newDoc.income) : 0)
           newData.budget =
             (data.budget ? parseFloat(data.budget) : 0) +
             (newDoc.budget ? parseFloat(newDoc.budget) : 0)
+          newData.balance =
+            (data.balance ? parseFloat(data.balance) : 0) +
+            (newDoc.balance ? parseFloat(newDoc.balance) : 0)
         }
         console.log(newData)
         t.update(ref, newData)
@@ -76,18 +83,22 @@ module.exports = ({ admin, environment }) => async (change, context) => {
           const data = doc.data()
           let newData = {
             expenses: 0,
-            income: 0,
+            balance: 0,
             budget: 0
           }
           newData.expenses =
             (data.expenses ? parseFloat(data.expenses) : 0) -
             (oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0)
-          newData.income =
-            (data.income ? parseFloat(data.income) : 0) -
-            (oldDoc.income ? Doc.income : 0)
+          // newData.income =
+          //   (data.income ? parseFloat(data.income) : 0) -
+          //   (oldDoc.income ? Doc.income : 0)
           newData.budget =
             (data.budget ? parseFloat(data.budget) : 0) -
             (oldDoc.budget ? parseFloat(oldDoc.budget) : 0)
+          newData.balance =
+            (data.balance ? parseFloat(data.balance) : 0) -
+            (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)
+
           console.log(newData)
           t.update(ref, newData)
         })
@@ -103,19 +114,23 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       const data = doc.data()
       let newData = {
         expenses: 0,
-        income: 0,
+        balance: 0,
         budget: 0
       }
       newData.expenses =
         (data.expenses ? parseFloat(data.expenses) : 0) -
         (oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0)
-      newData.income =
-        (data.income ? parseFloat(data.income) : 0) -
-        (oldDoc.income ? parseFloat(oldDoc.income) : 0)
+      // newData.income =
+      //   (data.income ? parseFloat(data.income) : 0) -
+      //   (oldDoc.income ? parseFloat(oldDoc.income) : 0)
 
       newData.budget =
         (data.budget ? parseFloat(data.budget) : 0) -
         (oldDoc.budget ? parseFloat(oldDoc.budget) : 0)
+      newData.balance =
+        (data.balance ? parseFloat(data.balance) : 0) -
+        (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)
+
       console.log(newData)
       t.update(ref, newData)
     })

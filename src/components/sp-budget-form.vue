@@ -1,7 +1,25 @@
 <template>
   <q-form @reset="onReset" @submit="onSubmit">
     <q-list style="min-width: 100px;min-height:360px;">
-      <q-item class="text-h6 justify-center">
+      <q-item>
+        <q-btn-toggle
+          v-model="newBudget.type"
+          toggle-color="primary"
+          :options="[
+            { label: 'Budget', value: 'budget' },
+            { label: 'Category', value: 'category' },
+            { label: 'Account', value: 'account' },
+            { label: 'Transaction', value: 'transaction' }
+          ]"
+          push
+          dense
+          class="q-mx-auto"
+        />
+      </q-item>
+      <q-item
+        class="text-h6 justify-center"
+        v-if="newBudget.type !== 'transaction'"
+      >
         Add
         {{ newBudget.type.charAt(0).toUpperCase() + newBudget.type.slice(1) }}
 
@@ -20,21 +38,13 @@
           </q-tooltip>
         </q-icon>
       </q-item>
-      <q-item>
-        <q-btn-toggle
-          v-model="newBudget.type"
-          toggle-color="primary"
-          :options="[
-            { label: 'Budget', value: 'budget' },
-            { label: 'Category', value: 'category' },
-            { label: 'Account', value: 'account' }
-          ]"
-          style="width:100%"
-          push
-          dense
+      <q-item v-if="newBudget.type === 'transaction'">
+        <sp-trans-form
+          :projectId="project.id"
+          @onSubmit="$emit('onSubmit', $event)"
         />
       </q-item>
-      <q-item>
+      <q-item v-if="newBudget.type !== 'transaction'">
         <q-input
           v-model="newBudget.label"
           :label="
@@ -85,7 +95,10 @@
         <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
       </q-item>
-      <q-item class="absolute-bottom q-mb-sm">
+      <q-item
+        class="absolute-bottom q-mb-sm"
+        v-if="newBudget.type !== 'transaction'"
+      >
         <q-btn label="Submit" type="submit" color="secondary" />
         <q-btn
           label="Clear"
@@ -105,7 +118,7 @@ import firebase from 'firebase/app'
 require('firebase/firestore')
 
 export default {
-  props: ['projectId'],
+  props: ['projectId', 'show'],
   data() {
     return {
       newBudget: {
@@ -118,6 +131,9 @@ export default {
     }
   },
   created() {
+    if (this.show) {
+      this.newBudget.type = this.show
+    }
     // this.$store.dispatch('fetchTransactions', this.$route.params.id)
     // this.$store.dispatch('fetchBudgets', this.$route.params.id)
     // this.$q.loading.show()
@@ -137,6 +153,9 @@ export default {
         return false
       }
       // console.log(`/projects/${this.projectId}/budgets`)
+      if (this.newBudget.type === 'account') {
+        this.newBudget.inHeader = false
+      }
       let newBudgetRef = firebase
         .firestore()
         .collection(`/projects/${this.projectId}/accounts`)
@@ -183,6 +202,9 @@ export default {
       'budgetOptions',
       'budgetCategoryOptions'
     ])
+  },
+  components: {
+    'sp-trans-form': () => import('../components/sp-trans-form.vue')
   }
 }
 </script>

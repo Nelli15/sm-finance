@@ -755,20 +755,27 @@
         </q-tr>
       </template>
     </q-table>
-    <q-page-sticky
-      position="bottom-left"
-      :offset="[18, 18]"
-      style="z-index:100"
-    >
-      <q-btn fab icon="add" color="primary">
+    <q-page-sticky position="bottom-left" :offset="fabPos" style="z-index:100">
+      <q-btn
+        fab
+        icon="add"
+        color="primary"
+        :disable="draggingFab"
+        v-touch-pan.prevent.mouse="moveFab"
+      >
         <q-tooltip content-class="bg-accent text-grey-10">
           Add Transaction
         </q-tooltip>
         <q-menu ref="addTransMenu" persistent>
           <!-- <q-scroll-area> -->
-          <sp-trans-form
+          <!-- <sp-trans-form
             :projectId="project.id"
             @onSubmit="$refs.addTransMenu.hide()"
+          /> -->
+          <sp-budget-form
+            :projectId="project.id"
+            @onSubmit="$refs.addTransMenu.hide()"
+            show="transaction"
           />
           <!-- </q-scroll-area> -->
         </q-menu>
@@ -776,11 +783,15 @@
     </q-page-sticky>
     <q-page-sticky
       position="bottom-right"
-      :offset="[18, 18]"
+      :offset="sumFabPos"
       style="z-index:100"
       v-if="rowSelected.length > 0"
     >
-      <q-card class="bg-primary text-white">
+      <q-card
+        class="bg-primary text-white"
+        :disable="draggingSumFab"
+        v-touch-pan.prevent.mouse="moveSumFab"
+      >
         <q-card-section>
           Amount ({{ project.currency }}): ${{ calcSelected }}
           <q-tooltip content-class="bg-accent text-grey-10">
@@ -905,14 +916,18 @@ export default {
       },
       rowSelected: [],
       showArchived: false,
-      typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
+      typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card'],
+      fabPos: [18, 18],
+      draggingFab: false,
+      sumFabPos: [18, 18],
+      draggingSumFab: false
     }
   },
   preFetch({ store, currentRoute }) {
     store.dispatch('fetchTransactions', currentRoute.params.id)
-    store.dispatch('fetchBudgetCategories', currentRoute.params.id)
-    store.dispatch('fetchBudgets', currentRoute.params.id)
-    store.dispatch('fetchAccounts', currentRoute.params.id)
+    // store.dispatch('fetchBudgetCategories', currentRoute.params.id)
+    // store.dispatch('fetchBudgets', currentRoute.params.id)
+    // store.dispatch('fetchAccounts', currentRoute.params.id)
   },
   created() {
     // console.log(this.project.currency)
@@ -939,6 +954,19 @@ export default {
   },
   methods: {
     ...mapActions(['updateTransactionByKey']),
+    moveFab(ev) {
+      this.draggingFab = ev.isFirst !== true && ev.isFinal !== true
+
+      this.fabPos = [this.fabPos[0] + ev.delta.x, this.fabPos[1] - ev.delta.y]
+    },
+    moveSumFab(ev) {
+      this.draggingSumFab = ev.isFirst !== true && ev.isFinal !== true
+
+      this.sumFabPos = [
+        this.sumFabPos[0] - ev.delta.x,
+        this.sumFabPos[1] - ev.delta.y
+      ]
+    },
     filterFn(val, update) {
       if (val === '') {
         update(() => {
@@ -1248,7 +1276,7 @@ export default {
     }
   },
   components: {
-    'sp-trans-form': () => import('../components/sp-trans-form.vue'),
+    'sp-budget-form': () => import('../components/sp-budget-form.vue'),
     'sp-receipt': () => import('../components/sp-receipt.vue'),
     'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
   }

@@ -6,7 +6,10 @@
     @validation-error="onLog('err ' + $event)"
     ref="transForm"
   >
-    <q-list style="min-width: 100px; max-width:500px;">
+    <q-list
+      style="min-width: 100px; max-width:500px;"
+      :style="$q.platform.is.desktop ? 'width:400px;' : ''"
+    >
       <q-item class="text-h6 justify-center">
         <!-- <q-item-section> -->
         Add Transaction
@@ -25,6 +28,7 @@
       <q-item>
         <!-- <q-item-section> -->
         <q-firebase-uploader
+          v-if="newTrans.category === 'Expense'"
           :metadata="{
             customMetadata: {
               projectId: project.id,
@@ -239,11 +243,11 @@
           dense
           :label="'Amount (' + this.project.currency + ')'"
           :rules="[v => !!v || 'Required value']"
-          style="width:50%"
+          :style="newTrans.receipt ? 'width:50%;' : 'width: 100%;'"
           prefix="$"
         />
         <q-input
-          v-if="newTrans.category === 'Expense'"
+          v-if="newTrans.category === 'Expense' && newTrans.receipt"
           v-model="newTrans.GST"
           dense
           :label="'GST (' + this.project.currency + ')'"

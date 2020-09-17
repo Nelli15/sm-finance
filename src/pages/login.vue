@@ -31,7 +31,7 @@ export default {
         firebase.auth.GithubAuthProvider.PROVIDER_ID,
         firebase.auth.EmailAuthProvider.PROVIDER_ID
       ],
-      signInSuccessUrl: '/#/dashboard',
+      signInSuccessUrl: '/dashboard',
       callbacks: {
         signInSuccessWithAuthResult(authResult, redirectUrl) {
           console.log(authResult, redirectUrl)

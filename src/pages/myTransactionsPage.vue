@@ -831,6 +831,15 @@ export default {
       typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
     }
   },
+  preFetch({ store, currentRoute }) {
+    // store.dispatch('fetchBudgets', currentRoute.params.id)
+    // store.dispatch('fetchBudgetCategories', currentRoute.params.id)
+    // store.dispatch('fetchAccounts', currentRoute.params.id)
+    store.dispatch('fetchMyTransactions', {
+      projectId: currentRoute.params.id,
+      uid: store.state.auth.user.uid
+    })
+  },
   created() {
     // console.log(this.project.currency)
     this.$store.dispatch('fetchMyTransactions', {

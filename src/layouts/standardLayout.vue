@@ -499,12 +499,12 @@
             {{ account.label }}:
             <q-badge
               :class="{
-                'bg-green-8': account.income - account.expenses > 0,
-                'bg-red-8': account.income - account.expenses < 0,
-                'bg-black': account.income - account.expenses == 0
+                'bg-green-8': (account.balance ? account.balance : 0) > 0,
+                'bg-red-8': (account.balance ? account.balance : 0) < 0,
+                'bg-black': (account.balance ? account.balance : 0) == 0
               }"
               icon="account_balance"
-              :label="'$' + (account.income - account.expenses).toFixed(2)"
+              :label="'$' + (account.balance ? account.balance : 0).toFixed(2)"
             />
           </q-tab>
         </q-tabs>
@@ -540,6 +540,11 @@ export default {
       }
       // admins: []
     }
+  },
+  preFetch({ store, currentRoute }) {
+    store.dispatch('fetchBudgets', currentRoute.params.id)
+    store.dispatch('fetchBudgetCategories', currentRoute.params.id)
+    store.dispatch('fetchAccounts', currentRoute.params.id)
   },
   created() {
     // console.log(this.$route.name)

@@ -834,8 +834,8 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
           //   console.error(err)
           // })
           let filename = file.metadata.name.split('-')
-          console.log(filename.length)
-          receipts[filename[filename.length]] = data
+          // console.log(filename.length, filename[filename.length - 1])
+          receipts[filename[filename.length - 1]] = data
           // console.log(file.metadata)
         }
 

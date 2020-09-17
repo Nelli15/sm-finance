@@ -167,13 +167,16 @@
           <q-td key="remaining" :props="props">
             <q-badge
               :class="{
-                'bg-green-8': props.row.income - props.row.expenses > 0.01,
-                'bg-red-8': props.row.income - props.row.expenses < -0.01,
+                'bg-green-8':
+                  (props.row.balance ? props.row.balance : 0) > 0.01,
+                'bg-red-8': (props.row.balance ? props.row.balance : 0) < -0.01,
                 'bg-black':
-                  props.row.income - props.row.expenses < 0.01 &&
-                  props.row.income - props.row.expenses > -0.01
+                  (props.row.balance ? props.row.balance : 0) < 0.01 &&
+                  (props.row.balance ? props.row.balance : 0) > -0.01
               }"
-              :label="'$' + (props.row.income - props.row.expenses).toFixed(2)"
+              :label="
+                '$' + (props.row.balance ? props.row.balance : 0).toFixed(2)
+              "
             />
             <q-tooltip content-class="bg-accent text-black">
               Auto Calculated
@@ -208,18 +211,22 @@
         </q-tr>
       </template>
     </q-table>
-    <q-page-sticky
-      position="bottom-left"
-      :offset="[18, 18]"
-      style="z-index:100"
-    >
-      <q-btn fab icon="add" color="primary" direction="up">
+    <q-page-sticky position="bottom-left" :offset="fabPos" style="z-index:100">
+      <q-btn
+        fab
+        icon="add"
+        color="primary"
+        direction="up"
+        :disable="draggingFab"
+        v-touch-pan.prevent.mouse="moveFab"
+      >
         <q-tooltip content-class="bg-accent text-black">
           Add Account
         </q-tooltip>
         <q-menu ref="addBudgetMenu" persistent>
           <!-- <q-scroll-area> -->
           <sp-budget-form
+            show="budget"
             :projectId="$route.params.id"
             @onSubmit="$refs.addBudgetMenu.hide()"
           />
@@ -295,16 +302,23 @@ export default {
         page: 1,
         rowsPerPage: 10
         // rowsNumber: xx if getting data from a server
-      }
+      },
+      fabPos: [18, 18],
+      draggingFab: false
     }
+  },
+  preFetch({ store, currentRoute }) {
+    // store.dispatch('fetchBudgets', currentRoute.params.id)
+    // store.dispatch('fetchBudgetCategories', currentRoute.params.id)
+    // store.dispatch('fetchAccounts', currentRoute.params.id)
   },
   created() {
     // this.$store.dispatch('fetchTransactions', this.$route.params.id)
     // this.$store.dispatch('fetchBudgets', this.$route.params.id)
     // this.$store.dispatch('fetchProject', { projectId: this.$route.params.id, uid: this.user.uid })
     // this.$store.dispatch('fetchTransactions', this.$route.params.id)
-    this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
-    this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    // this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
+    // this.$store.dispatch('fetchBudgets', this.$route.params.id)
     // this.$store.dispatch('fetchAccounts', this.$route.params.id)
     // this.$store.dispatch('fetchContributors', this.$route.params.id)
     // this.$store.dispatch('fetchInvites', this.$route.params.id)
@@ -315,6 +329,11 @@ export default {
   },
   methods: {
     ...mapActions(['updateBudgetByKey']),
+    moveFab(ev) {
+      this.draggingFab = ev.isFirst !== true && ev.isFinal !== true
+
+      this.fabPos = [this.fabPos[0] + ev.delta.x, this.fabPos[1] - ev.delta.y]
+    },
     updateBudget(budgetId, key, val) {
       // console.log(budgetId, key, val)
       this.updateBudgetByKey({ budgetId, key, val })

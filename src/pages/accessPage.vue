@@ -776,6 +776,11 @@ export default {
       }
     }
   },
+  preFetch({ store, currentRoute }) {
+    // store.dispatch('fetchBudgets', currentRoute.params.id)
+    store.dispatch('fetchContributors', currentRoute.params.id)
+    store.dispatch('fetchInvites', currentRoute.params.id)
+  },
   created() {
     // console.log(this.$route.name)
     // this.$store.dispatch('fetchProject', { projectId: this.$route.params.id, uid: this.user.uid })
@@ -783,8 +788,8 @@ export default {
     // this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
     // this.$store.dispatch('fetchBudgets', this.$route.params.id)
     // this.$store.dispatch('fetchAccounts', this.$route.params.id)
-    this.$store.dispatch('fetchContributors', this.$route.params.id)
-    this.$store.dispatch('fetchInvites', this.$route.params.id)
+    // this.$store.dispatch('fetchContributors', this.$route.params.id)
+    // this.$store.dispatch('fetchInvites', this.$route.params.id)
     // console.log(this.$route.name)
     this.newInvitation.fromName = this.user.displayName
     this.newInvitation.projectName = this.project.name
