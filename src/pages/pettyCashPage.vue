@@ -409,10 +409,11 @@ export default {
       'cents'
     ]),
     expected() {
-      return (
-        (this.accounts['pettyCash'] ? this.accounts['pettyCash'].income : 0) -
-        (this.accounts['pettyCash'] ? this.accounts['pettyCash'].expenses : 0)
-      )
+      return this.accounts['pettyCash']
+        ? this.accounts['pettyCash'].balance
+          ? this.accounts['pettyCash'].balance
+          : 0
+        : 0
     },
     total() {
       return (

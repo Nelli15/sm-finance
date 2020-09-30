@@ -1,6 +1,5 @@
 <template>
   <q-layout view="hHh lpR fFf">
-
     <q-header elevated class="bg-primary text-white" height-hint="98">
       <q-toolbar>
         <q-toolbar-title>
@@ -9,16 +8,19 @@
           </q-avatar> -->
           SP Finances
         </q-toolbar-title>
-        <q-btn icon="add" flat dense @click="createProject">
+        <q-btn
+          icon="add"
+          flat
+          dense
+          @click="createProject"
+          v-if="user.email.includes('@powertochange.org.au')"
+        >
           <q-tooltip content-class="bg-accent text-grey-10">
             Add a Project
           </q-tooltip>
         </q-btn>
-        <q-btn
-          flat
-          no-caps
-        >
-        <!-- {{ user }} -->
+        <q-btn flat no-caps>
+          <!-- {{ user }} -->
           <q-tooltip content-class="bg-accent text-grey-10">
             Who am I?
           </q-tooltip>
@@ -41,29 +43,29 @@
               </q-item>
               <q-card-actions vertical align="center">
                 <q-btn
-                flat
-                icon="logout"
-                label="Logout"
-                :to="{ name: 'logout' }"
-              />
+                  flat
+                  icon="logout"
+                  label="Logout"
+                  :to="{ name: 'logout' }"
+                />
               </q-card-actions>
             </q-card>
           </q-menu>
         </q-btn>
       </q-toolbar>
 
-     <!--  <q-tabs align="left">
+      <!--  <q-tabs align="left">
         <q-route-tab :to="{ name: 'summary' }" label="Summary" />
         <q-route-tab :to="{ name: 'budget' }" label="Budget" />
         <q-route-tab :to="{ name: 'transactions' }" label="Transactions" />
         <q-route-tab :to="{ name: 'petty' }" label="Petty Cash" />
       </q-tabs>
- -->    </q-header>
+ -->
+    </q-header>
 
     <q-page-container>
       <router-view />
     </q-page-container>
-
   </q-layout>
 </template>
 
@@ -73,20 +75,20 @@ import firebase from 'firebase/app'
 require('firebase/functions')
 
 export default {
-  data () {
+  data() {
     return {
       right: false
       // admins: []
     }
   },
-  created () {
+  created() {
     // console.log(this.user.uid)
     if (this.user.uid) {
       this.$store.dispatch('fetchProjects', this.user.uid)
     }
   },
   methods: {
-    async createProject () {
+    async createProject() {
       let createProject = firebase.functions().httpsCallable('createProject')
       createProject()
         .then(() => {
@@ -97,7 +99,8 @@ export default {
             icon: 'cloud_done',
             message: 'Project Created Successfully'
           })
-        }).catch(err => {
+        })
+        .catch(err => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
@@ -118,7 +121,7 @@ export default {
     ])
   },
   watch: {
-    user () {
+    user() {
       // console.log(this.user.uid)
       this.$store.dispatch('fetchProjects', this.user.uid)
     }

@@ -948,7 +948,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
         let categoryDoc = accountDocs[categoryId]
         transArray[index] = [
           project.get('number'),
-          transaction.id,
+          project.get('number') + transaction.id,
           0, // international transfer? 0 if no, 1? if yes
           transData.amount,
           transData.GST,
@@ -980,7 +980,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
       ) {
         transArray[index] = [
           project.get('number'),
-          transaction.id,
+          project.get('number') + transaction.id,
           0,
           transData.from === 'pettyCash'
             ? -1 * parseFloat(transData.amount)

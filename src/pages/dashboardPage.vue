@@ -322,7 +322,10 @@ export default {
           message: 'Saving File',
           delay: 0
         })
-        saveAs(blob, 'receipts.zip')
+        saveAs(
+          blob,
+          `${this.projects[projectId].number}-${this.projects[projectId].name}.zip`
+        )
         this.exportZipLoading = false
         this.$q.loading.hide()
         this.$q.notify({

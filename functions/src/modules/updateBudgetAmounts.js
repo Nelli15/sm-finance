@@ -109,11 +109,11 @@ function updateBudget(db, projectId, budgetId, expense, amount) {
     let newData = { income: 0, expenses: 0, balance: 0 }
     // newData.income = data.income ? parseFloat(data.income) + income : 0 + income
     newData.expenses = data.expenses
-      ? parseFloat(data.expenses) + expense
-      : 0 + expense
+      ? parseFloat(data.expenses) + parseFloat(expense)
+      : 0 + parseFloat(expense)
     newData.balance = data.balance
-      ? parseFloat(data.balance) + amount
-      : 0 + amount
+      ? parseFloat(data.balance) + parseFloat(amount)
+      : 0 + parseFloat(amount)
     t.update(ref, newData)
   })
 }
