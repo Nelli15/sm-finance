@@ -22,7 +22,7 @@ export const getters = {
         admins.push(state.contributors[contributor])
       }
     }
-    return admins.sort((a, b) => (a.name > b.name) ? 1 : -1)
+    return admins.sort((a, b) => (a.name > b.name ? 1 : -1))
   },
   contributors: state => {
     let contributors = []
@@ -31,65 +31,71 @@ export const getters = {
         contributors.push(state.contributors[contributor])
       }
     }
-    return contributors.sort((a, b) => (a.name > b.name) ? 1 : -1)
+    return contributors.sort((a, b) => (a.name > b.name ? 1 : -1))
   },
   invites: state => {
     let invites = []
     for (var invite in state.invites) {
       invites.push(state.invites[invite])
     }
-    return invites.sort((a, b) => (a.name > b.name) ? 1 : -1)
+    return invites.sort((a, b) => (a.name > b.name ? 1 : -1))
   },
   idToken: state => state.idToken,
   userLoadStatus: state => state.userLoadStatus
 }
 
 export const mutations = {
-  setUser (state, payload) {
+  setUser(state, payload) {
     state.user = payload
     // state.logInCheck = true
   },
-  setContributors (state, payload) {
+  setContributors(state, payload) {
     state.contributors = payload
   },
-  setIdToken (state, payload) {
+  setIdToken(state, payload) {
     // console.log(payload)
     state.idToken = payload
   },
-  setInvites (state, payload) {
+  setInvites(state, payload) {
     state.invites = payload
   },
-  setUserLoadStatus (state, payload) {
+  setUserLoadStatus(state, payload) {
     state.userLoadStatus = payload
   }
 }
 
 export const actions = {
-  fetchContributors ({ commit }, payload) {
+  fetchContributors({ commit }, payload) {
     // console.log('fetching contributors')
-    firebase.firestore().collection(`/projects/${payload}/contributors`).onSnapshot(async adminsSnap => {
-      let contributors = []
-      let promises = adminsSnap.docs.map(doc => {
-        // console.log('contributor ', doc.data())
-        contributors.push(doc.data())
+    firebase
+      .firestore()
+      .collection(`/projects/${payload}/contributors`)
+      .onSnapshot(async adminsSnap => {
+        let contributors = []
+        let promises = adminsSnap.docs.map(doc => {
+          // console.log('contributor ', doc.data())
+          contributors.push(doc.data())
+        })
+        await Promise.all(promises)
+        // console.log(members)
+        commit('setContributors', contributors)
       })
-      await Promise.all(promises)
-      // console.log(members)
-      commit('setContributors', contributors)
-    })
   },
-  fetchInvites ({ commit }, payload) {
+  fetchInvites({ commit }, payload) {
     // console.log('fetching contributors')
-    firebase.firestore().collection(`/projects/${payload}/invites`).onSnapshot(async adminsSnap => {
-      let invites = []
-      let promises = adminsSnap.docs.map(doc => {
-        // console.log('contributor ', doc.data())
-        invites.push(doc.data())
+    firebase
+      .firestore()
+      .collection(`/projects/${payload}/invites`)
+      .onSnapshot(async adminsSnap => {
+        let invites = []
+        let promises = adminsSnap.docs.map(doc => {
+          // console.log('contributor ', doc.data())
+          invites.push(doc.data())
+        })
+        await Promise.all(promises)
+        // console.log(members)
+        commit('setInvites', invites)
       })
-      await Promise.all(promises)
-      // console.log(members)
-      commit('setInvites', invites)
-    })
   }
 }
 

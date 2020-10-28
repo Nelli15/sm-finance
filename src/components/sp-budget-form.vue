@@ -23,19 +23,142 @@
         Add
         {{ newBudget.type.charAt(0).toUpperCase() + newBudget.type.slice(1) }}
 
-        <q-icon name="help_outline" size="xs" color="grey-7">
-          <q-tooltip
-            max-width="150px"
-            anchor="center right"
-            self="center left"
-            content-class="bg-cyan-2 text-black"
-          >
-            Create a new
-            {{
-              newBudget.type.charAt(0).toUpperCase() + newBudget.type.slice(1)
-            }}
-            below.
-          </q-tooltip>
+        <q-icon
+          name="help_outline"
+          style="cursor:pointer;"
+          size="xs"
+          color="grey-7"
+        >
+          <q-menu max-width="370px" anchor="center right" self="center left">
+            <q-list
+              separator
+              class="q-px-sm"
+              v-if="newBudget.type === 'budget'"
+            >
+              <q-item>
+                <q-item-section>
+                  <q-item-label header class="text-bold"
+                    >Add Budget</q-item-label
+                  >
+                  <q-item-label caption>
+                    This form is used to create a new Budget
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-expansion-item expand-separator label="Budget Label">
+                <q-card>
+                  <q-card-section>
+                    The label/name for the new budget.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Category">
+                <q-card>
+                  <q-card-section>
+                    The Budget Category this Budget is linked to. All Budgets
+                    must be linked to a Budget Category.<br />
+                    If this field is blank try creating a Category by clicking
+                    the Category tab at the top of this form.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Budget Amount">
+                <q-card>
+                  <q-card-section>
+                    The amount you have allocated to be spent in this Budget
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Create">
+                <q-card>
+                  <q-card-section>
+                    Create the Budget
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Clear">
+                <q-card>
+                  <q-card-section>
+                    Clear all fields of this form
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </q-list>
+            <q-list
+              separator
+              class="q-px-sm"
+              v-else-if="newBudget.type === 'category'"
+            >
+              <q-item>
+                <q-item-section>
+                  <q-item-label header class="text-bold"
+                    >Add Category</q-item-label
+                  >
+                  <q-item-label caption>
+                    This form is used to create a new Budget Category
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-expansion-item expand-separator label="Budget Label">
+                <q-card>
+                  <q-card-section>
+                    The label/name for the new Budget Category.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Create">
+                <q-card>
+                  <q-card-section>
+                    Create the Budget Category
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Clear">
+                <q-card>
+                  <q-card-section>
+                    Clear all fields of this form
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </q-list>
+            <q-list
+              separator
+              class="q-px-sm"
+              v-else-if="newBudget.type === 'account'"
+            >
+              <q-item>
+                <q-item-section>
+                  <q-item-label header class="text-bold"
+                    >Add Account</q-item-label
+                  >
+                  <q-item-label caption>
+                    This form is used to create a new Account
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-expansion-item expand-separator label="Budget Label">
+                <q-card>
+                  <q-card-section>
+                    The label/name for the new Account.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Create">
+                <q-card>
+                  <q-card-section>
+                    Create the Account
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Clear">
+                <q-card>
+                  <q-card-section>
+                    Clear all fields of this form
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </q-list>
+          </q-menu>
         </q-icon>
       </q-item>
       <q-item v-if="newBudget.type === 'transaction'">
@@ -99,7 +222,7 @@
         class="absolute-bottom q-mb-sm"
         v-if="newBudget.type !== 'transaction'"
       >
-        <q-btn label="Submit" type="submit" color="secondary" />
+        <q-btn label="Create" type="submit" color="secondary" />
         <q-btn
           label="Clear"
           type="reset"

@@ -102,39 +102,31 @@
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
           Accounts
-          <q-icon name="help_outline" size="xs" color="grey-7">
-            <q-tooltip
-              max-width="150px"
-              anchor="center right"
-              self="center left"
-              content-class="bg-cyan-2 text-black"
-            >
-              Accounts are physical or digital locations where money is stored.
-              Typically a bank account, bank card or petty cash.
-            </q-tooltip>
+          <q-icon
+            name="help_outline"
+            style="cursor:pointer;"
+            size="xs"
+            color="grey-7"
+          >
+            <q-menu max-width="370px" anchor="center right" self="center left">
+              <q-list separator class="q-px-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label header class="text-bold"
+                      >Accounts</q-item-label
+                    >
+                    <q-item-label caption>
+                      Accounts are physical or digital locations where money is
+                      stored. Typically a bank account, bank card or petty cash.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-icon>
         </div>
 
         <q-space />
-
-        <!-- <div v-if="$q.screen.gt.xs" class="col">
-          <q-toggle v-for="column in columns" v-model="visibleColumns" :val="column.name" :label="column.label" :key="column.name" />
-        </div>
-        -->
-        <!-- <q-select
-          v-model="visibleColumns"
-          multiple
-          borderless
-          dense
-          options-dense
-          :display-value="$q.lang.table.columns"
-          emit-value
-          map-options
-          :options="columns"
-          option-value="name"
-          style="min-width: 150px"
-        />-->
-
         <q-input
           borderless
           dense
@@ -177,18 +169,6 @@
               <q-icon name="edit" />Edit
             </q-tooltip>
           </q-td>
-          <!-- <q-td key="income" :props="props" class="text-positive">
-            ${{ props.row.income.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip>
-          </q-td>-->
-          <!-- <q-td key="expenses" :props="props" class="text-negative">
-            ${{ props.row.expenses.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip>
-          </q-td>-->
           <q-td key="balance" :props="props">
             <q-badge
               :class="{
@@ -253,39 +233,34 @@
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
           Categories
-          <q-icon name="help_outline" size="xs" color="grey-7">
-            <q-tooltip
-              max-width="150px"
-              anchor="center right"
-              self="center left"
-              content-class="bg-cyan-2 text-black"
-            >
-              Categories are the budget categories included in your budget for
-              SP National (National Summer Projects). To add a category that was
-              not included in the budget for SP National see Budgets.
-            </q-tooltip>
+          <q-icon
+            name="help_outline"
+            style="cursor:pointer;"
+            size="xs"
+            color="grey-7"
+          >
+            <q-menu max-width="370px" anchor="center right" self="center left">
+              <q-list separator class="q-px-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label header class="text-bold"
+                      >Categories</q-item-label
+                    >
+                    <q-item-label caption>
+                      Categories are the Budget Categories included in your
+                      Budget for Summer Projects Nations. Summer Projects
+                      National will create these for you, so you don't need to
+                      add, delete, edit them. They do however provide a helpful
+                      summary of the status of finances within your Project.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-icon>
         </div>
 
         <q-space />
-
-        <!-- <div v-if="$q.screen.gt.xs" class="col">
-          <q-toggle v-for="column in columns" v-model="visibleColumns" :val="column.name" :label="column.label" :key="column.name" />
-        </div>
-        -->
-        <!-- <q-select
-          v-model="visibleColumns"
-          multiple
-          borderless
-          dense
-          options-dense
-          :display-value="$q.lang.table.columns"
-          emit-value
-          map-options
-          :options="columns"
-          option-value="name"
-          style="min-width: 150px"
-        />-->
 
         <q-input
           borderless
@@ -298,7 +273,7 @@
             <q-icon name="search" />
           </template>
         </q-input>
-
+        <sp-category-import />
         <q-btn
           flat
           round
@@ -652,7 +627,8 @@ export default {
   },
   components: {
     'sp-budget-form': () => import('./../components/sp-budget-form.vue'),
-    'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
+    'sp-delete-btn': () => import('../components/sp-delete-btn.vue'),
+    'sp-category-import': () => import('../components/sp-category-import.vue')
   }
 }
 </script>

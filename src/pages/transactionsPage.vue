@@ -1,7 +1,5 @@
 <template>
   <q-page padding>
-    <!-- {{budgetCategories}} -->
-    <!-- {{ budget }} -->
     <q-banner
       class="bg-info text-center q-mb-md"
       rounded
@@ -135,25 +133,146 @@
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
           Transactions{{ pageLabel > '' ? ' for ' + pageLabel : '' }}
-          <q-icon name="help_outline" size="xs" color="grey-7">
-            <q-tooltip
-              max-width="150px"
-              anchor="center right"
-              self="center left"
-              content-class="bg-cyan-2 text-black"
-            >
-              Transactions record the transfer of money into, out of, and within
-              a project. A transaction should be recorded each time money is
-              moved. There are three types of transactions. <br />
-              <b class="text-green-8">-Income (Green)</b>, records when a
-              project recieves money from something, usually SP National<br />
-              <b class="text-blue-8">-Journal (Blue)</b>, records money being
-              moved amoungst accounts and budgets without leaving the
-              project.<br />
-              <b class="text-red-8">-Expense (Red)</b>, records money leaving
-              the project. eg. buying groceries, or returning money to SP
-              National
-            </q-tooltip>
+          <q-icon
+            name="help_outline"
+            style="cursor:pointer;"
+            size="xs"
+            color="grey-7"
+          >
+            <q-menu max-width="370px" anchor="center right" self="center left">
+              <q-list separator class="q-px-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label header class="text-bold"
+                      >Transactions</q-item-label
+                    >
+                    <q-item-label caption>
+                      Transactions record the transfer of money into, out of,
+                      and within a Project. A Transaction should be recorded
+                      each time money is moved. There are three types of
+                      Transactions. <br />
+                      <br />
+                      When choosing which Transaction to record, consider any
+                      money in the hands of Missionaries and Project
+                      Participants as 'within' the Project. Money 'outside' the
+                      Project includes money in the hands of Summer Project
+                      National and venders such as the accomodation and grocery
+                      stores.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-expansion-item
+                  expand-separator
+                  label="Income (Green)"
+                  class="text-green-8"
+                >
+                  <q-card>
+                    <q-card-section>
+                      Income Transactions record when a Project receives money
+                      from outside of the Project, usually from Summer Projects
+                      National, and are recorded in green.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+                <q-expansion-item
+                  expand-separator
+                  label="Journal (Blue)"
+                  class="text-blue-8"
+                >
+                  <q-card>
+                    <q-card-section>
+                      Journal Transactions record money being moved amoungst
+                      Accounts and Budgets without leaving the Project and are
+                      recorded in blue.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+                <q-expansion-item
+                  expand-separator
+                  label="Expense (Red)"
+                  class="text-red-8"
+                >
+                  <q-card>
+                    <q-card-section>
+                      Expense Transactions records money leaving the Project and
+                      are recorded in red. eg. buying groceries, or returning
+                      money to Summer Projects National.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+                <q-expansion-item expand-separator label="Columns">
+                  <q-card>
+                    <q-card-section>
+                      Each Transaction contains a number of fields that each
+                      need to have the correct information in them before the
+                      end of the Summer Project. This is what they should
+                      contain.<br /><br />
+                      <ul>
+                        <li>
+                          From - The user who submitted the Transaction (Auto
+                          Generated)
+                        </li>
+                        <li>
+                          Transaction ID - An internal system identifier for the
+                          Transactio (Auto Generated)
+                        </li>
+                        <li>
+                          Type - The physical method used for the Transaction
+                          (Cash, Bank Card, Internet Transfer, Cheque)
+                        </li>
+                        <li>
+                          Category - The Category connected to the relevant
+                          Budget (Auto Generated)
+                        </li>
+                        <li>
+                          Budget/Account - The Budget/s related to the
+                          Transaction
+                        </li>
+                        <li>
+                          Date - The date that the Transaction took place, for
+                          expense Transactions this will be recorded on the Tax
+                          Invoice
+                        </li>
+                        <li>Amount - The amount that was transfered</li>
+                        <li>
+                          GST - The amount of GST that was spent (Expenses only)
+                        </li>
+                        <li>
+                          Paid To - The supplier/business who the Transaction
+                          was made to (Expenses only)
+                        </li>
+                        <li>
+                          Description - A description of what the Transaction
+                          is, why was it made
+                        </li>
+                        <li>
+                          Cheque # - The number of the cheque (Cheque
+                          Transactions only)
+                        </li>
+                      </ul>
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+                <q-expansion-item
+                  expand-separator
+                  label="Processing & Reviewing"
+                >
+                  <q-card>
+                    <q-card-section>
+                      Each time you/or someone else submits a Transaction, you
+                      need to review it. Once you have checked that all of the
+                      details for the Transaction are correct, click the
+                      'Reviewed?' button. This will lock the Transaction and
+                      prevent Contributors from editing this Transaction. At the
+                      end of the Summer Project all Transactions should have
+                      been checked and marked as 'Reviewed!'. Use the
+                      'Reviewed?' button to keep track of what you have and
+                      haven't processed.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+              </q-list>
+            </q-menu>
           </q-icon>
         </div>
 
@@ -164,6 +283,7 @@
         </div>
  -->
         <q-select
+          label="Visible Columns"
           v-model="visibleColumns"
           multiple
           borderless
@@ -611,6 +731,42 @@
             </q-tooltip>
           </q-td>
           <q-td
+            key="payTo"
+            :props="props"
+            class="cursor-pointer"
+            style="white-space: normal;"
+            v-if="props.row.category === 'Expense'"
+          >
+            {{
+              props.row.payTo
+                ? props.row.payTo
+                : props.row.submittedBy.displayName
+            }}
+            <q-popup-edit v-model="props.row.payTo">
+              <q-input
+                :value="props.row.payTo"
+                @input="updateTransaction(props.row.id, 'payTo', $event)"
+                dense
+                autofocus
+                label="Paid To"
+              />
+            </q-popup-edit>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+            >
+              <q-icon name="edit" />
+              Edit
+            </q-tooltip>
+          </q-td>
+          <q-td
+            v-else
+            key="payTo"
+            :props="props"
+            style="white-space: normal;"
+          />
+          <q-td
             key="desc"
             :props="props"
             class="cursor-pointer"
@@ -725,7 +881,7 @@
                 self="center left"
                 content-class="bg-accent text-black"
               >
-                Reviewed?
+                {{ props.row.reviewed ? 'Reviewed!' : 'Reveiwed?' }}
               </q-tooltip>
             </q-btn>
             <q-btn
@@ -848,7 +1004,7 @@ export default {
         },
         {
           name: 'budget',
-          label: 'Account',
+          label: 'Budget/Account',
           field: 'budget',
           align: 'left',
           sortable: true
@@ -871,6 +1027,13 @@ export default {
           name: 'GST',
           label: `GST (currency)`,
           field: 'GST',
+          align: 'center',
+          sortable: true
+        },
+        {
+          name: 'payTo',
+          label: 'Paid To',
+          field: 'payTo',
           align: 'center',
           sortable: true
         },
@@ -904,6 +1067,7 @@ export default {
         'type',
         'category',
         'budget',
+        'payTo',
         'desc',
         'actions'
       ],

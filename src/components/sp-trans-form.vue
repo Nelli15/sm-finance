@@ -13,16 +13,161 @@
       <q-item class="text-h6 justify-center">
         <!-- <q-item-section> -->
         Add Transaction
-        <q-icon name="help_outline" size="xs" color="grey-7">
-          <q-tooltip
-            max-width="150px"
-            anchor="center right"
-            self="center left"
-            content-class="bg-cyan-2 text-black"
-          >
-            Submit a new transaction below.
-          </q-tooltip>
+        <q-icon
+          name="help_outline"
+          style="cursor:pointer;"
+          size="xs"
+          color="grey-7"
+        >
+          <q-menu max-width="370px" anchor="center right" self="center left">
+            <q-list separator class="q-px-sm">
+              <q-item>
+                <q-item-section>
+                  <q-item-label header class="text-bold"
+                    >Add Transaction</q-item-label
+                  >
+                  <q-item-label caption>
+                    This form is used to submit a new Transaction/Receipt
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-expansion-item expand-separator label="Category">
+                <q-card>
+                  <q-card-section>
+                    The type of transaction<br />
+                    <b>Income</b> - Money that is coming into the project. This
+                    is extra money that you did not have at the start of your
+                    project. (This does not include money moving around within
+                    your Project)<br />
+                    <b>Expense</b> - Money that is leaving your project. This is
+                    any money that is being spent by anyone on the project.
+                    (This does not include money moving around within your
+                    Project)<br />
+                    <b>Journal</b> - Money that is being moved around within
+                    your Project.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Type">
+                <q-card>
+                  <q-card-section>
+                    The physical way in which the funds left the project, ie. if
+                    someone paid for groceries using their credit card and then
+                    was given cash as reimbursement by the finance officer,
+                    record Cash.<br />
+                    <b>Cash</b> - The transaction was paid for in Cash<br />
+                    <b>Bank Card</b> - The transaction was paid via a Bank
+                    Card<br />
+                    <b>Internet Transfer</b> - The transaction was paid via
+                    Internet Bank Transfer<br />
+                    <b>Cheque</b> - The transaction was paid for via Cheque.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Upload Receipt Image">
+                <q-card>
+                  <q-card-section>
+                    Upload a photo of your receipt using the + button.<br />
+                    The receipt must include the words 'Tax Invoice' or 'Tax
+                    Receipt' and have the GST to be a legal Tax receipt.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Date">
+                <q-card>
+                  <q-card-section>
+                    The date the transaction was made, usually as recorded on
+                    the receipt.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Budget">
+                <q-card>
+                  <q-card-section>
+                    The budget the transaction is associated with.<br />
+                    If you are not sure, or don't have access to the associated
+                    budget, please speak to your finance officer.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Pay To">
+                <q-card>
+                  <q-card-section>
+                    If the reimbursement is not being made to you, and you are
+                    recording a transaction for someone else, enter their full
+                    name here.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Amount">
+                <q-card>
+                  <q-card-section>
+                    The amount that was transferred.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Description">
+                <q-card>
+                  <q-card-section>
+                    A short 1 sentence description for the transaction, why did
+                    you make this transaction.<br />
+                    Some Examples include:<br />
+                    <ul>
+                      <li>food for celebration dinner</li>
+                      <li>groceries for welcome bbq</li>
+                      <li>reimbursement for …</li>
+                    </ul>
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Submit">
+                <q-card>
+                  <q-card-section>
+                    Submit the Transaction
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="Clear">
+                <q-card>
+                  <q-card-section>
+                    Clear all fields of this Transaction
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </q-list>
+          </q-menu>
         </q-icon>
+        <!-- </q-item-section> -->
+      </q-item>
+      <q-item v-show="isAdmin">
+        <!-- <q-item-section> -->
+        <!-- <q-popup-edit v-model="props.row.category"> -->
+        <q-select
+          :value="newTrans.category"
+          dense
+          label="Category"
+          :options="categoryOptions"
+          @input="newTrans.category = $event"
+          style="width:50%"
+          :rules="[v => !!v || 'Required value']"
+          :disable="isContributor"
+          hide-bottom-space
+        >
+        </q-select>
+        <!-- </q-popup-edit> -->
+        <!-- </q-item-section> -->
+        <!-- <q-item-section> -->
+        <!-- <q-popup-edit v-model="props.row.category"> -->
+        <q-select
+          v-model="newTrans.type"
+          dense
+          label="Type"
+          :options="typeOptions"
+          style="width:50%"
+          :rules="[v => !!v || 'Required value']"
+          hide-bottom-space
+        />
+        <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
       </q-item>
       <q-item>
@@ -91,40 +236,8 @@
         <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
       </q-item>
-      <q-item v-show="isAdmin">
-        <!-- <q-item-section> -->
-        <!-- <q-popup-edit v-model="props.row.category"> -->
-        <q-select
-          :value="newTrans.category"
-          dense
-          label="Category"
-          :options="categoryOptions"
-          @input="newTrans.category = $event"
-          style="width:50%"
-          :rules="[v => !!v || 'Required value']"
-          :disable="isContributor"
-        >
-        </q-select>
-        <!-- </q-popup-edit> -->
-        <!-- </q-item-section> -->
-        <!-- <q-item-section> -->
-        <!-- <q-popup-edit v-model="props.row.category"> -->
-        <q-select
-          v-model="newTrans.type"
-          dense
-          label="Type"
-          :options="typeOptions"
-          style="width:50%"
-          :rules="[v => !!v || 'Required value']"
-        />
-        <!-- </q-popup-edit> -->
-        <!-- </q-item-section> -->
-      </q-item>
-      <!-- {{budgetsFiltered}} -->
 
       <q-item v-if="newTrans.category !== 'Journal'">
-        <!-- <q-item-section> -->
-        <!-- <q-popup-edit v-model="props.row.category"> -->
         <q-select
           :value="
             newTrans.budget > ''
@@ -139,7 +252,7 @@
           option-label="label"
           :option-value="item => (item === null ? null : item.id)"
           @input="newTrans.budget = $event.id"
-          style="width:100%"
+          :style="newTrans.category === 'Expense' ? 'width:50%' : 'width:100%'"
           use-input
           @filter="filterBudgets"
           :rules="[
@@ -154,8 +267,14 @@
             </q-item>
           </template>
         </q-select>
-        <!-- </q-popup-edit> -->
-        <!-- </q-item-section> -->
+        <q-input
+          v-model="newTrans.payTo"
+          dense
+          label="Paid To"
+          style="width:50%"
+          v-if="newTrans.category === 'Expense'"
+          :rules="[v => v > '' || 'Required']"
+        />
       </q-item>
       <q-item v-if="newTrans.category === 'Journal'">
         <!-- <q-item-section> -->
@@ -180,6 +299,7 @@
           :error="isValid"
           error-message="To & From accounts must be different"
           :rules="[v => !!v || 'Required value']"
+          hide-bottom-space
         >
           <template v-slot:no-option>
             <q-item>
@@ -212,6 +332,7 @@
           @filter="filterBudgets"
           :error="isValid"
           error-message="To & From accounts must be different"
+          hide-bottom-space
         >
           <template v-slot:no-option>
             <q-item>
@@ -267,6 +388,7 @@
           dense
           label="Description"
           style="width:100%"
+          :rules="[v => v > '' || 'Description Required']"
         />
       </q-item>
       <q-item>
@@ -310,7 +432,8 @@ export default {
         receipt: false,
         desc: '',
         category: 'Expense',
-        reviewed: false
+        reviewed: false,
+        payTo: ''
       },
       typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card'],
       transRef: {},

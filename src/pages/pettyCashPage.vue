@@ -3,17 +3,101 @@
     <q-card>
       <q-card-section class="text-center text-h5"
         >Petty Cash Calculator
-        <q-icon name="help_outline" size="xs" color="grey-7">
-          <q-tooltip
-            max-width="150px"
-            anchor="center right"
-            self="center left"
-            content-class="bg-cyan-2 text-black"
-          >
-            Calculates the amount of Petty Cash that you have and compares it to
-            the expected amount of Petty Cash. Enter the number of each note and
-            coin that you have in the fields below to get started.
-          </q-tooltip>
+        <q-icon
+          name="help_outline"
+          style="cursor:pointer;"
+          size="xs"
+          color="grey-7"
+        >
+          <q-menu max-width="370px" anchor="center right" self="center left">
+            <q-list separator class="q-pa-sm q-gutter-xs">
+              <q-item>
+                <q-item-section>
+                  <q-item-label header class="text-bold"
+                    >Petty Cash Calculator</q-item-label
+                  >
+                  <q-item-label caption>
+                    Calculates the amount of Petty Cash that you have and
+                    compares it to the expected amount of Petty Cash. Enter the
+                    number of each note and coin that you have in the fields
+                    below to get started.
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-expansion-item
+                expand-separator
+                label="Correct"
+                class="bg-positive text-white rounded-borders"
+              >
+                <q-card>
+                  <q-card-section class="text-black">
+                    If your Petty Cash is correct, the Difference field will go
+                    green and the value will show as $0.00. When this happens,
+                    you have done your job correctly, WELL DONE! Go enjoy your
+                    day.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item
+                expand-separator
+                label="Money missing"
+                class="bg-negative text-white rounded-borders"
+              >
+                <q-card>
+                  <q-card-section class="text-black">
+                    If the Difference field shows 'Petty Cash has more money
+                    than expected', then you have done something wrong. You have
+                    probably either given someone less cash than you were meant
+                    to, you have been given too much money back, or you haven't
+                    recorded a Transaction to or from the Petty Cash Account
+                    properly. Double check your work. If everything seems
+                    correct, and the amount is small, don't worry too much this
+                    is not a huge problem. If it is a small amount, it could be
+                    a rounding error. Ensure that the Amount fields of each
+                    Transaction is showing a multiple of 5 cents.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item
+                expand-separator
+                label="Money is missing from Petty Cash"
+                class="bg-negative text-white rounded-borders"
+              >
+                <q-card>
+                  <q-card-section class="text-black">
+                    If the Difference field shows '(Money is missing from Petty
+                    Cash)', then you have done something wrong. You have
+                    probably either given someone more cash than you were meant
+                    to, you have been given less money back, or you haven't
+                    recorded a Transaction to or from the Petty Cash Account
+                    properly. Double check your work. If everything seems
+                    correct, and the amount is small, don't worry too much this
+                    is not a huge problem. If it is a small amount, it could be
+                    a rounding error. Ensure that the Amount fields of each
+                    Transaction is showing a multiple of 5 cents.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item
+                expand-separator
+                label="Petty Cash can't be negative"
+                class="bg-negative text-white rounded-borders"
+              >
+                <q-card>
+                  <q-card-section class="text-black">
+                    If the Expected field shows 'Petty Cash can't be negative',
+                    then you have done something wrong. You have probably
+                    either, recorded too many Transactions removing money from
+                    the Petty Cash Account, or forgotten to record a Transaction
+                    when you added money to the Petty Cash tin. Double check
+                    your work. If it is a small amount, it could be a rounding
+                    error. Ensure that the Amount fields of each Transaction is
+                    showing a multiple of 5 cents.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </q-list>
+          </q-menu>
         </q-icon>
       </q-card-section>
     </q-card>
@@ -37,7 +121,7 @@
               @input="updatePetty('petty.dollars.hundreds', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -54,7 +138,7 @@
               @input="updatePetty('petty.dollars.fifties', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -71,7 +155,7 @@
               @input="updatePetty('petty.dollars.twenties', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -88,7 +172,7 @@
               @input="updatePetty('petty.dollars.tens', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -105,7 +189,7 @@
               @input="updatePetty('petty.dollars.fives', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -130,7 +214,7 @@
               @input="updatePetty('petty.dollars.twos', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -147,7 +231,7 @@
               @input="updatePetty('petty.dollars.ones', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -164,7 +248,7 @@
               @input="updatePetty('petty.cents.fifties', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -181,7 +265,7 @@
               @input="updatePetty('petty.cents.twenties', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -198,7 +282,7 @@
               @input="updatePetty('petty.cents.tens', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -215,7 +299,7 @@
               @input="updatePetty('petty.cents.fives', $event)"
               :rules="[
                 val =>
-                  Number(val.replace(/[^0-9.-]+/g, '')) > 0 ||
+                  Number(val.replace(/[^0-9.-]+/g, '')) >= 0 ||
                   `Cannot be negative`
               ]"
             >
@@ -239,8 +323,31 @@
                 </q-item-section>
               </q-item>
               <q-item>
-                <q-item-section class="text-bold q-pl-sm">
-                  Expected: ${{ expected.toFixed(2) }}
+                <q-item-section
+                  avatar
+                  class="text-bold q-pl-md rounded-borders bg-negative text-white"
+                  v-if="
+                    Number(expected.toFixed(2).replace(/[^0-9.-]+/g, '')) <=
+                      -0.05
+                  "
+                >
+                  <q-icon name="warning" />
+                </q-item-section>
+                <q-item-section
+                  class="text-bold q-pl-sm rounded-borders"
+                  :class="{
+                    'bg-negative text-white':
+                      Number(expected.toFixed(2).replace(/[^0-9.-]+/g, '')) <=
+                      -0.05
+                  }"
+                >
+                  Expected: ${{ expected.toFixed(2) }}<br />
+                  {{
+                    Number(expected.toFixed(2).replace(/[^0-9.-]+/g, '')) <=
+                    -0.05
+                      ? "(Petty Cash can't be negative)"
+                      : ''
+                  }}
                   <!-- <q-input
                     outlined
                     prefix="Expected:"
@@ -252,7 +359,21 @@
               </q-item>
               <q-item>
                 <q-item-section
-                  class="text-bold q-pl-sm"
+                  avatar
+                  class="text-bold q-pl-md rounded-borders bg-negative text-white"
+                  v-if="
+                    Number(
+                      (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                    ) <= -0.05 ||
+                      Number(
+                        (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                      ) >= 0.05
+                  "
+                >
+                  <q-icon name="warning" />
+                </q-item-section>
+                <q-item-section
+                  class="text-bold q-pl-sm rounded-borders"
                   :class="{
                     'bg-positive':
                       Number(
@@ -270,7 +391,7 @@
                       ) >= 0.05
                   }"
                 >
-                  Difference: ${{ (total - expected).toFixed(2) }}
+                  Difference: ${{ (total - expected).toFixed(2) }}<br />
                   {{
                     Number(
                       (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
@@ -284,22 +405,6 @@
                       ? '(Petty Cash has more money than expected)'
                       : ''
                   }}
-                  <!-- <q-input
-                    outlined
-                    prefix="Difference: "
-                    :value="'$' + (total - expected).toFixed(2)"
-                    dense
-                    disabled
-                    :rules="[
-                      val =>
-                        Number(val.replace(/[^0-9.-]+/g, '')) > -0.05 ||
-                        `Petty Cash is missing money`,
-                      val =>
-                        Number(val.replace(/[^0-9.-]+/g, '')) < 0.05 ||
-                        `Petty Cash has too much money`
-                    ]"
-                  >
-                  </q-input> -->
                 </q-item-section>
               </q-item>
             </q-list>
@@ -316,7 +421,7 @@
         <sp-pettycash-form :projectId="$route.params.id" />
       </q-btn>
     </q-page-sticky> -->
-    <q-page-sticky
+    <!-- <q-page-sticky
       position="bottom-right"
       :offset="[18, 18]"
       style="z-index:100"
@@ -363,7 +468,7 @@
           </q-card>
         </q-menu>
       </q-btn>
-    </q-page-sticky>
+    </q-page-sticky> -->
   </q-page>
 </template>
 

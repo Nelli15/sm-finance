@@ -893,15 +893,15 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
   }
 
   var projectId = req.query.projectId
-  console.log(projectId)
-  console.log(`/projects/${projectId}`)
+  // console.log(projectId)
+  // console.log(`/projects/${projectId}`)
   let project = await db
     .doc(`/projects/${projectId}`)
     .get()
     .catch(err => {
       console.log(err)
     })
-  console.log(`/projects/${projectId}/accounts`)
+  // console.log(`/projects/${projectId}/accounts`)
   let accounts = await db
     .collection(`/projects/${projectId}/accounts`)
     .get()
@@ -934,6 +934,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
       'trans_type',
       'trans_category',
       'trans_cheque',
+      'trans_payed_to',
       'trans_description',
       'trans_deleted?'
     ]
@@ -959,6 +960,9 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           transData.type,
           categoryDoc.label,
           transData.cheque,
+          transData.payTo > ''
+            ? transData.payTo.replace(/,/g, '-')
+            : transData.submittedBy.displayName,
           transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
           transData.deleted === true ? 1 : 0
         ]
@@ -993,6 +997,9 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           transData.type,
           'Petty Cash',
           transData.cheque,
+          transData.payTo > ''
+            ? transData.payTo.replace(/,/g, '-')
+            : transData.submittedBy.displayName,
           transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
           transData.deleted === true ? 1 : 0
         ]

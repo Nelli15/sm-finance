@@ -9,20 +9,50 @@
       <q-card-section>
         <div class="text-subtitle2">
           Invite People
-          <q-icon name="help_outline" size="xs" color="grey-7">
-            <q-tooltip
-              max-width="150px"
-              anchor="center right"
-              self="center left"
-              content-class="bg-cyan-2 text-black"
-            >
-              Invite people to access the Project. There are two levels of
-              permissions available.
-              <b>-Admins</b>, who have access to view, edit, and delete all
-              elements of the project. <b>-Contributors</b>, who can only see
-              the transactions that they have submitted and submit transactions
-              for the budgets that they have been given access to.
-            </q-tooltip>
+          <q-icon
+            name="help_outline"
+            style="cursor:pointer;"
+            size="xs"
+            color="grey-7"
+          >
+            <q-menu max-width="370px" anchor="center right" self="center left">
+              <q-list separator class="q-px-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label header class="text-bold"
+                      >Invite People</q-item-label
+                    >
+                    <q-item-label caption>
+                      Invite people to access the Project. There are two levels
+                      of permissions available.<br />
+                      <br />
+                      A good priniciple when considering the level of access to
+                      grant is to only provide the minimum level of access
+                      required to the minimum amount of people who need it.
+                      Avoid giving Admin access to anyone who isn't a Finance
+                      Officer, Project Director, or Summer Projects National.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-expansion-item expand-separator label="Admins">
+                  <q-card>
+                    <q-card-section>
+                      Admins have access to view, edit, and delete all elements
+                      of the Project.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+                <q-expansion-item expand-separator label="Contributors">
+                  <q-card>
+                    <q-card-section>
+                      Contributors can only see the Transactions that they have
+                      submitted and submit Transactions for the Budgets that
+                      they have been given access to.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+              </q-list>
+            </q-menu>
           </q-icon>
         </div>
         <q-form @submit="addUser">
@@ -45,7 +75,7 @@
             v-if="isAdmin && newInvitation.permission === 'contributor'"
             value=""
             @input="addNewInviteBudget"
-            :options="budgetOptions"
+            :options="budgetOptionsFiltered"
             label="Budgets"
             stack-label
             style="min-width:100px"
@@ -94,22 +124,50 @@
       <q-card-section>
         <div class="text-subtitle2">
           Invite People
-          <q-icon name="help_outline" size="xs" color="grey-7">
-            <q-tooltip
-              max-width="150px"
-              anchor="center right"
-              self="center left"
-              content-class="bg-cyan-2 text-black"
-            >
-              Invite people to access the Project. There are two levels of
-              permissions available.
-              <br />
-              <b>- Admins</b>, who have access to view, edit, and delete all
-              elements of the project. <br />
-              <b>- Contributors</b>, who can only see the transactions that they
-              have submitted and submit transactions for the budgets that they
-              have been given access to.
-            </q-tooltip>
+          <q-icon
+            name="help_outline"
+            style="cursor:pointer;"
+            size="xs"
+            color="grey-7"
+          >
+            <q-menu max-width="370px" anchor="center right" self="center left">
+              <q-list separator class="q-px-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label header class="text-bold"
+                      >Invite People</q-item-label
+                    >
+                    <q-item-label caption>
+                      Invite people to access the Project. There are two levels
+                      of permissions available.<br />
+                      <br />
+                      A good priniciple when considering the level of access to
+                      grant is to only provide the minimum level of access
+                      required to the minimum amount of people who need it.
+                      Avoid giving Admin access to anyone who isn't a Finance
+                      Officer, Project Director, or Summer Projects National.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-expansion-item expand-separator label="Admins">
+                  <q-card>
+                    <q-card-section>
+                      Admins have access to view, edit, and delete all elements
+                      of the Project.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+                <q-expansion-item expand-separator label="Contributors">
+                  <q-card>
+                    <q-card-section>
+                      Contributors can only see the Transactions that they have
+                      submitted and submit Transactions for the Budgets that
+                      they have been given access to.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+              </q-list>
+            </q-menu>
           </q-icon>
         </div>
         <q-input
@@ -129,13 +187,22 @@
               style="min-width:100px"
             />
             <q-select
-              v-if="isAdmin && newInvitation.permission === 'contributor'"
-              value=""
-              @input="addNewInviteBudget"
-              :options="budgetOptions"
-              label="Budgets"
               stack-label
-              style="min-width:100px"
+              v-if="isAdmin && newInvitation.permission === 'contributor'"
+              :options="budgetOptionsFiltered"
+              label="Budgets"
+              style="min-width:100px;max-width:150px"
+              v-model="newInvitation.budgets"
+              emit-value
+              map-options
+              multiple
+              use-chips
+              option-value="id"
+              options-dense
+              color="primary"
+              hide-bottom-space
+              borderless
+              hide-selected
             />
           </template>
           <template v-slot:after>
@@ -179,7 +246,7 @@
       </q-card-section>
     </q-card>
     <q-table
-      v-show="tabs === 'invites'"
+      v-if="tabs === 'invites'"
       class="my-sticky-header-table q-mt-md"
       :data="invites"
       :columns="invitesColumns"
@@ -190,24 +257,34 @@
       rows-per-page-label="Users per page:"
       :pagination.sync="invitesPagination"
       dense
-      @update:pagination="
-        $q.localStorage.set('invitesTablePagination', $event.rowsPerPage)
-      "
+      @update:pagination="$q.localStorage.set('invitesTablePagination', $event)"
     >
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
           Invites
-          <q-icon name="help_outline" size="xs" color="grey-7">
-            <q-tooltip
-              max-width="150px"
-              anchor="center right"
-              self="center left"
-              content-class="bg-cyan-2 text-black"
-            >
-              The following members have been given access to the project but
-              have not currently logged in to accept the invitiation. To accept
-              the invite, get the user to log in with the email listed below.
-            </q-tooltip>
+          <q-icon
+            name="help_outline"
+            style="cursor:pointer;"
+            size="xs"
+            color="grey-7"
+          >
+            <q-menu max-width="370px" anchor="center right" self="center left">
+              <q-list separator class="q-px-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label header class="text-bold"
+                      >Invites</q-item-label
+                    >
+                    <q-item-label caption>
+                      The following members have been given access to the
+                      project but have not currently logged in to accept the
+                      invitiation. To accept the invite, get the user to log in
+                      with the email listed below.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-icon>
         </div>
 
@@ -238,15 +315,6 @@
         <q-tr :props="props" class="text-bold">
           <q-td key="name" :props="props" class="cursor-pointer">
             <q-avatar class="q-pr-md" size="md">
-              <!-- <img
-                :src="
-                  props.row.photoURL
-                    ? props.row.photoURL
-                    : 'http://tinygraphs.com/spaceinvaders/' +
-                      props.row.uid +
-                      '?theme=bythepool&numcolors=4&size=220&fmt=svg'
-                "
-              /> -->
               <q-img
                 :src="
                   props.row.photoURL
@@ -277,27 +345,12 @@
                 </template>
               </q-img>
             </q-avatar>
-            <!-- <q-popup-edit v-model="props.row.label">
-              <q-input :value="props.row.label > '' ? props.row.label : ''" @input="updateAccount(props.row.id, 'label', $event)" dense autofocus label="Budget Label" />
-            </q-popup-edit>
-            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-              <q-icon name="edit"/>
-              Edit
-            </q-tooltip> -->
           </q-td>
           <q-td key="email" :props="props">
             {{ props.row.email }}
-            <!--  ${{ props.row.income.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip> -->
           </q-td>
           <q-td key="permission" :props="props">
             {{ props.row.permission }}
-            <!--  ${{ props.row.income.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip> -->
           </q-td>
           <q-td
             key="budgets"
@@ -306,15 +359,20 @@
             style="white-space: normal;max-width:300px"
           >
             <q-select
-              :options="budgetOptions"
+              :options="budgetOptionsFiltered"
               dense
               style="min-width:100px;max-width:150px"
-              @input="
-                addInviteBudget(props.row.budgets, $event.id, props.row.uid)
-              "
-              value=""
+              @input="addInviteBudget($event, props.row.email)"
+              :value="props.row.budgets"
+              emit-value
+              map-options
+              multiple
+              use-chips
+              option-value="id"
+              options-dense
+              color="primary"
             />
-            <q-chip
+            <!-- <q-chip
               color="primary"
               text-color="white"
               dense
@@ -334,12 +392,7 @@
                   ? budgetCategories[budget].label
                   : accounts[budget].label
               }}
-              <!-- <q-btn flat dense rounded size="xs" icon="close" @click="removeInviteBudget(props.row.budgets, budget, props.row.email)" /> -->
-            </q-chip>
-            <!--  ${{ props.row.income.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip> -->
+            </q-chip> -->
           </q-td>
           <q-td key="actions" :props="props" class="text-negative">
             <q-btn
@@ -357,7 +410,7 @@
       </template>
     </q-table>
     <q-table
-      v-show="tabs === 'admins'"
+      v-if="tabs === 'admins'"
       class="my-sticky-header-table"
       :data="admins"
       :columns="adminsColumns"
@@ -368,38 +421,30 @@
       rows-per-page-label="Users per page:"
       :pagination.sync="adminsPagination"
       dense
-      @update:pagination="
-        $q.localStorage.set('adminsTablePagination', $event.rowsPerPage)
-      "
+      @update:pagination="$q.localStorage.set('adminsTablePagination', $event)"
     >
-      <!-- <q-table
-      class="my-sticky-header-table"
-      :data="admins"
-      :columns="adminsColumns"
-      :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
-      row-key="name"
-      :key="'admins' + tableKey"
-      :filter="adminsFilter"
-      rows-per-page-label="Users per page:"
-      :pagination.sync="adminsPagination"
-      dense
-      @update:pagination="
-        $q.localStorage.set('adminsTablePagination', $event.rowsPerPage)
-      "
-    > -->
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
           Admins
-          <q-icon name="help_outline" size="xs" color="grey-7">
-            <q-tooltip
-              max-width="150px"
-              anchor="center right"
-              self="center left"
-              content-class="bg-cyan-2 text-black"
-            >
-              Admins are users who have access to view, edit, and delete all
-              elements of the project.
-            </q-tooltip>
+          <q-icon
+            name="help_outline"
+            style="cursor:pointer;"
+            size="xs"
+            color="grey-7"
+          >
+            <q-menu max-width="370px" anchor="center right" self="center left">
+              <q-list separator class="q-px-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label header class="text-bold">Admins</q-item-label>
+                    <q-item-label caption>
+                      Admins are users who have access to view, edit, and delete
+                      all elements of the Project.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-icon>
         </div>
 
@@ -461,20 +506,9 @@
               </q-img>
             </q-avatar>
             {{ props.row.name ? props.row.name : 'Anonymous' }}
-            <!-- <q-popup-edit v-model="props.row.label">
-              <q-input :value="props.row.label > '' ? props.row.label : ''" @input="updateAccount(props.row.id, 'label', $event)" dense autofocus label="Budget Label" />
-            </q-popup-edit>
-            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-              <q-icon name="edit"/>
-              Edit
-            </q-tooltip> -->
           </q-td>
           <q-td key="email" :props="props">
             {{ props.row.email }}
-            <!--  ${{ props.row.income.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip> -->
           </q-td>
           <q-td key="actions" :props="props" class="text-negative">
             <q-btn
@@ -483,16 +517,12 @@
               color="negative"
               @click="removeUser(props.row.uid)"
             />
-            <!--  ${{ props.row.expenses.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip> -->
           </q-td>
         </q-tr>
       </template>
     </q-table>
     <q-table
-      v-show="tabs === 'contributors'"
+      v-if="tabs === 'contributors'"
       class="my-sticky-header-table"
       :data="contributors"
       :columns="contributorsColumns"
@@ -504,23 +534,34 @@
       :pagination.sync="contributorsPagination"
       dense
       @update:pagination="
-        $q.localStorage.set('contributorsTablePagination', $event.rowsPerPage)
+        $q.localStorage.set('contributorsTablePagination', $event)
       "
     >
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
           Contributors
-          <q-icon name="help_outline" size="xs" color="grey-7">
-            <q-tooltip
-              max-width="150px"
-              anchor="center right"
-              self="center left"
-              content-class="bg-cyan-2 text-black"
-            >
-              Contributors are users who only have access to submit transactions
-              to the specified budgets only. They also have access to see the
-              transactions that they have submitted.
-            </q-tooltip>
+          <q-icon
+            name="help_outline"
+            style="cursor:pointer;"
+            size="xs"
+            color="grey-7"
+          >
+            <q-menu max-width="370px" anchor="center right" self="center left">
+              <q-list separator class="q-px-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label header class="text-bold"
+                      >Contributors</q-item-label
+                    >
+                    <q-item-label caption>
+                      Contributors are users who only have access to submit
+                      Transactions to the specified Budgets only. They also have
+                      access to see the Transactions that they have submitted.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-icon>
         </div>
 
@@ -582,20 +623,9 @@
               </q-img>
             </q-avatar>
             {{ props.row.name ? props.row.name : 'Anonymous' }}
-            <!-- <q-popup-edit v-model="props.row.label">
-              <q-input :value="props.row.label > '' ? props.row.label : ''" @input="updateAccount(props.row.id, 'label', $event)" dense autofocus label="Budget Label" />
-            </q-popup-edit>
-            <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
-              <q-icon name="edit"/>
-              Edit
-            </q-tooltip> -->
           </q-td>
           <q-td key="email" :props="props">
             {{ props.row.email }}
-            <!--  ${{ props.row.income.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip> -->
           </q-td>
           <q-td
             key="budgets"
@@ -604,6 +634,20 @@
             style="white-space: normal;max-width:300px"
           >
             <q-select
+              :options="budgetOptionsFiltered"
+              dense
+              style="min-width:100px;max-width:150px"
+              @input="addContributorBudget($event, props.row.uid)"
+              :value="props.row.budgets"
+              emit-value
+              map-options
+              multiple
+              use-chips
+              option-value="id"
+              options-dense
+              color="primary"
+            />
+            <!-- <q-select
               :options="budgetOptions"
               dense
               style="min-width:100px;max-width:150px"
@@ -615,6 +659,7 @@
                 )
               "
               value=""
+              hide-selected
             />
             <q-chip
               color="primary"
@@ -640,12 +685,7 @@
                   ? budgetCategories[budget].label
                   : accounts[budget].label
               }}
-              <!-- <q-btn flat dense rounded size="xs" icon="close" @click="removeInviteBudget(props.row.budgets, budget, props.row.email)" /> -->
-            </q-chip>
-            <!--  ${{ props.row.income.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
-              Auto Calculated
-            </q-tooltip> -->
+            </q-chip> -->
           </q-td>
           <q-td key="actions" :props="props" class="text-negative">
             <q-btn
@@ -795,13 +835,33 @@ export default {
     this.newInvitation.projectName = this.project.name
     this.adminsPagination = this.$q.localStorage.has('adminsTablePagination')
       ? this.$q.localStorage.getItem('adminsTablePagination')
-      : 10
-    this.contributorsPagination = this.$q.localStorage.getItem(
+      : {
+          sortBy: 'name',
+          descending: false,
+          page: 1,
+          rowsPerPage: 10
+          // rowsNumber: xx if getting data from a server
+        }
+    this.contributorsPagination = this.$q.localStorage.has(
       'contributorsTablePagination'
     )
-    this.invitesPagination = this.$q.localStorage.getItem(
-      'invitesTablePagnation'
-    )
+      ? this.$q.localStorage.getItem('contributorsTablePagination')
+      : {
+          sortBy: 'name',
+          descending: false,
+          page: 1,
+          rowsPerPage: 10
+          // rowsNumber: xx if getting data from a server
+        }
+    this.invitesPagination = this.$q.localStorage.has('invitesTablePagnation')
+      ? this.$q.localStorage.getItem('invitesTablePagnation')
+      : {
+          sortBy: 'name',
+          descending: false,
+          page: 1,
+          rowsPerPage: 10
+          // rowsNumber: xx if getting data from a server
+        }
   },
   computed: {
     ...mapGetters([
@@ -816,7 +876,12 @@ export default {
       'budgetCategories',
       'invites',
       'tableKey'
-    ])
+    ]),
+    budgetOptionsFiltered() {
+      return this.budgetOptions.filter(
+        val => val.id !== 'debitCard' && val.id !== 'pettyCash'
+      )
+    }
   },
   methods: {
     uuid() {
@@ -829,35 +894,35 @@ export default {
     // getHash (val) {
     //   return md5(val.trim().toLowerCase())
     // },
-    addContributorBudget(budgets, newBudget, uid) {
+    addContributorBudget(tempBudgets, uid) {
       // console.log(this.newInvitation.budgets.indexOf(event.id) !== -1)
-      let tempBudgets = JSON.parse(JSON.stringify(budgets))
-      if (tempBudgets.indexOf(newBudget) === -1) {
-        tempBudgets.push(newBudget)
-        firebase
-          .firestore()
-          .collection(`/projects/${this.$route.params.id}/contributors`)
-          .doc(uid)
-          .update({ budgets: tempBudgets })
-          .then(() => {
-            // console.log('updated')
-            this.$q.notify({
-              color: 'positive',
-              textColor: 'white',
-              icon: 'cloud_done',
-              message: 'Contributor Added Successfully'
-            })
+      // let tempBudgets = JSON.parse(JSON.stringify(budgets))
+      // if (tempBudgets.indexOf(newBudget) === -1) {
+      //   tempBudgets.push(newBudget)
+      firebase
+        .firestore()
+        .collection(`/projects/${this.$route.params.id}/contributors`)
+        .doc(uid)
+        .update({ budgets: tempBudgets })
+        .then(() => {
+          // console.log('updated')
+          this.$q.notify({
+            color: 'positive',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'Contributor Added Successfully'
           })
-          .catch(err => {
-            console.log(err)
-            this.$q.notify({
-              color: 'negative',
-              textColor: 'white',
-              icon: 'error',
-              message: 'Oops, Something went wrong!'
-            })
+        })
+        .catch(err => {
+          console.log(err)
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
           })
-      }
+        })
+      // }
     },
     removeContributorBudget(budgets, newBudget, uid) {
       // var overrideStyleVal = this.overrideStyles[event].id
@@ -891,35 +956,36 @@ export default {
           })
       }
     },
-    addInviteBudget(budgets, newBudget, email) {
+    addInviteBudget(tempBudgets, email) {
       // console.log(this.newInvitation.budgets.indexOf(event.id) !== -1)
-      let tempBudgets = JSON.parse(JSON.stringify(budgets))
-      if (tempBudgets.indexOf(newBudget) === -1) {
-        tempBudgets.push(newBudget)
-        firebase
-          .firestore()
-          .collection(`/projects/${this.$route.params.id}/invites`)
-          .doc(email)
-          .update({ budgets: tempBudgets })
-          .then(() => {
-            // console.log('updated')
-            this.$q.notify({
-              color: 'positive',
-              textColor: 'white',
-              icon: 'cloud_done',
-              message: 'Contributor Budget Added Successfully'
-            })
+      // let tempBudgets = JSON.parse(JSON.stringify(budgets))
+      // if (tempBudgets.indexOf(newBudget) === -1) {
+      //   tempBudgets.push(newBudget)
+      //   console.log(tempBudgets, email)
+      firebase
+        .firestore()
+        .collection(`/projects/${this.$route.params.id}/invites`)
+        .doc(email)
+        .update({ budgets: tempBudgets })
+        .then(() => {
+          // console.log('updated')
+          this.$q.notify({
+            color: 'positive',
+            textColor: 'white',
+            icon: 'cloud_done',
+            message: 'Contributor Budget Added Successfully'
           })
-          .catch(err => {
-            console.log(err)
-            this.$q.notify({
-              color: 'negative',
-              textColor: 'white',
-              icon: 'error',
-              message: 'Oops, Something went wrong!'
-            })
+        })
+        .catch(err => {
+          console.log(err)
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!'
           })
-      }
+        })
+      // }
     },
     removeInviteBudget(budgets, newBudget, email) {
       // var overrideStyleVal = this.overrideStyles[event].id

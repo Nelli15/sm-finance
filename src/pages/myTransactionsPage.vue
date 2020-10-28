@@ -385,6 +385,35 @@
             </q-tooltip>
           </q-td>
           <q-td
+            key="payTo"
+            :props="props"
+            class="cursor-pointer"
+            style="white-space: normal;"
+          >
+            {{
+              props.row.payTo
+                ? props.row.payTo
+                : props.row.submittedBy.displayName
+            }}
+            <q-popup-edit v-model="props.row.payTo">
+              <q-input
+                :value="props.row.payTo"
+                @input="updateTransaction(props.row.id, 'payTo', $event)"
+                dense
+                autofocus
+                label="Paid To"
+              />
+            </q-popup-edit>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+            >
+              <q-icon name="edit" />
+              Edit
+            </q-tooltip>
+          </q-td>
+          <q-td
             key="desc"
             :props="props"
             style="white-space: normal;min-width:300px"
@@ -637,6 +666,18 @@
             {{ parseFloat(props.row.GST ? props.row.GST : 0).toFixed(2) }}
           </q-td>
           <q-td
+            key="payTo"
+            :props="props"
+            class="cursor-pointer"
+            style="white-space: normal;"
+          >
+            {{
+              props.row.payTo
+                ? props.row.payTo
+                : props.row.submittedBy.displayName
+            }}
+          </q-td>
+          <q-td
             key="desc"
             :props="props"
             style="white-space: normal;min-width:300px"
@@ -763,7 +804,7 @@ export default {
         },
         {
           name: 'budget',
-          label: 'Account',
+          label: 'Budget',
           field: 'budget',
           align: 'left',
           sortable: true
@@ -786,6 +827,13 @@ export default {
           name: 'GST',
           label: `GST (currency)`,
           field: 'GST',
+          align: 'center',
+          sortable: true
+        },
+        {
+          name: 'payTo',
+          label: 'Paid To',
+          field: 'payTo',
           align: 'center',
           sortable: true
         },
@@ -816,6 +864,7 @@ export default {
         'amount',
         'GST',
         'budget',
+        'payTo',
         'desc',
         'actions'
       ],

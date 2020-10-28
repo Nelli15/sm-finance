@@ -19,17 +19,29 @@
       <template v-slot:top="props">
         <div class="col-2 q-table__title">
           Budgets
-          <q-icon name="help_outline" size="xs" color="grey-7">
-            <q-tooltip
-              max-width="150px"
-              anchor="center right"
-              self="center left"
-              content-class="bg-cyan-2 text-black"
-            >
-              Budgets are a sub category under a category. They must be linked
-              to a category. They are used for tracking where money is within
-              your Project.
-            </q-tooltip>
+          <q-icon
+            name="help_outline"
+            style="cursor:pointer;"
+            size="xs"
+            color="grey-7"
+          >
+            <q-menu max-width="370px" anchor="center right" self="center left">
+              <q-list separator class="q-px-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label header class="text-bold"
+                      >Budgets</q-item-label
+                    >
+                    <q-item-label caption>
+                      Budgets are a sub category within a Category. They must be
+                      linked to a Category. They are used to break your Budget
+                      into smaller more managable parts to help you keep track
+                      of the money within your Project.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-icon>
         </div>
 
@@ -64,6 +76,8 @@
             <q-icon name="search" />
           </template>
         </q-input>
+
+        <sp-budget-import />
 
         <q-btn
           flat
@@ -401,7 +415,8 @@ export default {
   },
   components: {
     'sp-budget-form': () => import('./../components/sp-budget-form.vue'),
-    'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
+    'sp-delete-btn': () => import('../components/sp-delete-btn.vue'),
+    'sp-budget-import': () => import('../components/sp-budget-import.vue')
   }
 }
 </script>

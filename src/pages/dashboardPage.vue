@@ -238,12 +238,13 @@ export default {
     },
     async onZipExport(projectId) {
       // this.exportZipLoading = true
-      this.$q.loading.show({
-        message: 'Preparing Download'
-      })
-      this.loading = 0
+
       // console.log(projectId, this.idToken)
-      if (projectId > '') {
+      if (projectId > '' || true) {
+        this.$q.loading.show({
+          message: 'Preparing Download'
+        })
+        this.loading = 0
         // var storageRef = $storage.ref()
         // var projectRef = storageRef
         //   .child('projects')
@@ -322,9 +323,12 @@ export default {
           message: 'Saving File',
           delay: 0
         })
+        // console.log(this.projects.find)
         saveAs(
           blob,
-          `${this.projects[projectId].number}-${this.projects[projectId].name}.zip`
+          `${this.projects.find(val => val.id === projectId).number}-${
+            this.projects.find(val => val.id === projectId).name
+          }.zip`
         )
         this.exportZipLoading = false
         this.$q.loading.hide()
@@ -359,7 +363,12 @@ export default {
         // console.log(res.status)
         let blob = await res.blob()
         // console.log(blob)
-        saveAs(blob, 'transactions.csv')
+        saveAs(
+          blob,
+          `${this.projects.find(val => val.id === projectId).number}-${
+            this.projects.find(val => val.id === projectId).name
+          }.csv`
+        )
         this.exportCSVLoading = false
         this.$q.notify({
           color: 'positive',
