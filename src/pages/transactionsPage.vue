@@ -8,32 +8,24 @@
       <span class="q-mr-lg">
         <b>Category:</b> {{ budgetCategories[budget.category].label }}
       </span>
-      <span class="q-mr-lg"> <b>Budget:</b> {{ budget.label }} </span>
+      <span class="q-mr-lg"> <b>Budget: </b> {{ budget.label }} </span>
       <span class="q-mr-lg">
-        <b>Budgeted:</b>
+        <b>Budgeted: </b>
         <q-badge class="bg-black" :label="'$' + budget.budget.toFixed(2)" />
       </span>
-      <span
-        :class="{
-          'text-negative':
-            parseFloat(budget.budget) - parseFloat(budget.expenses) < 0
-        }"
-        class=" q-mr-lg"
-      >
-        <b>Spent:</b>
+      <span class=" q-mr-lg">
+        <b>Spent: </b>
         <q-badge class="bg-red-8" :label="'$' + budget.expenses.toFixed(2)" />
       </span>
       <span class="q-mr-lg">
-        <b>Cash in Hand:</b>
+        <b>Cash in Hand: </b>
         <q-badge
           :class="{
-            'bg-green-8': budget.income - budget.expenses > 0.01,
-            'bg-red-8': budget.income - budget.expenses < -0.01,
-            'bg-black':
-              budget.income - budget.expenses < 0.01 &&
-              budget.income - budget.expenses > -0.01
+            'bg-green-8': budget.balance > 0.01,
+            'bg-red-8': budget.balance < -0.01,
+            'bg-black': budget.balance < 0.01 && budget.balance > -0.01
           }"
-          :label="'$' + (budget.income - budget.expenses).toFixed(2)"
+          :label="'$' + budget.balance.toFixed(2)"
         />
       </span>
     </q-banner>
@@ -42,8 +34,8 @@
       rounded
       v-if="budget && budget.type === 'account'"
     >
-      <span class="q-mr-lg"> <b>Account:</b> {{ budget.label }} </span>
-      <span
+      <span class="q-mr-lg"> <b>Account: </b> {{ budget.label }} </span>
+      <!-- <span
         :class="{
           'text-negative':
             parseFloat(budget.budget) - parseFloat(budget.expenses) < 0
@@ -52,8 +44,8 @@
       >
         <b>In:</b>
         <q-badge class="bg-black" :label="'$' + budget.income.toFixed(2)" />
-      </span>
-      <span
+      </span> -->
+      <!-- <span
         :class="{
           'text-negative':
             parseFloat(budget.budget) - parseFloat(budget.expenses) < 0
@@ -62,18 +54,16 @@
       >
         <b>Out:</b>
         <q-badge class="bg-red-8" :label="'$' + budget.expenses.toFixed(2)" />
-      </span>
+      </span> -->
       <span class="q-mr-lg">
-        <b>Balance:</b>
+        <b>Balance: </b>
         <q-badge
           :class="{
-            'bg-green-8': budget.income - budget.expenses > 0.01,
-            'bg-red-8': budget.income - budget.expenses < -0.01,
-            'bg-black':
-              budget.income - budget.expenses < 0.01 &&
-              budget.income - budget.expenses > -0.01
+            'bg-green-8': budget.balance > 0.01,
+            'bg-red-8': budget.balance < -0.01,
+            'bg-black': budget.balance < 0.01 && budget.balance > -0.01
           }"
-          :label="'$' + (budget.income - budget.expenses).toFixed(2)"
+          :label="'$' + budget.balance.toFixed(2)"
         />
       </span>
     </q-banner>
@@ -82,32 +72,24 @@
       rounded
       v-if="budget && budget.type === 'category'"
     >
-      <span class="q-mr-lg"> <b>Category:</b> {{ budget.label }} </span>
+      <span class="q-mr-lg"> <b>Category: </b> {{ budget.label }} </span>
       <span class="q-mr-lg">
-        <b>Budgeted:</b>
+        <b>Budgeted: </b>
         <q-badge class="bg-black" :label="'$' + budget.budget.toFixed(2)" />
       </span>
-      <span
-        :class="{
-          'text-negative':
-            parseFloat(budget.budget) - parseFloat(budget.expenses) < 0
-        }"
-        class=" q-mr-lg"
-      >
-        <b>Spent:</b>
+      <span class=" q-mr-lg">
+        <b>Spent: </b>
         <q-badge class="bg-red-8" :label="'$' + budget.expenses.toFixed(2)" />
       </span>
       <span class="q-mr-lg">
-        <b>Cash in Hand:</b>
+        <b>Cash in Hand: </b>
         <q-badge
           :class="{
-            'bg-green-8': budget.income - budget.expenses > 0.01,
-            'bg-red-8': budget.income - budget.expenses < -0.01,
-            'bg-black':
-              budget.income - budget.expenses < 0.01 &&
-              budget.income - budget.expenses > -0.01
+            'bg-green-8': budget.balance > 0.01,
+            'bg-red-8': budget.balance < -0.01,
+            'bg-black': budget.balance < 0.01 && budget.balance > -0.01
           }"
-          :label="'$' + (budget.income - budget.expenses).toFixed(2)"
+          :label="'$' + budget.balance.toFixed(2)"
         />
       </span>
     </q-banner>

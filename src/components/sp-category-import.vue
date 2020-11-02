@@ -116,7 +116,7 @@ export default {
         reader.readAsText(file)
       })
     },
-    convertCSVToJSON(str, delimiter = ',') {
+    convertCSVToJSON(str) {
       const titles = str
         .slice(
           0,
@@ -128,7 +128,7 @@ export default {
             ? str.indexOf('\n')
             : str.indexOf('\r')
         )
-        .split(delimiter)
+        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
       for (var title in this.expectedTitles) {
         if (!titles.includes(this.expectedTitles[title])) {
           this.error =
@@ -141,7 +141,7 @@ export default {
       const rows = str.slice(str.indexOf('\n') + 1).split('\n')
       return rows.map(row => {
         // Convert to 2D array
-        const values = row.split(delimiter)
+        const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
         // Convert array to object
         return titles.reduce((object, curr, i) => {
           object[curr] = values[i]

@@ -133,11 +133,13 @@ export default {
         reader.readAsText(file)
       })
     },
-    convertCSVToJSON(str, delimiter = ',') {
+    convertCSVToJSON(str) {
       // console.log(JSON.stringify(str))
       str = str.replace('\r\n', '\n').replace('\n\r', '\n')
 
-      const titles = str.slice(0, str.indexOf('\n')).split(delimiter)
+      const titles = str
+        .slice(0, str.indexOf('\n'))
+        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
       for (var title in this.expectedTitles) {
         if (!titles.includes(this.expectedTitles[title])) {
           this.error =
@@ -150,7 +152,7 @@ export default {
       const rows = str.slice(str.indexOf('\n') + 1).split('\n')
       return rows.map(row => {
         // Convert to 2D array
-        const values = row.split(delimiter)
+        const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
         // Convert array to object
         return titles.reduce((object, curr, i) => {
           object[curr] = values[i]
@@ -203,10 +205,6 @@ export default {
                   )
                 : 0
             )
-            // console.log(
-            //   budget[this.expectedTitles[jj]],
-            //   JSON.stringify(budgetsObj[ii][this.expectedTitles[jj]])
-            // )
           } else {
             budget[this.expectedTitles[jj]] =
               budgetsObj[ii][this.expectedTitles[jj]]

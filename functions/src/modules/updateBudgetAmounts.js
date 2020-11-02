@@ -11,11 +11,6 @@ module.exports = ({ admin, environment }) => async (change, context) => {
 
   // check if reviewed changed
   if (oldDoc !== null && newDoc !== null) {
-    // console.log(
-    //   newDoc.reviewed === true && oldDoc.reviewed === false,
-    //   newDoc.reviewed === false && oldDoc.reviewed === true,
-    //   newDoc.category
-    // )
     if (newDoc.reviewed === true && oldDoc.reviewed === false) {
       if (newDoc.category === 'Journal') {
         updateAwaitingReview(

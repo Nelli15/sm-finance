@@ -175,10 +175,9 @@
         <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
       </q-item>
-      <q-item>
+      <q-item v-if="newTrans.category === 'Expense'">
         <!-- <q-item-section> -->
         <q-firebase-uploader
-          v-if="newTrans.category === 'Expense'"
           :metadata="{
             customMetadata: {
               projectId: project.id,
