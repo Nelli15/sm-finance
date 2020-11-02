@@ -9,7 +9,142 @@ module.exports = ({ admin, environment }) => async (change, context) => {
   // Get an object with the previous document value (for update or delete)
   const oldDoc = change.before.exists ? change.before.data() : null
 
-  console.log(newDoc, oldDoc)
+  // check if reviewed changed
+  if (oldDoc !== null && newDoc !== null) {
+    // console.log(
+    //   newDoc.reviewed === true && oldDoc.reviewed === false,
+    //   newDoc.reviewed === false && oldDoc.reviewed === true,
+    //   newDoc.category
+    // )
+    if (newDoc.reviewed === true && oldDoc.reviewed === false) {
+      if (newDoc.category === 'Journal') {
+        updateAwaitingReview(
+          db,
+          projectId,
+          oldDoc.to,
+          oldDoc.to !== newDoc.to ? -1 : 0
+        )
+        updateAwaitingReview(
+          db,
+          projectId,
+          oldDoc.from,
+          oldDoc.from !== newDoc.from ? -1 : 0
+        )
+        updateAwaitingReview(
+          db,
+          projectId,
+          newDoc.to,
+          oldDoc.to !== newDoc.to ? 0 : -1
+        )
+        updateAwaitingReview(
+          db,
+          projectId,
+          newDoc.from,
+          oldDoc.from !== newDoc.from ? 0 : -1
+        )
+      } else {
+        updateAwaitingReview(
+          db,
+          projectId,
+          oldDoc.budget,
+          oldDoc.budget !== newDoc.budget ? -1 : 0
+        )
+        updateAwaitingReview(
+          db,
+          projectId,
+          newDoc.budget,
+          oldDoc.budget !== newDoc.budget ? 0 : -1
+        )
+      }
+    } else if (newDoc.reviewed === false && oldDoc.reviewed === true) {
+      if (newDoc.category === 'Journal') {
+        updateAwaitingReview(db, projectId, newDoc.to, 1)
+        updateAwaitingReview(db, projectId, newDoc.from, 1)
+      } else {
+        updateAwaitingReview(db, projectId, newDoc.budget, 1)
+      }
+    } else if (newDoc.reviewed === false && oldDoc.reviewed === false) {
+      if (newDoc.category === 'Journal') {
+        updateAwaitingReview(
+          db,
+          projectId,
+          oldDoc.to,
+          oldDoc.to !== newDoc.to ? -1 : 0
+        )
+        updateAwaitingReview(
+          db,
+          projectId,
+          oldDoc.from,
+          oldDoc.from !== newDoc.from ? -1 : 0
+        )
+        updateAwaitingReview(
+          db,
+          projectId,
+          newDoc.to,
+          oldDoc.to !== newDoc.to ? 1 : 0
+        )
+        updateAwaitingReview(
+          db,
+          projectId,
+          newDoc.from,
+          oldDoc.from !== newDoc.from ? 1 : 0
+        )
+      } else {
+        updateAwaitingReview(
+          db,
+          projectId,
+          oldDoc.budget,
+          oldDoc.budget !== newDoc.budget ? -1 : 0
+        )
+        updateAwaitingReview(
+          db,
+          projectId,
+          newDoc.budget,
+          oldDoc.budget !== newDoc.budget ? 1 : 0
+        )
+      }
+    }
+  } else if (oldDoc === null) {
+    if (newDoc.reviewed !== true) {
+      if (newDoc.category === 'Journal') {
+        updateAwaitingReview(db, projectId, newDoc.to, 1)
+        updateAwaitingReview(db, projectId, newDoc.from, 1)
+      } else {
+        updateAwaitingReview(db, projectId, newDoc.budget, 1)
+      }
+    }
+  } else if (newDoc === null) {
+    if (oldDoc.reviewed !== true) {
+      if (newDoc.category === 'Journal') {
+        updateAwaitingReview(db, projectId, oldDoc.to, -1)
+        updateAwaitingReview(db, projectId, oldDoc.from, -1)
+      } else {
+        updateAwaitingReview(db, projectId, oldDoc.budget, -1)
+      }
+    }
+  }
+
+  function updateAwaitingReview(db, projectId, budgetId, transAwaitingReview) {
+    // console.log(projectId, budgetId, transAwaitingReview)
+    if (transAwaitingReview === 0) return
+    return db.runTransaction(async t => {
+      const ref = db
+        .collection('projects')
+        .doc(projectId)
+        .collection('accounts')
+        .doc(budgetId)
+      const doc = await t.get(ref)
+      const data = doc.data()
+      let newData = {
+        transAwaitingReview: data.transAwaitingReview
+          ? parseInt(data.transAwaitingReview) + parseInt(transAwaitingReview)
+          : 0 + parseInt(transAwaitingReview)
+      }
+      console.log(newData)
+      t.update(ref, newData)
+    })
+  }
+
   // check for relevant change
   if (oldDoc !== null && newDoc !== null) {
     if (

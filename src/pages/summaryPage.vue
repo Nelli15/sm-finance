@@ -150,7 +150,7 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props" class="text-bold">
-          <q-td key="label" :props="props" class="cursor-pointer">
+          <q-td key="label" :props="props" class="cursor-pointer" auto-width>
             {{ props.row.label }}
             <q-popup-edit v-model="props.row.label">
               <q-input
@@ -168,6 +168,16 @@
             >
               <q-icon name="edit" />Edit
             </q-tooltip>
+            <q-badge
+              v-if="props.row.transAwaitingReview > 0"
+              class="bg-red-8"
+              :label="
+                props.row.transAwaitingReview
+                  ? props.row.transAwaitingReview
+                  : ''
+              "
+              floating
+            />
           </q-td>
           <q-td key="balance" :props="props">
             <q-badge
@@ -180,10 +190,12 @@
                 '$' + (props.row.balance ? props.row.balance : 0).toFixed(2)
               "
             />
-            <q-tooltip content-class="bg-accent text-black"
-              >Auto Calculated</q-tooltip
-            >
           </q-td>
+          <!-- <q-td key="awaitingReviews" :props="props">
+            {{
+              props.row.transAwaitingReview ? props.row.transAwaitingReview : ''
+            }}
+          </q-td> -->
           <q-td key="actions" :props="props">
             <q-toggle
               :value="props.row.inHeader"
@@ -285,7 +297,7 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props" class="text-bold">
-          <q-td key="label" :props="props" class="cursor-pointer">
+          <q-td key="label" :props="props" class="cursor-pointer" auto-width>
             {{ props.row.label }}
             <q-popup-edit v-model="props.row.label">
               <q-input
@@ -303,13 +315,20 @@
             >
               <q-icon name="edit" />Edit
             </q-tooltip>
+            <q-badge
+              v-if="props.row.transAwaitingReview > 0"
+              class="bg-red-8"
+              :label="
+                props.row.transAwaitingReview
+                  ? props.row.transAwaitingReview
+                  : ''
+              "
+              floating
+            />
           </q-td>
           <q-td key="budgeted" :props="props">
             <!-- {{props.row.budget}} -->
             ${{ props.row.budget.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black"
-              >Auto Calculated</q-tooltip
-            >
           </q-td>
           <q-td
             key="spent"
@@ -321,9 +340,6 @@
             }"
           >
             ${{ props.row.expenses.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black"
-              >Auto Calculated</q-tooltip
-            >
           </q-td>
           <q-td key="remaining" :props="props">
             <q-badge
@@ -336,10 +352,12 @@
                 '$' + (props.row.balance ? props.row.balance : 0).toFixed(2)
               "
             />
-            <q-tooltip content-class="bg-accent text-black"
-              >Auto Calculated</q-tooltip
-            >
           </q-td>
+          <!-- <q-td key="awaitingReviews" :props="props">
+            {{
+              props.row.transAwaitingReview ? props.row.transAwaitingReview : ''
+            }}
+          </q-td> -->
           <q-td key="actions" :props="props">
             <q-btn :to="'budget/' + props.row.id" dense class="q-mr-sm"
               >Budgets</q-btn
@@ -421,6 +439,13 @@ const columns = [
     field: 'remaining',
     sortable: true
   },
+  // {
+  //   name: 'awaitingReviews',
+  //   align: 'center',
+  //   label: 'Transactions Awaiting Review',
+  //   field: 'awaitingReviews',
+  //   sortable: true
+  // },
   { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
 ]
 
@@ -453,6 +478,13 @@ const accountColumns = [
     field: 'balance',
     sortable: true
   },
+  // {
+  //   name: 'awaitingReviews',
+  //   align: 'center',
+  //   label: 'Transactions Awaiting Review',
+  //   field: 'awaitingReviews',
+  //   sortable: true
+  // },
   { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
 ]
 

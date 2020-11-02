@@ -1,11 +1,5 @@
 <template>
-  <q-form
-    @reset="onReset"
-    @submit="onSubmit"
-    @validation-success="onLog('success ' + $event)"
-    @validation-error="onLog('err ' + $event)"
-    ref="transForm"
-  >
+  <q-form @reset="onReset" @submit="onSubmit" ref="transForm">
     <q-list
       style="min-width: 100px; max-width:500px;"
       :style="$q.platform.is.desktop ? 'width:400px;' : ''"
@@ -31,7 +25,11 @@
                   </q-item-label>
                 </q-item-section>
               </q-item>
-              <q-expansion-item expand-separator label="Category">
+              <q-expansion-item
+                expand-separator
+                label="Category"
+                v-if="isAdmin"
+              >
                 <q-card>
                   <q-card-section>
                     The type of transaction<br />
@@ -48,7 +46,7 @@
                   </q-card-section>
                 </q-card>
               </q-expansion-item>
-              <q-expansion-item expand-separator label="Type">
+              <q-expansion-item expand-separator label="Type" v-if="isAdmin">
                 <q-card>
                   <q-card-section>
                     The physical way in which the funds left the project, ie. if
@@ -90,12 +88,11 @@
                   </q-card-section>
                 </q-card>
               </q-expansion-item>
-              <q-expansion-item expand-separator label="Pay To">
+              <q-expansion-item expand-separator label="Business">
                 <q-card>
                   <q-card-section>
-                    If the reimbursement is not being made to you, and you are
-                    recording a transaction for someone else, enter their full
-                    name here.
+                    The name of the Business or Supplier who the purchase was
+                    made from.
                   </q-card-section>
                 </q-card>
               </q-expansion-item>
@@ -103,6 +100,14 @@
                 <q-card>
                   <q-card-section>
                     The amount that was transferred.
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+              <q-expansion-item expand-separator label="GST">
+                <q-card>
+                  <q-card-section>
+                    The amount of GST that was paid. Only fill this in if you
+                    have submitted a Tax Invoice. In all other cases leave as $0
                   </q-card-section>
                 </q-card>
               </q-expansion-item>
@@ -270,7 +275,7 @@
         <q-input
           v-model="newTrans.payTo"
           dense
-          label="Paid To"
+          label="Business"
           style="width:50%"
           v-if="newTrans.category === 'Expense'"
           :rules="[v => v > '' || 'Required']"
@@ -391,8 +396,10 @@
           :rules="[v => v > '' || 'Description Required']"
         />
       </q-item>
+      <q-item v-if="error > ''" class="text-red">
+        {{ error }}
+      </q-item>
       <q-item>
-        <!-- {{newTrans}} -->
         <q-btn
           label="Submit"
           type="submit"
@@ -435,6 +442,7 @@ export default {
         reviewed: false,
         payTo: ''
       },
+      error: '',
       typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card'],
       transRef: {},
       readOnly: false,
@@ -472,7 +480,18 @@ export default {
       this.uploading = true
     },
     onSubmit() {
+      this.error = ''
       // console.log('submitting form', this.newTrans)
+      if (
+        this.isContributor &&
+        this.newTrans.category === 'Expense' &&
+        this.newTrans.receipt !== true &&
+        parseFloat(this.newTrans.amount) > 10
+      ) {
+        this.error =
+          'Please submit a receipt. If a Tax Invoice is not available, submit an eftpos receipt and set the GST to $0'
+        return
+      }
       this.$q.loading.show()
       this.newTrans.cheque =
         this.newTrans.type === 'Cheque' ? this.newTrans.cheque : ''

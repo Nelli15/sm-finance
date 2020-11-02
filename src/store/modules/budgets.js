@@ -90,14 +90,25 @@ export const mutations = {
         // state.budgetCategories[key].income = state.budgetCategories[key].income ? state.budgetCategories[key].income : 0
         // state.budgetCategories[key].budget = 0
         state.budgetCategories[key].inUse = false
+        state.budgetCategories[key].transAwaitingReview = 0
       }
       for (key in state.budgets) {
         // state.budgets[key].expenses = state.budgets[key].expenses ? state.budgets[key].expenses : 0
         // state.budgets[key].income = state.budgets[key].income ? state.budgets[key].income : 0
-        state.budgets[key].inUse = false
+        // state.budgets[key].inUse = false
         // console.log(state.budgetCategories[state.budgets[key].category])
         if (state.budgetCategories[state.budgets[key].category]) {
           state.budgetCategories[state.budgets[key].category].inUse = true
+          state.budgetCategories[
+            state.budgets[key].category
+          ].transAwaitingReview =
+            parseInt(
+              state.budgetCategories[state.budgets[key].category]
+                .transAwaitingReview
+            ) +
+            (state.budgets[key].transAwaitingReview
+              ? parseInt(state.budgets[key].transAwaitingReview)
+              : 0)
           // state.budgetCategories[state.budgets[key].category].budget += state.budgets[key].budget ? parseFloat(state.budgets[key].budget) : 0
         }
       }

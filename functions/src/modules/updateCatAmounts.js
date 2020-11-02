@@ -9,7 +9,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
   // Get an object with the previous document value (for update or delete)
   const oldDoc = change.before.exists ? change.before.data() : null
 
-  console.log(newDoc, oldDoc)
+  // console.log(newDoc, oldDoc)
   // nothing to do if the account is of type account or category so return
   if (newDoc && newDoc.type !== 'budget') {
     return true
@@ -28,7 +28,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
           budget: 0
         }
         if (oldDoc && oldDoc.category === newDoc.category) {
-          console.log('updated')
+          // console.log('updated')
           // console.log(
           //   data.expenses ? parseFloat(data.expenses) : 0,
           //   newDoc.expenses ? parseFloat(newDoc.expenses) : 0,
@@ -52,7 +52,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
             (newDoc.balance ? parseFloat(newDoc.balance) : 0) -
             (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)
         } else {
-          console.log('new')
+          // console.log('new')
 
           // category has changed. add the new amounts to the category
           newData.expenses =
@@ -68,14 +68,14 @@ module.exports = ({ admin, environment }) => async (change, context) => {
             (data.balance ? parseFloat(data.balance) : 0) +
             (newDoc.balance ? parseFloat(newDoc.balance) : 0)
         }
-        console.log(newData)
+        // console.log(newData)
         t.update(ref, newData)
       })
       .then(() => {
         //return if category hasn't changed
         if (!oldDoc || oldDoc.category === newDoc.category) return
         //category has changed. update the old one to remove the budget from the amounts
-        console.log('updated')
+        // console.log('updated')
 
         db.runTransaction(async t => {
           const ref = change.after.ref.parent.doc(oldDoc.category)
@@ -99,13 +99,13 @@ module.exports = ({ admin, environment }) => async (change, context) => {
             (data.balance ? parseFloat(data.balance) : 0) -
             (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)
 
-          console.log(newData)
+          // console.log(newData)
           t.update(ref, newData)
         })
       })
   } else {
     //budget was deleted
-    console.log('deleted')
+    // console.log('deleted')
 
     return db.runTransaction(async t => {
       const ref = change.before.ref.parent.doc(oldDoc.category)
@@ -131,7 +131,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         (data.balance ? parseFloat(data.balance) : 0) -
         (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)
 
-      console.log(newData)
+      // console.log(newData)
       t.update(ref, newData)
     })
   }

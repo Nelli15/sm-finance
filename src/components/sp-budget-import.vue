@@ -24,11 +24,29 @@
                 Import Budgets from CSV
               </q-item-label>
               <q-item-label caption>
-                Select a CSV to import a list of Budgets. Use the template and
-                ensure the categories match the category labels aleady created.
+                Select a CSV to import a list of Budgets. Use this
+                <q-btn
+                  dense
+                  flat
+                  icon="img:icons/google-spreadsheet.svg"
+                  @click="downloadTemplate"
+                  size="sm"
+                  label="template"
+                >
+                  <q-tooltip
+                    max-width="150px"
+                    anchor="center right"
+                    self="center left"
+                    content-class="bg-cyan-2 text-black"
+                  >
+                    Download Template
+                  </q-tooltip>
+                </q-btn>
+                and ensure the categories match the category labels aleady
+                created.
               </q-item-label>
             </q-item-section>
-            <q-item-section side>
+            <q-item-section side v-if="false">
               <q-btn
                 dense
                 flat
@@ -144,6 +162,7 @@ export default {
       let budget = {}
       let uploads = []
       for (var ii in budgetsObj) {
+        // console.log(budgetsObj[ii])
         budget = { type: 'budget' }
         let errorFound = false
         for (var jj in this.expectedTitles) {
@@ -163,6 +182,11 @@ export default {
               }
             )
             if (!budgetCategory) {
+              // console.log(
+              //   'error found, no budget category',
+              //   budgetCategory,
+              //   budgetsObj[ii][this.expectedTitles[jj]]
+              // )
               errorFound = true
               break
             }
@@ -205,6 +229,7 @@ export default {
             icon: 'cloud_done',
             message: 'Budgets: Created Successfully'
           })
+          this.$refs.importDialog && this.$refs.importDialog.hide()
         })
         .catch(err => {
           console.log(err)

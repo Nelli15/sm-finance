@@ -737,18 +737,14 @@
             style="white-space: normal;"
             v-if="props.row.category === 'Expense'"
           >
-            {{
-              props.row.payTo
-                ? props.row.payTo
-                : props.row.submittedBy.displayName
-            }}
+            {{ props.row.payTo ? props.row.payTo : '' }}
             <q-popup-edit v-model="props.row.payTo">
               <q-input
                 :value="props.row.payTo"
                 @input="updateTransaction(props.row.id, 'payTo', $event)"
                 dense
                 autofocus
-                label="Paid To"
+                label="Business/Supplier"
               />
             </q-popup-edit>
             <q-tooltip
@@ -836,9 +832,10 @@
               :label="props.row.id"
               :url="props.row.receiptURL"
               v-if="
-                props.row.receiptURL > ''
-                  ? props.row.receiptURL.startsWith('https://')
-                  : false
+                props.row.category === 'Expense' &&
+                  (props.row.receiptURL > ''
+                    ? props.row.receiptURL.startsWith('https://')
+                    : false)
               "
               class="q-mr-sm"
             />
@@ -846,16 +843,21 @@
               name="img:../icons/no-receipt.png"
               style="height:30px;width:30px;padding:3.99px"
               v-if="
-                props.row.receiptURL > ''
-                  ? !props.row.receiptURL.startsWith('https://')
-                  : true
+                props.row.category === 'Expense' &&
+                  (props.row.receiptURL > ''
+                    ? !props.row.receiptURL.startsWith('https://')
+                    : true)
               "
               class="q-mr-sm"
             />
             <q-spinner-gears
               size="30px"
               color="primary"
-              v-if="!props.row.receiptURL && props.row.receipt"
+              v-if="
+                props.row.category === 'Expense' &&
+                  !props.row.receiptURL &&
+                  props.row.receipt
+              "
             >
               <q-tooltip
                 anchor="center right"
@@ -1032,7 +1034,7 @@ export default {
         },
         {
           name: 'payTo',
-          label: 'Paid To',
+          label: 'Business/Supplier',
           field: 'payTo',
           align: 'center',
           sortable: true

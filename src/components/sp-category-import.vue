@@ -24,26 +24,25 @@
                 Import Budget Categories from CSV
               </q-item-label>
               <q-item-label caption>
-                Select a CSV to import a list of Budget Categories. Use the
-                template.
-              </q-item-label>
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                dense
-                flat
-                icon="img:icons/google-spreadsheet.svg"
-                @click="downloadTemplate"
-              >
-                <q-tooltip
-                  max-width="150px"
-                  anchor="center right"
-                  self="center left"
-                  content-class="bg-cyan-2 text-black"
+                Select a CSV to import a list of Budget Categories. Use this
+                <q-btn
+                  dense
+                  flat
+                  icon="img:icons/google-spreadsheet.svg"
+                  @click="downloadTemplate"
+                  size="sm"
+                  label="template"
                 >
-                  Download Template
-                </q-tooltip>
-              </q-btn>
+                  <q-tooltip
+                    max-width="150px"
+                    anchor="center right"
+                    self="center left"
+                    content-class="bg-cyan-2 text-black"
+                  >
+                    Download Template
+                  </q-tooltip> </q-btn
+                >.
+              </q-item-label>
             </q-item-section>
           </q-item>
         </q-card-section>
@@ -176,6 +175,7 @@ export default {
             icon: 'cloud_done',
             message: 'Categories Created Successfully'
           })
+          this.$refs.importDialog && this.$refs.importDialog.hide()
         })
         .catch(err => {
           console.log(err)

@@ -614,7 +614,7 @@ exports.receiptUploaded = functions.storage
       //   throw err;
       // }
 
-      // let text = await detectText(fileBucket, filePath);
+      // let text = await detectText(fileBucket, filePath)
       // console.log(text)
       // doc.update({text: text})
       //       .catch(err => {
@@ -735,8 +735,12 @@ exports.onTransactionCreate = functions.firestore
   .onCreate(getTransReceipt(context))
 
 // TODO: make this use optimistic locking
-exports.onTransactionWrite = functions.firestore
-  .document('/projects/{projectId}/transactions/{transId}')
+exports.onTransactionWrite = functions
+  .runWith({
+    timeoutSeconds: 300
+  })
+  .firestore.document('/projects/{projectId}/transactions/{transId}')
+
   .onWrite(updateBudgetAmounts(context))
 
 // TODO: work out what this does
