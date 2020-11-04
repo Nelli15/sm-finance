@@ -9,112 +9,153 @@ module.exports = ({ admin, environment }) => async (change, context) => {
   // Get an object with the previous document value (for update or delete)
   const oldDoc = change.before.exists ? change.before.data() : null
 
+  console.log(oldDoc, newDoc)
   // check if reviewed changed
   if (oldDoc !== null && newDoc !== null) {
-    if (newDoc.reviewed === true && oldDoc.reviewed === false) {
-      if (newDoc.category === 'Journal') {
-        updateAwaitingReview(
-          db,
-          projectId,
-          oldDoc.to,
-          oldDoc.to !== newDoc.to ? -1 : 0
-        )
-        updateAwaitingReview(
-          db,
-          projectId,
-          oldDoc.from,
-          oldDoc.from !== newDoc.from ? -1 : 0
-        )
-        updateAwaitingReview(
-          db,
-          projectId,
-          newDoc.to,
-          oldDoc.to !== newDoc.to ? 0 : -1
-        )
-        updateAwaitingReview(
-          db,
-          projectId,
-          newDoc.from,
-          oldDoc.from !== newDoc.from ? 0 : -1
-        )
-      } else {
-        updateAwaitingReview(
-          db,
-          projectId,
-          oldDoc.budget,
-          oldDoc.budget !== newDoc.budget ? -1 : 0
-        )
-        updateAwaitingReview(
-          db,
-          projectId,
-          newDoc.budget,
-          oldDoc.budget !== newDoc.budget ? 0 : -1
-        )
+    if (newDoc.deleted && !oldDoc.deleted) {
+      if (newDoc.reviewed === true && oldDoc.reviewed === false) {
+        if (newDoc.category === 'Journal') {
+          await updateAwaitingReview(
+            db,
+            projectId,
+            oldDoc.to,
+            oldDoc.to !== newDoc.to ? -1 : 0
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            oldDoc.from,
+            oldDoc.from !== newDoc.from ? -1 : 0
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            newDoc.to,
+            oldDoc.to !== newDoc.to ? 0 : -1
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            newDoc.from,
+            oldDoc.from !== newDoc.from ? 0 : -1
+          )
+        } else {
+          await updateAwaitingReview(
+            db,
+            projectId,
+            oldDoc.budget,
+            oldDoc.budget !== newDoc.budget ? -1 : 0
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            newDoc.budget,
+            oldDoc.budget !== newDoc.budget ? 0 : -1
+          )
+        }
+      } else if (newDoc.reviewed === false && oldDoc.reviewed === false) {
+        if (newDoc.category === 'Journal') {
+          await updateAwaitingReview(db, projectId, oldDoc.to, -1)
+          await updateAwaitingReview(db, projectId, oldDoc.from, -1)
+        } else {
+          await updateAwaitingReview(db, projectId, oldDoc.budget, -1)
+        }
       }
-    } else if (newDoc.reviewed === false && oldDoc.reviewed === true) {
-      if (newDoc.category === 'Journal') {
-        updateAwaitingReview(db, projectId, newDoc.to, 1)
-        updateAwaitingReview(db, projectId, newDoc.from, 1)
-      } else {
-        updateAwaitingReview(db, projectId, newDoc.budget, 1)
-      }
-    } else if (newDoc.reviewed === false && oldDoc.reviewed === false) {
-      if (newDoc.category === 'Journal') {
-        updateAwaitingReview(
-          db,
-          projectId,
-          oldDoc.to,
-          oldDoc.to !== newDoc.to ? -1 : 0
-        )
-        updateAwaitingReview(
-          db,
-          projectId,
-          oldDoc.from,
-          oldDoc.from !== newDoc.from ? -1 : 0
-        )
-        updateAwaitingReview(
-          db,
-          projectId,
-          newDoc.to,
-          oldDoc.to !== newDoc.to ? 1 : 0
-        )
-        updateAwaitingReview(
-          db,
-          projectId,
-          newDoc.from,
-          oldDoc.from !== newDoc.from ? 1 : 0
-        )
-      } else {
-        updateAwaitingReview(
-          db,
-          projectId,
-          oldDoc.budget,
-          oldDoc.budget !== newDoc.budget ? -1 : 0
-        )
-        updateAwaitingReview(
-          db,
-          projectId,
-          newDoc.budget,
-          oldDoc.budget !== newDoc.budget ? 1 : 0
-        )
+    } else if (!newDoc.deleted) {
+      if (newDoc.reviewed === true && oldDoc.reviewed === false) {
+        if (newDoc.category === 'Journal') {
+          await updateAwaitingReview(
+            db,
+            projectId,
+            oldDoc.to,
+            oldDoc.to !== newDoc.to ? -1 : 0
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            oldDoc.from,
+            oldDoc.from !== newDoc.from ? -1 : 0
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            newDoc.to,
+            oldDoc.to !== newDoc.to ? 0 : -1
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            newDoc.from,
+            oldDoc.from !== newDoc.from ? 0 : -1
+          )
+        } else {
+          await updateAwaitingReview(
+            db,
+            projectId,
+            oldDoc.budget,
+            oldDoc.budget !== newDoc.budget ? -1 : 0
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            newDoc.budget,
+            oldDoc.budget !== newDoc.budget ? 0 : -1
+          )
+        }
+      } else if (newDoc.reviewed === false && oldDoc.reviewed === true) {
+        if (newDoc.category === 'Journal') {
+          await updateAwaitingReview(db, projectId, newDoc.to, 1)
+          await updateAwaitingReview(db, projectId, newDoc.from, 1)
+        } else {
+          await updateAwaitingReview(db, projectId, newDoc.budget, 1)
+        }
+      } else if (newDoc.reviewed === false && oldDoc.reviewed === false) {
+        if (newDoc.category === 'Journal') {
+          await updateAwaitingReview(
+            db,
+            projectId,
+            oldDoc.to,
+            oldDoc.to !== newDoc.to ? -1 : 0
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            oldDoc.from,
+            oldDoc.from !== newDoc.from ? -1 : 0
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            newDoc.to,
+            oldDoc.to !== newDoc.to ? 1 : 0
+          )
+          await updateAwaitingReview(
+            db,
+            projectId,
+            newDoc.from,
+            oldDoc.from !== newDoc.from ? 1 : 0
+          )
+        } else {
+          await updateAwaitingReview(db, projectId, newDoc.budget, 1)
+        }
       }
     }
   } else if (oldDoc === null) {
     if (newDoc.reviewed !== true) {
       if (newDoc.category === 'Journal') {
-        updateAwaitingReview(db, projectId, newDoc.to, 1)
-        updateAwaitingReview(db, projectId, newDoc.from, 1)
+        await updateAwaitingReview(db, projectId, newDoc.to, 1)
+        await updateAwaitingReview(db, projectId, newDoc.from, 1)
       } else {
-        updateAwaitingReview(db, projectId, newDoc.budget, 1)
+        await updateAwaitingReview(db, projectId, newDoc.budget, 1)
       }
     }
   } else if (newDoc === null) {
     if (oldDoc.reviewed !== true) {
-      if (newDoc.category === 'Journal') {
-        updateAwaitingReview(db, projectId, oldDoc.to, -1)
-        updateAwaitingReview(db, projectId, oldDoc.from, -1)
+      if (oldDoc.category === 'Journal') {
+        await updateAwaitingReview(db, projectId, oldDoc.to, -1)
+        await updateAwaitingReview(db, projectId, oldDoc.from, -1)
       } else {
-        updateAwaitingReview(db, projectId, oldDoc.budget, -1)
+        await updateAwaitingReview(db, projectId, oldDoc.budget, -1)
       }
     }
   }
@@ -135,7 +176,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
           ? parseInt(data.transAwaitingReview) + parseInt(transAwaitingReview)
           : 0 + parseInt(transAwaitingReview)
       }
-      console.log(newData)
+      if (newData.transAwaitingReview < 0) newData.transAwaitingReview = 0
       t.update(ref, newData)
     })
   }
@@ -228,6 +269,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
 }
 
 function updateBudget(db, projectId, budgetId, expense, amount) {
+  console.log(projectId, budgetId, expense, amount)
   return db.runTransaction(async t => {
     const ref = db
       .collection('projects')
@@ -237,7 +279,6 @@ function updateBudget(db, projectId, budgetId, expense, amount) {
     const doc = await t.get(ref)
     const data = doc.data()
     let newData = { income: 0, expenses: 0, balance: 0 }
-    // newData.income = data.income ? parseFloat(data.income) + income : 0 + income
     newData.expenses = data.expenses
       ? parseFloat(data.expenses) + parseFloat(expense)
       : 0 + parseFloat(expense)

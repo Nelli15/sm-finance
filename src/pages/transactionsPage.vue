@@ -23,9 +23,11 @@
           :class="{
             'bg-green-8': budget.balance > 0.01,
             'bg-red-8': budget.balance < -0.01,
-            'bg-black': budget.balance < 0.01 && budget.balance > -0.01
+            'bg-black':
+              (budget.balance < 0.01 && budget.balance > -0.01) ||
+              !budget.balance
           }"
-          :label="'$' + budget.balance.toFixed(2)"
+          :label="'$' + (budget.balance ? budget.balance : 0).toFixed(2)"
         />
       </span>
     </q-banner>
@@ -61,9 +63,11 @@
           :class="{
             'bg-green-8': budget.balance > 0.01,
             'bg-red-8': budget.balance < -0.01,
-            'bg-black': budget.balance < 0.01 && budget.balance > -0.01
+            'bg-black':
+              (budget.balance < 0.01 && budget.balance > -0.01) ||
+              !budget.balance
           }"
-          :label="'$' + budget.balance.toFixed(2)"
+          :label="'$' + (budget.balance ? budget.balance : 0).toFixed(2)"
         />
       </span>
     </q-banner>
@@ -87,9 +91,11 @@
           :class="{
             'bg-green-8': budget.balance > 0.01,
             'bg-red-8': budget.balance < -0.01,
-            'bg-black': budget.balance < 0.01 && budget.balance > -0.01
+            'bg-black':
+              (budget.balance < 0.01 && budget.balance > -0.01) ||
+              !budget.balance
           }"
-          :label="'$' + budget.balance.toFixed(2)"
+          :label="'$' + (budget.balance ? budget.balance : 0).toFixed(2)"
         />
       </span>
     </q-banner>
@@ -974,11 +980,11 @@ export default {
         {
           name: 'number',
           label: 'Transaction ID',
-          field: 'number',
+          field: 'id',
           align: 'center',
           sortable: true
         },
-        { name: 'icon', label: 'Type', field: 'icon', align: 'center' },
+        { name: 'icon', label: 'Type', field: 'type', align: 'center' },
         {
           name: 'category',
           label: 'Category',
@@ -1231,16 +1237,68 @@ export default {
         })
     },
     filterMethod(rows, terms, cols, cellValue) {
+      console.log(rows, terms, cols, cellValue)
       const lowerTerms = terms ? terms.toLowerCase() : ''
+      console.log(lowerTerms)
       let res = rows.filter(row =>
-        cols.some(col =>
-          typeof cellValue(col, row) === 'object'
+        cols.some(col => {
+          if (!cellValue(col, row)) return false
+          // console.log('filter', row, col, cellValue(col, row))
+          if (col.name === 'budget') {
+            return (
+              (this.budgetsAndAccounts[row.budget] &&
+                this.budgetsAndAccounts[row.budget].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1) ||
+              (this.budgetsAndAccounts[row.to] &&
+                this.budgetsAndAccounts[row.to].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1) ||
+              (this.budgetsAndAccounts[row.from] &&
+                this.budgetsAndAccounts[row.from].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1)
+            )
+          }
+          if (col.name === 'category') {
+            console.log('isCategory')
+            return (
+              (this.budgetsAndAccounts[row.budget] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.budget].category
+                ] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.budget].category
+                ].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1) ||
+              (this.budgetsAndAccounts[row.to] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.to].category
+                ] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.to].category
+                ].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1) ||
+              (this.budgetsAndAccounts[row.from] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.from].category
+                ] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.from].category
+                ].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1)
+            )
+          }
+          return typeof cellValue(col, row) === 'object'
             ? (Object.values(cellValue(col, row)) + '')
                 .toLowerCase()
                 .indexOf(lowerTerms) > -1
             : (cellValue(col, row) + '').toLowerCase().indexOf(lowerTerms) !==
-              -1
-        )
+                -1
+        })
       )
       return res
     }
@@ -1408,6 +1466,9 @@ export default {
       } else {
         return false
       }
+    },
+    budgetsAndAccounts() {
+      return { ...this.accounts, ...this.budgets }
     }
   },
   watch: {

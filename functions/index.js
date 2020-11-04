@@ -719,15 +719,15 @@ async function detectText(bucketName, filename) {
 
 exports.onTransactionDelete = functions.firestore
   .document('/projects/{projectId}/transactions/{transId}')
-  .onDelete((snap, context) => {
+  .onDelete(async (snap, context) => {
     // deletes the reciept on transaction delete
     let projectId = context.params.projectId
     let transId = context.params.transId
 
     var bucket = admin.storage().bucket()
-    return bucket
-      .file(`/projects/${projectId}/receipts/${transId}.jpg`)
-      .delete()
+    const file = bucket.file(`/projects/${projectId}/receipts/${transId}.jpg`)
+    if (await !file.exists()) return
+    return
   })
 
 exports.onTransactionCreate = functions.firestore
@@ -938,7 +938,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
       'trans_type',
       'trans_category',
       'trans_cheque',
-      'trans_payed_to',
+      'trans_paid_to',
       'trans_description',
       'trans_deleted?'
     ]
@@ -964,9 +964,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           transData.type,
           categoryDoc.label,
           transData.cheque,
-          transData.payTo > ''
-            ? transData.payTo.replace(/,/g, '-')
-            : transData.submittedBy.displayName,
+          transData.payTo.replace(/,/g, '-'),
           transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
           transData.deleted === true ? 1 : 0
         ]
@@ -1001,9 +999,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           transData.type,
           'Petty Cash',
           transData.cheque,
-          transData.payTo > ''
-            ? transData.payTo.replace(/,/g, '-')
-            : transData.submittedBy.displayName,
+          transData.payTo.replace(/,/g, '-'),
           transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
           transData.deleted === true ? 1 : 0
         ]

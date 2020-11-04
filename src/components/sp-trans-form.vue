@@ -505,6 +505,10 @@ export default {
       this.newTrans.budget =
         this.newTrans.category !== 'Journal' ? this.newTrans.budget : 0
       this.newTrans.amount =
+        typeof this.newTrans.amount === 'string'
+          ? this.newTrans.amount.replace(',', '')
+          : this.newTrans.amount
+      this.newTrans.amount =
         this.newTrans.type === 'Cash'
           ? round5(this.newTrans.amount)
           : this.newTrans.amount
