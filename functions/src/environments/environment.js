@@ -5,6 +5,6 @@ module.exports = {
     storageBucket: 'gs://sp-finance.appspot.com'
   },
   schema: {
-    projects: 'test-projects'
+    projects: 'projects'
   }
 }

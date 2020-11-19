@@ -125,7 +125,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     status.amount.old = oldDoc.amount
     status.amount.new = 0
   }
-  // console.log(status)
+  console.log(status)
 
   // check for each condition
 
@@ -903,28 +903,32 @@ module.exports = ({ admin, environment }) => async (change, context) => {
 }
 
 function updateBudget(db, budgetRef, awaitReviewAdj, balanceAdj, expenseAdj) {
-  // console.log(awaitReviewAdj, balanceAdj, expenseAdj)
-  // console.log(budgetRef.path)
-  return db.runTransaction(async t => {
-    const doc = await t.get(budgetRef)
-    // console.log(doc)
-    if (!doc.exists) return
-    const data = doc.data()
-    let newData = {}
+  console.log(awaitReviewAdj, balanceAdj, expenseAdj)
+  console.log(budgetRef.path)
+  return db
+    .runTransaction(async t => {
+      const doc = await t.get(budgetRef)
+      // console.log(doc)
+      if (!doc.exists) return
+      const data = doc.data()
+      let newData = {}
 
-    newData.transAwaitingReview = data.transAwaitingReview
-      ? parseInt(data.transAwaitingReview) + parseInt(awaitReviewAdj)
-      : 0 + parseInt(awaitReviewAdj)
+      newData.transAwaitingReview = data.transAwaitingReview
+        ? parseInt(data.transAwaitingReview) + parseInt(awaitReviewAdj)
+        : 0 + parseInt(awaitReviewAdj)
 
-    newData.expenses = data.expenses
-      ? parseFloat(data.expenses) + parseFloat(expenseAdj)
-      : 0 + parseFloat(expenseAdj)
+      newData.expenses = data.expenses
+        ? parseFloat(data.expenses) + parseFloat(expenseAdj)
+        : 0 + parseFloat(expenseAdj)
 
-    newData.balance = data.balance
-      ? parseFloat(data.balance) + parseFloat(balanceAdj)
-      : 0 + parseFloat(balanceAdj)
+      newData.balance = data.balance
+        ? parseFloat(data.balance) + parseFloat(balanceAdj)
+        : 0 + parseFloat(balanceAdj)
 
-    // console.log(newData)
-    t.update(budgetRef, newData)
-  })
+      // console.log(newData)
+      t.update(budgetRef, newData)
+    })
+    .catch(err => {
+      console.error(err)
+    })
 }
