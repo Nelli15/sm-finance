@@ -3,288 +3,928 @@ module.exports = ({ admin, environment }) => async (change, context) => {
   // Get an object with the current document value.
   let projectId = context.params.projectId
   let transId = context.params.transId
+  let projectRef = db.collection(environment.schema.projects).doc(projectId)
   // If the document does not exist, it has been deleted.
   const newDoc = change.after.exists ? change.after.data() : null
 
   // Get an object with the previous document value (for update or delete)
   const oldDoc = change.before.exists ? change.before.data() : null
-
-  console.log(oldDoc, newDoc)
-  // check if reviewed changed
-  if (oldDoc !== null && newDoc !== null) {
-    if (newDoc.deleted && !oldDoc.deleted) {
-      if (newDoc.reviewed === true && oldDoc.reviewed === false) {
-        if (newDoc.category === 'Journal') {
-          await updateAwaitingReview(
-            db,
-            projectId,
-            oldDoc.to,
-            oldDoc.to !== newDoc.to ? -1 : 0
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            oldDoc.from,
-            oldDoc.from !== newDoc.from ? -1 : 0
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            newDoc.to,
-            oldDoc.to !== newDoc.to ? 0 : -1
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            newDoc.from,
-            oldDoc.from !== newDoc.from ? 0 : -1
-          )
-        } else {
-          await updateAwaitingReview(
-            db,
-            projectId,
-            oldDoc.budget,
-            oldDoc.budget !== newDoc.budget ? -1 : 0
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            newDoc.budget,
-            oldDoc.budget !== newDoc.budget ? 0 : -1
-          )
-        }
-      } else if (newDoc.reviewed === false && oldDoc.reviewed === false) {
-        if (newDoc.category === 'Journal') {
-          await updateAwaitingReview(db, projectId, oldDoc.to, -1)
-          await updateAwaitingReview(db, projectId, oldDoc.from, -1)
-        } else {
-          await updateAwaitingReview(db, projectId, oldDoc.budget, -1)
-        }
-      }
-    } else if (!newDoc.deleted) {
-      if (newDoc.reviewed === true && oldDoc.reviewed === false) {
-        if (newDoc.category === 'Journal') {
-          await updateAwaitingReview(
-            db,
-            projectId,
-            oldDoc.to,
-            oldDoc.to !== newDoc.to ? -1 : 0
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            oldDoc.from,
-            oldDoc.from !== newDoc.from ? -1 : 0
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            newDoc.to,
-            oldDoc.to !== newDoc.to ? 0 : -1
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            newDoc.from,
-            oldDoc.from !== newDoc.from ? 0 : -1
-          )
-        } else {
-          await updateAwaitingReview(
-            db,
-            projectId,
-            oldDoc.budget,
-            oldDoc.budget !== newDoc.budget ? -1 : 0
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            newDoc.budget,
-            oldDoc.budget !== newDoc.budget ? 0 : -1
-          )
-        }
-      } else if (newDoc.reviewed === false && oldDoc.reviewed === true) {
-        if (newDoc.category === 'Journal') {
-          await updateAwaitingReview(db, projectId, newDoc.to, 1)
-          await updateAwaitingReview(db, projectId, newDoc.from, 1)
-        } else {
-          await updateAwaitingReview(db, projectId, newDoc.budget, 1)
-        }
-      } else if (newDoc.reviewed === false && oldDoc.reviewed === false) {
-        if (newDoc.category === 'Journal') {
-          await updateAwaitingReview(
-            db,
-            projectId,
-            oldDoc.to,
-            oldDoc.to !== newDoc.to ? -1 : 0
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            oldDoc.from,
-            oldDoc.from !== newDoc.from ? -1 : 0
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            newDoc.to,
-            oldDoc.to !== newDoc.to ? 1 : 0
-          )
-          await updateAwaitingReview(
-            db,
-            projectId,
-            newDoc.from,
-            oldDoc.from !== newDoc.from ? 1 : 0
-          )
-        } else {
-          await updateAwaitingReview(db, projectId, newDoc.budget, 1)
-        }
-      }
+  //create a status object
+  let status = {
+    change: 'create' || 'update' || 'delete',
+    category: 'Expense' || 'Income' || 'Journal',
+    deleted: true || false || 'delete' || 'undelete',
+    budget: {
+      status: 'changed' || 'same',
+      old: '',
+      new: ''
+    },
+    to: {
+      status: 'changed' || 'same',
+      old: '',
+      new: ''
+    },
+    from: {
+      status: 'changed' || 'same',
+      old: '',
+      new: ''
+    },
+    reviewed: true || false || 'mark reviewed' || 'mark unreviewed',
+    amount: {
+      status: 'changed' || 'same',
+      old: 0,
+      new: 0
     }
+  }
+
+  // check if created, updated, deleted and generate status object
+  if (oldDoc !== null && newDoc !== null) {
+    // updated
+    status.change = 'update'
+    status.category = newDoc.category
+    status.deleted =
+      newDoc.deleted === true && oldDoc.deleted === true
+        ? true
+        : newDoc.deleted !== true && oldDoc.deleted !== true
+        ? false
+        : newDoc.deleted === true && oldDoc.deleted !== true
+        ? 'delete'
+        : newDoc.deleted !== true && oldDoc.deleted === true
+        ? 'undelete'
+        : false
+    status.reviewed =
+      newDoc.reviewed === true && oldDoc.reviewed === true
+        ? true
+        : newDoc.reviewed !== true && oldDoc.reviewed !== true
+        ? false
+        : newDoc.reviewed === true && oldDoc.reviewed !== true
+        ? 'mark reviewed'
+        : newDoc.reviewed !== true && oldDoc.reviewed === true
+        ? 'mark unreviewed'
+        : false
+
+    status.budget.status = oldDoc.budget === newDoc.budget ? 'same' : 'changed'
+    status.budget.old = oldDoc.budget
+    status.budget.new = newDoc.budget
+
+    status.to.status = oldDoc.to === newDoc.to ? 'same' : 'changed'
+    status.to.old = oldDoc.to
+    status.to.new = newDoc.to
+
+    status.from.status = oldDoc.from === newDoc.from ? 'same' : 'changed'
+    status.from.old = oldDoc.from
+    status.from.new = newDoc.from
+
+    status.amount.status = oldDoc.amount === newDoc.amount ? 'same' : 'changed'
+    status.amount.old = oldDoc.amount
+    status.amount.new = newDoc.amount
   } else if (oldDoc === null) {
-    if (newDoc.reviewed !== true) {
-      if (newDoc.category === 'Journal') {
-        await updateAwaitingReview(db, projectId, newDoc.to, 1)
-        await updateAwaitingReview(db, projectId, newDoc.from, 1)
-      } else {
-        await updateAwaitingReview(db, projectId, newDoc.budget, 1)
-      }
-    }
+    // created
+    status.change = 'create'
+    status.category = newDoc.category
+    status.deleted = newDoc.deleted === true ? true : false
+    status.reviewed =
+      newDoc.reviewed === true ? true : newDoc.reviewed !== true ? false : false
+
+    status.budget.status = 'same'
+    status.budget.old = newDoc.budget
+    status.budget.new = newDoc.budget
+
+    status.to.status = 'same'
+    status.to.old = newDoc.to
+    status.to.new = newDoc.to
+
+    status.from.status = 'same'
+    status.from.old = newDoc.from
+    status.from.new = newDoc.from
+
+    status.amount.status = 'changed'
+    status.amount.old = 0
+    status.amount.new = newDoc.amount
   } else if (newDoc === null) {
-    if (oldDoc.reviewed !== true) {
-      if (oldDoc.category === 'Journal') {
-        await updateAwaitingReview(db, projectId, oldDoc.to, -1)
-        await updateAwaitingReview(db, projectId, oldDoc.from, -1)
-      } else {
-        await updateAwaitingReview(db, projectId, oldDoc.budget, -1)
-      }
-    }
-  }
+    // deleted
+    status.change = 'delete'
+    status.category = oldDoc.category
+    status.deleted = oldDoc.deleted
 
-  function updateAwaitingReview(db, projectId, budgetId, transAwaitingReview) {
-    // console.log(projectId, budgetId, transAwaitingReview)
-    if (transAwaitingReview === 0) return
-    return db.runTransaction(async t => {
-      const ref = db
-        .collection('projects')
-        .doc(projectId)
-        .collection('accounts')
-        .doc(budgetId)
-      const doc = await t.get(ref)
-      const data = doc.data()
-      let newData = {
-        transAwaitingReview: data.transAwaitingReview
-          ? parseInt(data.transAwaitingReview) + parseInt(transAwaitingReview)
-          : 0 + parseInt(transAwaitingReview)
-      }
-      if (newData.transAwaitingReview < 0) newData.transAwaitingReview = 0
-      t.update(ref, newData)
-    })
-  }
+    status.reviewed =
+      oldDoc.reviewed === true ? true : oldDoc.reviewed !== true ? false : false
+    status.budget.status = 'same'
+    status.budget.old = oldDoc.budget
+    status.budget.new = oldDoc.budget
 
-  // check for relevant change
-  if (oldDoc !== null && newDoc !== null) {
-    if (
-      newDoc.amount === oldDoc.amount &&
-      newDoc.to === oldDoc.to &&
-      newDoc.from === oldDoc.from &&
-      newDoc.budget === oldDoc.budget &&
-      newDoc.category === oldDoc.category &&
-      newDoc.deleted === oldDoc.deleted
-    ) {
-      console.log('no change detected')
-      return true
-    }
-  }
+    status.to.status = 'same'
+    status.to.old = oldDoc.to
+    status.to.new = oldDoc.to
 
-  if (oldDoc === null) {
-    // create
-    // make a list of all the budgets to be updated
-    if (newDoc.category === 'Income') {
-      await updateBudget(db, projectId, newDoc.budget, 0, newDoc.amount)
-    } else if (newDoc.category === 'Expense') {
+    status.from.status = 'same'
+    status.from.old = oldDoc.from
+    status.from.new = oldDoc.from
+
+    status.amount.status = 'changed'
+    status.amount.old = oldDoc.amount
+    status.amount.new = 0
+  }
+  // console.log(status)
+
+  // check for each condition
+
+  if (status.change === 'create' && status.category === 'Expense') {
+    // expense transaction created
+    // add review notification
+    // add expense to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      1,
+      -status.amount.new,
+      status.amount.new
+    )
+  } else if (status.change === 'create' && status.category === 'Income') {
+    // income transaction created
+    // add review notification
+    // add income to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      1,
+      status.amount.new,
+      0
+    )
+  } else if (status.change === 'create' && status.category === 'Journal') {
+    // journal transaction created
+    // add review notification
+    // add expense to the buget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.from.new),
+      1,
+      -status.amount.new,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.to.new),
+      1,
+      status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'delete' &&
+    status.category === 'Expense' &&
+    status.deleted === false &&
+    status.reviewed === true
+  ) {
+    // expense transaction deleted
+    // remove expense to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      0,
+      status.amount.old,
+      -status.amount.old
+    )
+  } else if (
+    status.change === 'delete' &&
+    status.category === 'Expense' &&
+    status.deleted === false &&
+    status.reviewed === false
+  ) {
+    // expense transaction deleted
+    // remove review notification
+    // remove expense to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      -1,
+      status.amount.old,
+      -status.amount.old
+    )
+  } else if (
+    status.change === 'delete' &&
+    status.category === 'Income' &&
+    status.deleted === false &&
+    status.reviewed === true
+  ) {
+    // Income transaction deleted
+    // remove income from the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      0,
+      -status.amount.old,
+      0
+    )
+  } else if (
+    status.change === 'delete' &&
+    status.category === 'Income' &&
+    status.deleted === false &&
+    status.reviewed === false
+  ) {
+    // expense transaction deleted
+    // remove review notification
+    // remove expense to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      -1,
+      -status.amount.old,
+      0
+    )
+  } else if (
+    status.change === 'delete' &&
+    status.category === 'Journal' &&
+    status.deleted === false &&
+    status.reviewed === true
+  ) {
+    // Journal transaction deleted
+    // add the journal to the from budget total
+    // remove journal from the to budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.from.new),
+      0,
+      status.amount.old,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.to.new),
+      0,
+      -status.amount.old,
+      0
+    )
+  } else if (
+    status.change === 'delete' &&
+    status.category === 'Journal' &&
+    status.deleted === false &&
+    status.reviewed === false
+  ) {
+    // Journal transaction deleted
+    // add the journal to the from budget total
+    // remove journal from the to budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.from.new),
+      -1,
+      status.amount.old,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.to.new),
+      -1,
+      -status.amount.old,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Expense' &&
+    status.deleted === false &&
+    status.reviewed === false &&
+    status.budget.status === 'changed'
+  ) {
+    // expense transaction budget updated
+    // remove expense to the budget total
+    // move the await review notification to new budget
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.old),
+      -1,
+      status.amount.old,
+      -status.amount.old
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      1,
+      -status.amount.new,
+      status.amount.new
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Expense' &&
+    status.deleted === false &&
+    status.reviewed === true &&
+    status.budget.status === 'changed'
+  ) {
+    // expense transaction budget updated
+    // remove expense to the budget total
+    // move the await review notification to new budget
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.old),
+      0,
+      status.amount.old,
+      -status.amount.old
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      0,
+      -status.amount.new,
+      status.amount.new
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Income' &&
+    status.deleted === false &&
+    status.reviewed === false &&
+    status.budget.status === 'changed'
+  ) {
+    // income transaction budget updated
+    // remove income to the budget total
+    // move the await review notification to new budget
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.old),
+      -1,
+      -status.amount.old,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      1,
+      status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Income' &&
+    status.deleted === false &&
+    status.reviewed === true &&
+    status.budget.status === 'changed'
+  ) {
+    // expense transaction budget updated
+    // remove expense to the budget total
+    // move the await review notification to new budget
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.old),
+      0,
+      -status.amount.old,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      0,
+      status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Journal' &&
+    status.deleted === false &&
+    status.reviewed === false &&
+    status.budget.status === 'changed'
+  ) {
+    // journal transaction budget updated
+    // remove journal to the budget total
+    // move the await review notification to new budget
+    if (status.from.status === 'changed') {
       await updateBudget(
         db,
-        projectId,
-        newDoc.budget,
-        newDoc.amount,
-        -newDoc.amount
+        projectRef.collection('accounts').doc(status.from.old),
+        -1,
+        status.amount.old,
+        0
       )
-    } else if (newDoc.category === 'Journal') {
-      await updateBudget(db, projectId, newDoc.to, 0, newDoc.amount)
-      await updateBudget(db, projectId, newDoc.from, 0, -newDoc.amount)
-    }
-  } else if (oldDoc !== null && newDoc !== null) {
-    // update
-    // make a list of all the budgets to be updated
-    if (!oldDoc.deleted) {
-      if (oldDoc.category === 'Income') {
-        await updateBudget(db, projectId, oldDoc.budget, 0, -oldDoc.amount)
-      } else if (oldDoc.category === 'Expense') {
-        await updateBudget(
-          db,
-          projectId,
-          oldDoc.budget,
-          -oldDoc.amount,
-          oldDoc.amount
-        )
-      } else if (oldDoc.category === 'Journal') {
-        await updateBudget(db, projectId, oldDoc.to, 0, -oldDoc.amount)
-        await updateBudget(db, projectId, oldDoc.from, 0, oldDoc.amount)
-      }
-    }
-    if (!newDoc.deleted) {
-      if (newDoc.category === 'Income') {
-        await updateBudget(db, projectId, newDoc.budget, 0, newDoc.amount)
-      } else if (newDoc.category === 'Expense') {
-        await updateBudget(
-          db,
-          projectId,
-          newDoc.budget,
-          newDoc.amount,
-          -newDoc.amount
-        )
-      } else if (newDoc.category === 'Journal') {
-        await updateBudget(db, projectId, newDoc.to, 0, newDoc.amount)
-        await updateBudget(db, projectId, newDoc.from, 0, -newDoc.amount)
-      }
-    }
-  } else {
-    // delete
-    // make a list of all the budgets to be updated
-    if (oldDoc.category === 'Income') {
-      await updateBudget(db, projectId, oldDoc.budget, 0, -oldDoc.amount)
-    } else if (oldDoc.category === 'Expense') {
       await updateBudget(
         db,
-        projectId,
-        oldDoc.budget,
-        -oldDoc.amount,
-        oldDoc.amount
+        projectRef.collection('accounts').doc(status.from.new),
+        1,
+        -status.amount.new,
+        0
       )
-    } else if (oldDoc.category === 'Journal') {
-      await updateBudget(db, projectId, oldDoc.to, 0, -oldDoc.amount)
-      await updateBudget(db, projectId, oldDoc.from, 0, oldDoc.amount)
+    }
+    if (status.to.status === 'changed') {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.to.old),
+        -1,
+        -status.amount.old,
+        0
+      )
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.to.new),
+        1,
+        status.amount.new,
+        0
+      )
+    }
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Journal' &&
+    status.deleted === false &&
+    status.reviewed === true &&
+    status.budget.status === 'changed'
+  ) {
+    // journal transaction budget updated
+    // remove journal to the budget total
+    // move the await review notification to new budget
+    if (status.from.status === 'changed') {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.from.old),
+        0,
+        status.amount.old,
+        0
+      )
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.from.new),
+        0,
+        -status.amount.new,
+        0
+      )
+    }
+    if (status.to.status === 'changed') {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.to.old),
+        0,
+        -status.amount.old,
+        0
+      )
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.to.new),
+        0,
+        status.amount.new,
+        0
+      )
+    }
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Expense' &&
+    status.deleted === 'undelete' &&
+    status.reviewed === true
+  ) {
+    // expense transaction undeleted
+    // add expense to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      0,
+      -status.amount.new,
+      status.amount.new
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Expense' &&
+    status.deleted === 'undelete' &&
+    status.reviewed === false
+  ) {
+    // expense transaction undeleted
+    // add review notification
+    // add expense to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      1,
+      -status.amount.new,
+      status.amount.new
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Expense' &&
+    status.deleted === 'delete' &&
+    status.reviewed === true
+  ) {
+    // expense transaction created
+    // add expense to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      0,
+      status.amount.new,
+      -status.amount.new
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Expense' &&
+    status.deleted === 'delete' &&
+    status.reviewed === false
+  ) {
+    // expense transaction created
+    // add review notification
+    // add expense to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      0,
+      status.amount.new,
+      -status.amount.new
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Income' &&
+    status.deleted === 'undelete' &&
+    status.reviewed === true
+  ) {
+    // income transaction undeleted
+    // add review notification
+    // add income to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      0,
+      status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Income' &&
+    status.deleted === 'undelete' &&
+    status.reviewed === false
+  ) {
+    // income transaction undeleted
+    // add review notification
+    // add income to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      1,
+      status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Income' &&
+    status.deleted === 'delete' &&
+    status.reviewed === true
+  ) {
+    // income transaction deleted
+    // add review notification
+    // add income to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      0,
+      -status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Income' &&
+    status.deleted === 'delete' &&
+    status.reviewed === false
+  ) {
+    // income transaction deleted
+    // add review notification
+    // add income to the budget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      -1,
+      -status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Journal' &&
+    status.deleted === 'undelete' &&
+    status.reviewed === true
+  ) {
+    // journal transaction undeleted
+    // add review notification
+    // add expense to the buget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.from.new),
+      0,
+      -status.amount.new,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.to.new),
+      0,
+      status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Journal' &&
+    status.deleted === 'undelete' &&
+    status.reviewed === false
+  ) {
+    // journal transaction undeleted
+    // add review notification
+    // add expense to the buget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.from.new),
+      1,
+      -status.amount.new,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.to.new),
+      1,
+      status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Journal' &&
+    status.deleted === 'delete' &&
+    status.reviewed === true
+  ) {
+    // journal transaction undeleted
+    // add review notification
+    // add expense to the buget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.from.new),
+      0,
+      status.amount.new,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.to.new),
+      0,
+      -status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Journal' &&
+    status.deleted === 'delete' &&
+    status.reviewed === false
+  ) {
+    // journal transaction undeleted
+    // add review notification
+    // add expense to the buget total
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.from.new),
+      -1,
+      status.amount.new,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.to.new),
+      -1,
+      -status.amount.new,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Expense' &&
+    status.deleted === false &&
+    status.reviewed === 'mark reviewed'
+  ) {
+    // income transaction marked reviewed
+    // add review notification
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      -1,
+      0,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Expense' &&
+    status.deleted === false &&
+    status.reviewed === 'mark unreviewed'
+  ) {
+    // expense transaction marked unreviewed
+    // add review notification
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      1,
+      0,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Income' &&
+    status.deleted === false &&
+    status.reviewed === 'mark reviewed'
+  ) {
+    // income transaction marked reviewed
+    // remove review notification
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      -1,
+      0,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Income' &&
+    status.deleted === false &&
+    status.reviewed === 'mark unreviewed'
+  ) {
+    // income transaction marked unreviewed
+    // add review notification
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.budget.new),
+      1,
+      0,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Journal' &&
+    status.deleted === false &&
+    status.reviewed === 'mark reviewed'
+  ) {
+    // journal transaction marked as reviewed
+    // remove review notification
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.from.new),
+      -1,
+      0,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.to.new),
+      -1,
+      0,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Journal' &&
+    status.deleted === false &&
+    status.reviewed === 'mark unreviewed'
+  ) {
+    // journal transaction marked as unreviewed
+    // add review notification
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.from.new),
+      1,
+      0,
+      0
+    )
+    await updateBudget(
+      db,
+      projectRef.collection('accounts').doc(status.to.new),
+      1,
+      0,
+      0
+    )
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Expense' &&
+    status.deleted === false &&
+    status.amount.status === 'changed'
+  ) {
+    // expense transaction amount changed
+    // add expense to the budget total
+    if (status.budget.status === 'changed') {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.budget.old),
+        0,
+        status.amount.old,
+        -status.amount.old
+      )
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.budget.new),
+        0,
+        -status.amount.new,
+        status.amount.new
+      )
+    } else {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.budget.new),
+        0,
+        status.amount.old - status.amount.new,
+        -status.amount.old + status.amount.new
+      )
+    }
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Income' &&
+    status.deleted === false &&
+    status.amount.status === 'changed'
+  ) {
+    // income transaction amount changed
+    // add income to the budget total
+    if (status.budget.status === 'changed') {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.budget.old),
+        0,
+        -status.amount.old,
+        0
+      )
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.budget.new),
+        0,
+        status.amount.new,
+        0
+      )
+    } else {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.budget.new),
+        0,
+        status.amount.new - status.amount.old,
+        0
+      )
+    }
+  } else if (
+    status.change === 'update' &&
+    status.category === 'Journal' &&
+    status.deleted === false &&
+    status.amount.status === 'changed'
+  ) {
+    // journal transaction amount changed
+    // add journal to the budget total
+    if (status.to.status === 'changed') {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.to.old),
+        0,
+        -status.amount.old,
+        0
+      )
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.to.new),
+        0,
+        status.amount.new,
+        0
+      )
+    } else {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.to.new),
+        0,
+        status.amount.new - status.amount.old,
+        0
+      )
+    }
+    if (status.from.status === 'changed') {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.from.old),
+        0,
+        status.amount.old,
+        0
+      )
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.from.new),
+        0,
+        -status.amount.new,
+        0
+      )
+    } else {
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.from.new),
+        0,
+        -status.amount.new + status.amount.old,
+        0
+      )
     }
   }
 }
 
-function updateBudget(db, projectId, budgetId, expense, amount) {
-  console.log(projectId, budgetId, expense, amount)
+function updateBudget(db, budgetRef, awaitReviewAdj, balanceAdj, expenseAdj) {
+  // console.log(awaitReviewAdj, balanceAdj, expenseAdj)
+  // console.log(budgetRef.path)
   return db.runTransaction(async t => {
-    const ref = db
-      .collection('projects')
-      .doc(projectId)
-      .collection('accounts')
-      .doc(budgetId)
-    const doc = await t.get(ref)
+    const doc = await t.get(budgetRef)
+    // console.log(doc)
+    if (!doc.exists) return
     const data = doc.data()
-    let newData = { income: 0, expenses: 0, balance: 0 }
+    let newData = {}
+
+    newData.transAwaitingReview = data.transAwaitingReview
+      ? parseInt(data.transAwaitingReview) + parseInt(awaitReviewAdj)
+      : 0 + parseInt(awaitReviewAdj)
+
     newData.expenses = data.expenses
-      ? parseFloat(data.expenses) + parseFloat(expense)
-      : 0 + parseFloat(expense)
+      ? parseFloat(data.expenses) + parseFloat(expenseAdj)
+      : 0 + parseFloat(expenseAdj)
+
     newData.balance = data.balance
-      ? parseFloat(data.balance) + parseFloat(amount)
-      : 0 + parseFloat(amount)
-    t.update(ref, newData)
+      ? parseFloat(data.balance) + parseFloat(balanceAdj)
+      : 0 + parseFloat(balanceAdj)
+
+    // console.log(newData)
+    t.update(budgetRef, newData)
   })
 }

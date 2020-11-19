@@ -191,13 +191,9 @@
 </template>
 
 <script>
-// import firebase from 'firebase/app'
-// require('firebase/firestore')
-import { $firestore, $storage } from './../scripts/firebase.js'
+import { $firestore, $storage, $analytics } from './../scripts/firebase.js'
 import { mapGetters } from 'vuex'
 import { saveAs } from 'file-saver'
-// const fs = require('fs')
-// const downloadsFolder = require('downloads-folder')
 import JSZip from 'JSZip'
 
 const columns = [
@@ -227,6 +223,7 @@ export default {
   },
   created() {
     // this.$store.dispatch('fetchProjects', this.$route.params.id)
+    $analytics.setCurrentScreen('Dashboard')
   },
   methods: {
     onProjectOpen(projectId, permission) {

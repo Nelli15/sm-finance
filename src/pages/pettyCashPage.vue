@@ -477,6 +477,7 @@ import { mapGetters, mapActions } from 'vuex'
 import { debounce } from 'quasar'
 import firebase from 'firebase/app'
 require('firebase/firestore')
+require('firebase/analytics')
 
 export default {
   data() {
@@ -502,6 +503,7 @@ export default {
   created() {
     // this.$store.dispatch('fetchPetty', this.$route.params.id)
     this.updatePetty = debounce(this.updatePetty, 500)
+    firebase.analytics().setCurrentScreen('Petty Cash')
   },
   computed: {
     ...mapGetters([

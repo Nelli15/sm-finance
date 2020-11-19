@@ -102,6 +102,14 @@
             label="Share"
             v-if="isAdmin"
           />
+          <a
+            href="/manual.pdf"
+            class="text-white"
+            style="text-decoration:none;"
+            target="blank"
+          >
+            <q-tab targer icon="help" label="Finance Manual" />
+          </a>
         </q-tabs>
         <q-space />
         <q-tabs

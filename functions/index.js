@@ -964,7 +964,11 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           transData.type,
           categoryDoc.label,
           transData.cheque,
-          transData.payTo.replace(/,/g, '-'),
+          !transData.payTo
+            ? ''
+            : typeof transData.payTo === 'string'
+            ? transData.payTo.replace(/,/g, '-')
+            : transData.payTo,
           transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
           transData.deleted === true ? 1 : 0
         ]
@@ -999,7 +1003,11 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           transData.type,
           'Petty Cash',
           transData.cheque,
-          transData.payTo.replace(/,/g, '-'),
+          !transData.payTo
+            ? ''
+            : typeof transData.payTo === 'string' && transData.payTo > ''
+            ? transData.payTo.replace(/,/g, '-')
+            : transData.payTo,
           transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
           transData.deleted === true ? 1 : 0
         ]

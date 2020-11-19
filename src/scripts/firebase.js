@@ -5,7 +5,7 @@ import 'firebase/functions'
 import 'firebase/auth'
 import 'firebase/performance'
 import 'firebase/storage'
-// import 'firebase/analytics'
+import 'firebase/analytics'
 // // import "firebase/remote-config"
 // // import "firebase/database"
 
@@ -53,7 +53,7 @@ if (location.hostname === 'localhost') {
 }
 
 if (process.env.PROD) {
-  db.enablePersistence().catch(function (err) {
+  db.enablePersistence().catch(function(err) {
     if (err.code === 'failed-precondition') {
       // Multiple tabs open, persistence can only be enabled
       // in one tab at a a time.
@@ -75,7 +75,7 @@ export const $firestore = db
 export const $auth = firebase.auth()
 // // export const $remoteConfig = firebase.remoteConfig()
 export const $perform = firebase.performance()
-// export const $analytics = firebase.analytics()
+export const $analytics = firebase.analytics()
 export const $functions = funcs
 export const $storage = firebase.storage()
 // // export const $messaging = messaging
@@ -87,7 +87,7 @@ export default {
   $auth,
   // $remoteConfig,
   $perform,
-  // $analytics,
+  $analytics,
   // $messaging,
   $functions,
   $storage

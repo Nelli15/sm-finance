@@ -4,5 +4,7 @@ module.exports = {
     databaseURL: 'https://sp-finance.firebaseio.com',
     storageBucket: 'gs://sp-finance.appspot.com'
   },
-  schema: {}
+  schema: {
+    projects: 'test-projects'
+  }
 }

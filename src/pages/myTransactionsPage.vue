@@ -340,7 +340,13 @@
             <q-popup-edit v-model="props.row.amount">
               <q-input
                 :value="props.row.amount"
-                @input="updateTransaction(props.row.id, 'amount', $event)"
+                @input="
+                  updateTransaction(
+                    props.row.id,
+                    'amount',
+                    props.row.type === 'Cash' ? round5($event) : $event
+                  )
+                "
                 dense
                 autofocus
                 :label="'Amount (' + project.currency + ')'"
@@ -700,7 +706,7 @@
                 self="center left"
                 content-class="bg-accent text-black"
               >
-                Checking for receipt
+                Looking for receipt
               </q-tooltip>
             </q-spinner-gears>
             <sp-receipt
@@ -775,6 +781,7 @@
 import { debounce } from 'quasar'
 import firebase from 'firebase/app'
 require('firebase/firestore')
+require('firebase/analytics')
 
 import { mapGetters, mapActions } from 'vuex'
 
@@ -912,6 +919,7 @@ export default {
 
     this.updateTransaction = debounce(this.updateTransaction, 1000)
     this.pagination.rowsPerPage = this.$q.localStorage.getItem('transTableRows')
+    firebase.analytics().setCurrentScreen('My Transactions')
   },
   methods: {
     ...mapActions(['updateMyTransactionByKey']),
@@ -1043,6 +1051,15 @@ export default {
         )
       )
       return res
+    },
+    round5(x) {
+      var mod = (x - Math.floor(x)) * 100
+      if (mod % 5 > 0) {
+        mod % 5 <= 2 ? (mod = mod - (mod % 5)) : (mod = mod + (5 - (mod % 5)))
+        return parseFloat(Math.floor(x) + mod / 100)
+      } else {
+        return parseFloat(x)
+      }
     }
   },
   computed: {

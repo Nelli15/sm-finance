@@ -277,6 +277,7 @@ import { mapGetters, mapActions } from 'vuex'
 import { debounce } from 'quasar'
 import firebase from 'firebase/app'
 require('firebase/firestore')
+require('firebase/analytics')
 
 const columns = [
   {
@@ -368,6 +369,7 @@ export default {
     this.pagination.rowsPerPage = this.$q.localStorage.getItem(
       'budgetTableRows'
     )
+    firebase.analytics().setCurrentScreen('Budgets')
   },
   methods: {
     ...mapActions(['updateBudgetByKey']),

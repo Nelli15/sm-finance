@@ -710,6 +710,7 @@ import { uid } from 'quasar'
 import { mapGetters } from 'vuex'
 import firebase from 'firebase/app'
 require('firebase/firestore')
+require('firebase/analytics')
 // let md5 = require('js-md5')
 
 const adminsColumns = [
@@ -862,6 +863,7 @@ export default {
           rowsPerPage: 10
           // rowsNumber: xx if getting data from a server
         }
+    firebase.analytics().setCurrentScreen('Access')
   },
   computed: {
     ...mapGetters([

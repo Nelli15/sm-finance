@@ -16,6 +16,7 @@
 import firebase from 'firebase/app'
 require('firebase/auth')
 var firebaseui = require('firebaseui')
+require('firebase/analytics')
 // import store from '../store/index.js'
 import '../../node_modules/firebaseui/dist/firebaseui.css'
 
@@ -67,6 +68,7 @@ export default {
       ui = new firebaseui.auth.AuthUI(firebase.auth())
     }
     ui.start('#firebaseui-auth-container', uiConfig)
+    firebase.analytics().setCurrentScreen('Login')
   }
 }
 </script>

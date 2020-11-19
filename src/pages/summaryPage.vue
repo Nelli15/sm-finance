@@ -81,6 +81,39 @@
           <q-icon name="edit" />Edit
         </q-tooltip>
       </q-badge>
+      <q-select
+        :value="
+          project.contributorTransTypeOpts
+            ? project.contributorTransTypeOpts
+            : []
+        "
+        @input="
+          project.contributorTransTypeOpts = $event
+          updateProject('contributorTransTypeOpts', $event)
+        "
+        dense
+        autofocus
+        borderless
+        label="Contributor Transaction Types"
+        multiple
+        :options="['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']"
+        style="width:250px"
+        class="q-mx-auto"
+        label-color="white"
+        hide-dropdown-icon
+      >
+        <template v-slot:selected-item="scope">
+          <q-chip
+            dense
+            :tabindex="scope.tabindex"
+            text-color="white"
+            class="q-ma-none"
+            style="background-color: inherit;"
+          >
+            {{ scope.opt }}
+          </q-chip>
+        </template>
+      </q-select>
     </q-banner>
 
     <q-table
@@ -407,8 +440,7 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from 'quasar'
-import { $firestore } from './../scripts/firebase.js'
-// require('firebase/firestore')
+import { $firestore, $analytics, $perform } from './../scripts/firebase.js'
 
 const columns = [
   {
@@ -439,13 +471,6 @@ const columns = [
     field: 'remaining',
     sortable: true
   },
-  // {
-  //   name: 'awaitingReviews',
-  //   align: 'center',
-  //   label: 'Transactions Awaiting Review',
-  //   field: 'awaitingReviews',
-  //   sortable: true
-  // },
   { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
 ]
 
@@ -457,20 +482,6 @@ const accountColumns = [
     field: 'label',
     sortable: true
   },
-  // {
-  //   name: 'income',
-  //   align: 'center',
-  //   label: 'In (AUD)',
-  //   field: 'income',
-  //   sortable: true
-  // },
-  // {
-  //   name: 'expenses',
-  //   align: 'center',
-  //   label: 'Out (AUD)',
-  //   field: 'expenses',
-  //   sortable: true
-  // },
   {
     name: 'balance',
     align: 'center',
@@ -478,13 +489,6 @@ const accountColumns = [
     field: 'balance',
     sortable: true
   },
-  // {
-  //   name: 'awaitingReviews',
-  //   align: 'center',
-  //   label: 'Transactions Awaiting Review',
-  //   field: 'awaitingReviews',
-  //   sortable: true
-  // },
   { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
 ]
 
@@ -519,12 +523,6 @@ export default {
       },
       fabPos: [18, 18],
       draggingFab: false
-      // project: {
-      //   name: 'Gold Coast Schoolies',
-      //   id: '12345',
-      //   participants: 40,
-      //   currency: 'AUD'
-      // }
     }
   },
   preFetch({ store, currentRoute }) {
@@ -533,13 +531,6 @@ export default {
     // store.dispatch('fetchAccounts', currentRoute.params.id)
   },
   created() {
-    // this.$store.dispatch('fetchProject', { projectId: this.$route.params.id, uid: this.user.uid })
-    // this.$store.dispatch('fetchTransactions', this.$route.params.id)
-    // this.$store.dispatch('fetchBudgetCategories', this.$route.params.id)
-    // this.$store.dispatch('fetchBudgets', this.$route.params.id)
-    // this.$store.dispatch('fetchAccounts', this.$route.params.id)
-    // this.$store.dispatch('fetchContributors', this.$route.params.id)
-    // this.$store.dispatch('fetchInvites', this.$route.params.id)
     this.updateCategory = debounce(this.updateCategory, 1000)
     this.updateAccount = debounce(this.updateAccount, 1000)
     this.updateProject = debounce(this.updateProject, 3000)
@@ -549,6 +540,7 @@ export default {
     this.accountsPagination.rowsPerPage = this.$q.localStorage.getItem(
       'accountsTableRows'
     )
+    $analytics.setCurrentScreen('Summary')
   },
   methods: {
     ...mapActions([

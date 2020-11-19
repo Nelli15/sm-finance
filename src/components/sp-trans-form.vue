@@ -144,16 +144,26 @@
         </q-icon>
         <!-- </q-item-section> -->
       </q-item>
-      <q-item v-show="isAdmin">
+      <q-item
+        v-show="
+          isAdmin ||
+            (project.contributorTransTypeOpts &&
+              project.contributorTransTypeOpts.length > 1)
+        "
+      >
+        <!-- {{ project }} -->
         <!-- <q-item-section> -->
         <!-- <q-popup-edit v-model="props.row.category"> -->
         <q-select
+          v-if="isAdmin"
           :value="newTrans.category"
           dense
           label="Category"
           :options="categoryOptions"
           @input="newTrans.category = $event"
-          style="width:50%"
+          style="
+            width:50%
+          "
           :rules="[v => !!v || 'Required value']"
           :disable="isContributor"
           hide-bottom-space
@@ -164,11 +174,21 @@
         <!-- <q-item-section> -->
         <!-- <q-popup-edit v-model="props.row.category"> -->
         <q-select
+          v-show="
+            isAdmin ||
+              (project.contributorTransTypeOpts &&
+                project.contributorTransTypeOpts.length > 1)
+          "
           v-model="newTrans.type"
           dense
           label="Type"
           :options="typeOptions"
-          style="width:50%"
+          :style="
+            project.contributorTransTypeOpts &&
+            project.contributorTransTypeOpts.length > 1
+              ? 'width:100%;'
+              : 'width:50%;'
+          "
           :rules="[v => !!v || 'Required value']"
           hide-bottom-space
         />
@@ -300,9 +320,11 @@
           style="width:50%"
           use-input
           @filter="filterBudgets"
-          :error="isValid"
-          error-message="To & From accounts must be different"
-          :rules="[v => !!v || 'Required value']"
+          :rules="[
+            v => !!v || 'Required value',
+            newTrans.to !== newTrans.from ||
+              'To & From accounts must be different'
+          ]"
           hide-bottom-space
         >
           <template v-slot:no-option>
@@ -334,9 +356,12 @@
           style="width:50%"
           use-input
           @filter="filterBudgets"
-          :error="isValid"
-          error-message="To & From accounts must be different"
           hide-bottom-space
+          :rules="[
+            v => !!v || 'Required value',
+            newTrans.to !== newTrans.from ||
+              'To & From accounts must be different'
+          ]"
         >
           <template v-slot:no-option>
             <q-item>
@@ -442,7 +467,6 @@ export default {
         payTo: ''
       },
       error: '',
-      typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card'],
       transRef: {},
       readOnly: false,
       uploading: false,
@@ -451,7 +475,7 @@ export default {
   },
   created() {
     // this.$q.dark.set(true)
-    console.log(`/projects/${this.projectId}/transactions`)
+    // console.log(`/projects/${this.projectId}/transactions`)
     this.transRef = firebase
       .firestore()
       .collection(`/projects/${this.project.id}/transactions`)
@@ -468,7 +492,7 @@ export default {
   },
   methods: {
     onLog(event) {
-      console.log(event)
+      // console.log(event)
     },
     onAdded(files) {
       console.log('file added', files)
@@ -491,6 +515,25 @@ export default {
           'Please submit a receipt. If a Tax Invoice is not available, submit an eftpos receipt and set the GST to $0'
         return
       }
+      console.log(
+        this.newTrans,
+
+        this.newTrans.category === 'Journal' &&
+          !this.budgetsFiltered.some(val => val.id === this.newTrans.to) &&
+          !this.budgetsFiltered.some(val => val.id === this.newTrans.from),
+        this.newTrans.category !== 'Journal' &&
+          !this.budgetsFiltered.some(val => val.id === this.newTrans.budget)
+      )
+      if (
+        (this.newTrans.category === 'Journal' &&
+          !this.budgetsFiltered.some(val => val.id === this.newTrans.to) &&
+          !this.budgetsFiltered.some(val => val.id === this.newTrans.from)) ||
+        (this.newTrans.category !== 'Journal' &&
+          !this.budgetsFiltered.some(val => val.id === this.newTrans.budget))
+      ) {
+        this.error = 'Budget Missing'
+        return
+      }
       this.$q.loading.show()
       this.newTrans.cheque =
         this.newTrans.type === 'Cheque' ? this.newTrans.cheque : ''
@@ -498,6 +541,7 @@ export default {
         this.newTrans.category === 'Expense' && this.newTrans.receipt === true
           ? this.newTrans.GST
           : 0
+
       this.newTrans.to =
         this.newTrans.category === 'Journal' ? this.newTrans.to : 0
       this.newTrans.from =
@@ -551,7 +595,7 @@ export default {
       }
     },
     onReset() {
-      console.log('form reset')
+      // console.log('form reset')
       this.newTrans = {
         budget: '',
         from: '',
@@ -572,15 +616,15 @@ export default {
         .doc()
       this.readOnly = false
       let date = new Date()
-      console.log(
-        this.newTrans.date,
-        `${date
-          .getDate()
-          .toString()
-          .padStart(2, '0')}/${(date.getMonth() + 1)
-          .toString()
-          .padStart(2, '0')}/${date.getFullYear()}`
-      )
+      // console.log(
+      //   this.newTrans.date,
+      //   `${date
+      //     .getDate()
+      //     .toString()
+      //     .padStart(2, '0')}/${(date.getMonth() + 1)
+      //     .toString()
+      //     .padStart(2, '0')}/${date.getFullYear()}`
+      // )
       this.newTrans.date = `${date
         .getDate()
         .toString()
@@ -647,16 +691,24 @@ export default {
       'isContributor',
       'user'
     ]),
+    typeOptions() {
+      // this.isContributor &&
+      return this.isContributor &&
+        this.project.contributorTransTypeOpts &&
+        this.project.contributorTransTypeOpts.length > 0
+        ? this.project.contributorTransTypeOpts
+        : ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
+    },
     isValid() {
-      console.log(
-        this.newTrans.to !== '' &&
-          this.newTrans.from !== '' &&
-          this.newTrans.to === this.newTrans.from
-      )
+      // console.log(
+      //   this.newTrans.to !== '' &&
+      //     this.newTrans.from !== '' &&
+      //     this.newTrans.to === this.newTrans.from
+      // )
       return (
         this.newTrans.category === 'Journal' &&
-        this.newTrans.to !== '' &&
-        this.newTrans.from !== '' &&
+        this.newTrans.to > '' &&
+        this.newTrans.from > '' &&
         this.newTrans.to === this.newTrans.from
       )
     },
