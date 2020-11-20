@@ -102,14 +102,63 @@
             label="Share"
             v-if="isAdmin"
           />
-          <a
-            href="/manual.pdf"
-            class="text-white"
-            style="text-decoration:none;"
-            target="blank"
-          >
-            <q-tab targer icon="help" label="Finance Manual" />
-          </a>
+
+          <q-tab targer icon="help" label="Finance Manual" v-if="isAdmin">
+            <q-menu>
+              <q-list class="bg-primary">
+                <q-item>
+                  <q-item-section
+                    ><a
+                      href="/manual-vic.pdf"
+                      class="text-white"
+                      style="text-decoration:none;"
+                      target="blank"
+                      >Victoria</a
+                    ></q-item-section
+                  >
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <a
+                      href="/manual.pdf"
+                      class="text-white"
+                      style="text-decoration:none;"
+                      target="blank"
+                      >All Other States</a
+                    >
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-tab>
+          <q-tab targer icon="help" label="Finance Manual" v-else>
+            <q-menu>
+              <q-list class="bg-primary">
+                <q-item>
+                  <q-item-section
+                    ><a
+                      href="/contributor-manual-vic.pdf"
+                      class="text-white"
+                      style="text-decoration:none;"
+                      target="blank"
+                      >Victoria</a
+                    ></q-item-section
+                  >
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <a
+                      href="/contributor-manual.pdf"
+                      class="text-white"
+                      style="text-decoration:none;"
+                      target="blank"
+                      >All Other States</a
+                    >
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-tab>
         </q-tabs>
         <q-space />
         <q-tabs

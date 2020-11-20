@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "quasar dev",
     "dev:pwa": "quasar dev -m pwa",
-    "emultors:start": "firebase emulators:start --only functions,firestore",
+    "emultors:start": "firebase emulators:start",
     "emulators:start:firestore": "firebase emulators:start --only firestore",
     "emulators:start:functions": "firebase emulators:start --only functions"
   },

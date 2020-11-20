@@ -322,8 +322,7 @@
           @filter="filterBudgets"
           :rules="[
             v => !!v || 'Required value',
-            newTrans.to !== newTrans.from ||
-              'To & From accounts must be different'
+            v => newTrans.to !== newTrans.from || 'To & From must be different'
           ]"
           hide-bottom-space
         >
@@ -359,8 +358,7 @@
           hide-bottom-space
           :rules="[
             v => !!v || 'Required value',
-            newTrans.to !== newTrans.from ||
-              'To & From accounts must be different'
+            v => newTrans.to !== newTrans.from || 'To & From must be different'
           ]"
         >
           <template v-slot:no-option>
@@ -455,7 +453,7 @@ export default {
         budget: '',
         from: '',
         to: '',
-        type: 'Cash',
+        type: '',
         date: '',
         amount: '',
         GST: '0',
@@ -476,6 +474,7 @@ export default {
   created() {
     // this.$q.dark.set(true)
     // console.log(`/projects/${this.projectId}/transactions`)
+    this.newTrans.type = this.typeOptions[0]
     this.transRef = firebase
       .firestore()
       .collection(`/projects/${this.project.id}/transactions`)
@@ -515,15 +514,6 @@ export default {
           'Please submit a receipt. If a Tax Invoice is not available, submit an eftpos receipt and set the GST to $0'
         return
       }
-      console.log(
-        this.newTrans,
-
-        this.newTrans.category === 'Journal' &&
-          !this.budgetsFiltered.some(val => val.id === this.newTrans.to) &&
-          !this.budgetsFiltered.some(val => val.id === this.newTrans.from),
-        this.newTrans.category !== 'Journal' &&
-          !this.budgetsFiltered.some(val => val.id === this.newTrans.budget)
-      )
       if (
         (this.newTrans.category === 'Journal' &&
           !this.budgetsFiltered.some(val => val.id === this.newTrans.to) &&
@@ -532,6 +522,13 @@ export default {
           !this.budgetsFiltered.some(val => val.id === this.newTrans.budget))
       ) {
         this.error = 'Budget Missing'
+        return
+      }
+      if (
+        this.newTrans.category === 'Journal' &&
+        this.newTrans.to === this.newTrans.from
+      ) {
+        this.error = 'To and From must be different'
         return
       }
       this.$q.loading.show()
@@ -600,7 +597,7 @@ export default {
         budget: '',
         from: '',
         to: '',
-        type: 'Cash',
+        type: '',
         date: '',
         amount: '',
         GST: '',
@@ -692,12 +689,14 @@ export default {
       'user'
     ]),
     typeOptions() {
-      // this.isContributor &&
-      return this.isContributor &&
+      let options =
+        this.isContributor &&
         this.project.contributorTransTypeOpts &&
         this.project.contributorTransTypeOpts.length > 0
-        ? this.project.contributorTransTypeOpts
-        : ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
+          ? this.project.contributorTransTypeOpts
+          : ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
+      this.newTrans.type = options[0]
+      return options
     },
     isValid() {
       // console.log(

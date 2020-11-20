@@ -6,9 +6,7 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log",
-    "build": "./node_modules/.bin/tsc",
-    "build:watch": "./node_modules/.bin/tsc --watch"
+    "logs": "firebase functions:log"
   },
   "engines": {
     "node": "12"

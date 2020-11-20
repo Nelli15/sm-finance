@@ -125,7 +125,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     status.amount.old = oldDoc.amount
     status.amount.new = 0
   }
-  console.log(status)
+  // console.log(status)
 
   // check for each condition
 
@@ -903,8 +903,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
 }
 
 function updateBudget(db, budgetRef, awaitReviewAdj, balanceAdj, expenseAdj) {
-  console.log(awaitReviewAdj, balanceAdj, expenseAdj)
-  console.log(budgetRef.path)
+  // console.log(awaitReviewAdj, balanceAdj, expenseAdj)
+  // console.log(budgetRef.path)
   return db
     .runTransaction(async t => {
       const doc = await t.get(budgetRef)

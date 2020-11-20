@@ -130,6 +130,18 @@
                 Bank Card
               </q-tooltip>
             </q-icon>
+            <q-popup-edit
+              v-model="props.row.type"
+              v-if="typeOptions.length > 1"
+            >
+              <q-select
+                :value="props.row.type"
+                dense
+                label="Type"
+                :options="typeOptions"
+                @input="updateTransaction(props.row.id, 'type', $event)"
+              />
+            </q-popup-edit>
           </q-td>
           <q-td key="category" :props="props">
             <!-- {{props.row.category}} -->
@@ -164,7 +176,7 @@
                   dense
                   autofocus
                   label="Budget"
-                  :options="budgetOptions"
+                  :options="budgetOptionsFiltered"
                 />
               </q-popup-edit>
               <q-tooltip
@@ -196,7 +208,7 @@
                   dense
                   autofocus
                   label="Budget Category"
-                  :options="budgetOptions"
+                  :options="budgetOptionsFiltered"
                 />
               </q-popup-edit>
               <q-tooltip
@@ -238,7 +250,7 @@
                   autofocus
                   label="From"
                   stack-label
-                  :options="budgetOptions"
+                  :options="budgetOptionsFiltered"
                 />
                 <q-select
                   v-if="budgets[props.row.from]"
@@ -248,7 +260,7 @@
                   autofocus
                   label="From"
                   stack-label
-                  :options="budgetOptions"
+                  :options="budgetOptionsFiltered"
                 />
                 <q-select
                   v-if="budgetCategories[props.row.from]"
@@ -258,7 +270,7 @@
                   autofocus
                   label="From"
                   stack-label
-                  :options="budgetOptions"
+                  :options="budgetOptionsFiltered"
                 />
                 <q-select
                   v-if="accounts[props.row.to]"
@@ -268,7 +280,7 @@
                   autofocus
                   label="To"
                   stack-label
-                  :options="budgetOptions"
+                  :options="budgetOptionsFiltered"
                 />
                 <q-select
                   v-if="budgets[props.row.to]"
@@ -278,7 +290,7 @@
                   autofocus
                   label="To"
                   stack-label
-                  :options="budgetOptions"
+                  :options="budgetOptionsFiltered"
                 />
                 <q-select
                   v-if="budgetCategories[props.row.to]"
@@ -288,7 +300,7 @@
                   autofocus
                   label="To"
                   stack-label
-                  :options="budgetOptions"
+                  :options="budgetOptionsFiltered"
                 />
               </q-popup-edit>
               <q-tooltip
@@ -887,8 +899,7 @@ export default {
         // rowsNumber: xx if getting data from a server
       },
       rowSelected: [],
-      showArchived: false,
-      typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
+      showArchived: false
     }
   },
   preFetch({ store, currentRoute }) {
@@ -1071,8 +1082,23 @@ export default {
       'budgets',
       'budgetOptions',
       'budgetCategories',
-      'user'
+      'user',
+      'isContributor'
     ]),
+    typeOptions() {
+      let options =
+        this.isContributor &&
+        this.project.contributorTransTypeOpts &&
+        this.project.contributorTransTypeOpts.length > 0
+          ? this.project.contributorTransTypeOpts
+          : ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
+      return options
+    },
+    budgetOptionsFiltered() {
+      return this.budgetOptions.filter(
+        val => val.id !== 'debitCard' && val.id !== 'pettyCash'
+      )
+    },
     columnsFiltered() {
       let columns = []
       for (var key in this.columns) {
