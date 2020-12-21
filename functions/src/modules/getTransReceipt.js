@@ -13,13 +13,20 @@ module.exports = ({ admin, environment }) => async (snap, context) => {
 
     let file = await admin
       .storage()
-      .bucket('gs://sp-finance-upload')
+      .bucket('gs://sp-finance-uploads')
       .file(`processed/${projectId}-${transId}.jpg`)
+    let meta = await file.getMetadata()
+    console.log(meta.name)
+    if (!(await file.exists())) {
+      console.log('file not found')
+      return false
+    }
     console.log(
       'file found',
       await file.exists(),
       `moving to: /projects/${projectId}/receipts/${projectId}-${transId}.jpg`
     )
+
     let res = await file
       .copy(
         `gs://sp-finance.appspot.com/projects/${projectId}/receipts/${projectId}-${transId}.jpg`

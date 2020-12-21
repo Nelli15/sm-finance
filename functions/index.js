@@ -577,7 +577,8 @@ exports.receiptUploaded = functions.storage
           destination: JPEGFilePath,
           metadata: metadata
         })
-        .then(() => {
+        .then(async res => {
+          console.log('File Uploaded', await res[0].exists(), res)
           // console.log('Creating Transaction Doc ', metadata)
           // doc.set(metadata)
           //   .catch(err => {
@@ -637,7 +638,7 @@ exports.receiptUploaded = functions.storage
       //   })
       // console.log('Done')
 
-      file.delete()
+      // await file.delete()
       return true
     }
     // else {
