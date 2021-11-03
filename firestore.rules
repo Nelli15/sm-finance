@@ -10,25 +10,67 @@ service cloud.firestore {
       {
         return get(/databases/$(database)/documents/projects/$(projectId)/contributors/$(request.auth.uid)).data.permission == 'contributor'
       }
+      function userIsBudgetContributor(projectId, budgetId)
+      {
+        return budgetId in get(/databases/$(database)/documents/projects/$(projectId)/contributors/$(request.auth.uid)).data.budgets
+      }
       match /projects/{projectId} {
+      	allow create: if request.auth.uid != null;
         allow read, write: if userIsAdmin(projectId);
+        allow read: if userIsContributor(projectId);
         match /contributors/{uid} {
           allow read, write: if userIsAdmin(projectId);
         }
-        match /invites/{uid} {
-          allow read: if userIsAdmin(projectId) || request.auth.token.email == resource.data.email;
-          allow write: if userIsAdmin(projectId);
-        }
-        match /budgets/{uid} {
+        match /invites/{email} {
+          allow read: if request.auth.token.email == email;
           allow read, write: if userIsAdmin(projectId);
         }
-        match /transactions/{uid} {
-          allow create: if userIsContributor(projectId);
+        match /accounts/{accountId} {
+          allow read: if userIsAdmin(projectId);
+          allow write: if userIsAdmin(projectId) && (budgetPopulated() || budgetCategoriesPopulated() || accountPopulated());
+          allow read: if userIsBudgetContributor(projectId, accountId)
+          allow read: if userIsContributor(projectId)
+          allow delete: if userIsAdmin(projectId);
+          function budgetPopulated() {
+          	return int(request.resource.data.budget) > 0
+            && get(/databases/$(database)/documents/projects/$(projectId)/accounts/$(request.resource.data.category)).data.type == 'category' 
+            && request.resource.data.type == 'budget'
+            && request.resource.data.label > ''
+          }
+          function budgetCategoriesPopulated() {
+          	return request.resource.data.type == 'category'
+            && request.resource.data.label > ''
+          }
+          function accountPopulated() {
+          	return request.resource.data.type == 'account'
+            && request.resource.data.label > ''
+          }
+        }
+        match /transactions/{transId} {
+          // allow read: if true
+        	allow create: if userIsContributor(projectId) && userIsBudgetContributor(projectId, request.resource.data.budget);
+          // allow create: if userIsContributor(projectId) && userIsBudgetContributor(projectId, request.resource.data.to) && userIsBudgetContributor(projectId, request.resource.data.from);
+          allow read, write: if userIsAdmin(projectId);
+          allow read: if userIsContributor(projectId) && resource.data.submittedBy.uid == request.auth.uid;
+          allow update: if (userIsAdmin(projectId) || userIsContributor(projectId)) && !resource.data.reviewed && ((!("deleted" in resource.data) && !("deleted" in request.resource.data)) || ("deleted" in resource.data && "deleted" in request.resource.data && checkUnchanged('deleted'))) && checkUnchanged('category') && checkUnchanged('type') && checkAuthor();
+          // && parseFloat(request.resource.data.amount) > 0
+          // && parseFloat(request.resource.data.GST) <= (parseFloat(request.resource.data.amount)*0.1);
+          function checkUnchanged(key) {
+          	return request.resource.data[key] == resource.data[key]
+          }
+          function checkAuthor() {
+          	return request.resource.data.submittedBy.uid == resource.data.submittedBy.uid && resource.data.submittedBy.uid == request.auth.uid
+          }
+        }
+        match /petty/{pettyId} {
           allow read, write: if userIsAdmin(projectId);
         }
-        match /petty/{uid} {
-          allow create: if userIsContributor(projectId);
+        match /actions/{actionId} {
           allow read, write: if userIsAdmin(projectId);
+        }
+        match /contributors/{uid} {
+        	allow read, write: if userIsAdmin(projectId);
+          allow read: if request.auth.uid == uid;
         }
       }
       match /users/{uid} {
@@ -36,7 +78,7 @@ service cloud.firestore {
       }
     }
     match /{path=**}/contributors/{uid} {
-      allow list: if request.auth.uid == resource.data.uid;
+      allow read: if request.auth.uid == resource.data.uid;
     }
   }
 }

@@ -35,10 +35,10 @@ module.exports = ({ admin, environment }) => async (change, context) => {
           //   oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0
           // )
           // category hasn't changed. modify the totals by the amount to changed by
-          newData.expenses =
+          newData.expenses = parseFloat((
             (data.expenses ? parseFloat(data.expenses) : 0) +
             (newDoc.expenses ? parseFloat(newDoc.expenses) : 0) -
-            (oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0)
+            (oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0)).toFixed(2))
           // newData.income =
           //   (data.income ? parseFloat(data.income) : 0) +
           //   (newDoc.income ? parseFloat(newDoc.income) : 0) -
@@ -48,16 +48,16 @@ module.exports = ({ admin, environment }) => async (change, context) => {
             (newDoc.budget ? parseFloat(newDoc.budget) : 0) -
             (oldDoc.budget ? parseFloat(oldDoc.budget) : 0)
           newData.balance =
-            (data.balance ? parseFloat(data.balance) : 0) +
+            parseFloat(((data.balance ? parseFloat(data.balance) : 0) +
             (newDoc.balance ? parseFloat(newDoc.balance) : 0) -
-            (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)
+            (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)).toFixed(2))
         } else {
           // console.log('new')
 
           // category has changed. add the new amounts to the category
-          newData.expenses =
+          newData.expenses = parseFloat((
             (data.expenses ? parseFloat(data.expenses) : 0) +
-            (newDoc.expenses ? parseFloat(newDoc.expenses) : 0)
+            (newDoc.expenses ? parseFloat(newDoc.expenses) : 0)).toFixed(2))
           // newData.income =
           //   (data.income ? parseFloat(data.income) : 0) +
           //   (newDoc.income ? parseFloat(newDoc.income) : 0)
@@ -65,8 +65,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
             (data.budget ? parseFloat(data.budget) : 0) +
             (newDoc.budget ? parseFloat(newDoc.budget) : 0)
           newData.balance =
-            (data.balance ? parseFloat(data.balance) : 0) +
-            (newDoc.balance ? parseFloat(newDoc.balance) : 0)
+            parseFloat(((data.balance ? parseFloat(data.balance) : 0) +
+            (newDoc.balance ? parseFloat(newDoc.balance) : 0)).toFixed(2))
         }
         // console.log(newData)
         t.update(ref, newData)
@@ -87,8 +87,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
             budget: 0
           }
           newData.expenses =
-            (data.expenses ? parseFloat(data.expenses) : 0) -
-            (oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0)
+            parseFloat(((parseFloat(data.expenses) ? parseFloat(data.expenses) : 0) -
+            (parseFloat(oldDoc.expenses) ? parseFloat(oldDoc.expenses) : 0)).toFixed(2))
           // newData.income =
           //   (data.income ? parseFloat(data.income) : 0) -
           //   (oldDoc.income ? Doc.income : 0)
@@ -96,8 +96,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
             (data.budget ? parseFloat(data.budget) : 0) -
             (oldDoc.budget ? parseFloat(oldDoc.budget) : 0)
           newData.balance =
-            (data.balance ? parseFloat(data.balance) : 0) -
-            (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)
+            parseFloat(((data.balance ? parseFloat(data.balance) : 0) -
+            (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)).toFixed(2))
 
           // console.log(newData)
           t.update(ref, newData)
@@ -118,8 +118,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         budget: 0
       }
       newData.expenses =
-        (data.expenses ? parseFloat(data.expenses) : 0) -
-        (oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0)
+        parseFloat(((parseFloat(data.expenses) ? parseFloat(data.expenses) : 0) -
+        (parseFloat(oldDoc.expenses) ? parseFloat(oldDoc.expenses) : 0)).toFixed(2))
       // newData.income =
       //   (data.income ? parseFloat(data.income) : 0) -
       //   (oldDoc.income ? parseFloat(oldDoc.income) : 0)
@@ -128,8 +128,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         (data.budget ? parseFloat(data.budget) : 0) -
         (oldDoc.budget ? parseFloat(oldDoc.budget) : 0)
       newData.balance =
-        (data.balance ? parseFloat(data.balance) : 0) -
-        (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)
+        parseFloat(((data.balance ? parseFloat(data.balance) : 0) -
+        (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)).toFixed(2))
 
       // console.log(newData)
       t.update(ref, newData)

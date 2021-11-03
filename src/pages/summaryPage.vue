@@ -5,8 +5,8 @@
         {{ project.name }}
         <q-popup-edit v-model="project.name">
           <q-input
-            :value="project.name > '' ? project.name : ''"
-            @input="updateProject('name', $event)"
+            :model-value="project.name > '' ? project.name : ''"
+            @update:model-value="updateProject('name', $event)"
             dense
             autofocus
             label="Project Label"
@@ -25,8 +25,8 @@
         {{ project.number > '' ? project.number : 'Project Code' }}
         <q-popup-edit v-model="project.number" max-width="100px">
           <q-input
-            :value="project.number > '' ? project.number : ''"
-            @input="updateProject('number', $event)"
+            :model-value="project.number > '' ? project.number : ''"
+            @update:model-value="updateProject('number', $event)"
             dense
             autofocus
             label="Project Number"
@@ -46,8 +46,8 @@
         {{ project.participants }} Participants
         <q-popup-edit v-model="project.participants">
           <q-input
-            :value="project.participants > '' ? project.participants : ''"
-            @input="updateProject('participants', $event)"
+            :model-value="project.participants > '' ? project.participants : ''"
+            @update:model-value="updateProject('participants', $event)"
             dense
             autofocus
             label="Participants"
@@ -66,10 +66,9 @@
         Project Currency ({{ project.currency }})
         <q-popup-edit v-model="project.currency">
           <q-input
-            :value="project.currency > '' ? project.currency : ''"
-            @input="updateProject('currency', $event)"
+            :model-value="project.currency > '' ? project.currency : ''"
+            @update:model-value="updateProject('currency', $event)"
             dense
-            autofocus
             label="Currency"
           />
         </q-popup-edit>
@@ -82,22 +81,23 @@
         </q-tooltip>
       </q-badge>
       <q-select
-        :value="
+        :model-value="
           project.contributorTransTypeOpts
             ? project.contributorTransTypeOpts
             : []
         "
-        @input="
-          project.contributorTransTypeOpts = $event
-          updateProject('contributorTransTypeOpts', $event)
+        @update:model-value="
+          ($event) => {
+            project.contributorTransTypeOpts = $event
+            updateProject('contributorTransTypeOpts', $event)
+          }
         "
         dense
-        autofocus
         borderless
         label="Contributor Transaction Types"
         multiple
         :options="['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']"
-        style="width:250px"
+        style="width: 250px"
         class="q-mx-auto"
         label-color="white"
         hide-dropdown-icon
@@ -108,7 +108,7 @@
             :tabindex="scope.tabindex"
             text-color="white"
             class="q-ma-none"
-            style="background-color: inherit;"
+            style="background-color: inherit"
           >
             {{ scope.opt }}
           </q-chip>
@@ -118,7 +118,7 @@
 
     <q-table
       class="my-sticky-header-table"
-      :data="accountsFiltered"
+      :rows="accountsFiltered"
       :columns="accountColumns"
       title="Accounts"
       :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
@@ -137,7 +137,7 @@
           Accounts
           <q-icon
             name="help_outline"
-            style="cursor:pointer;"
+            style="cursor: pointer"
             size="xs"
             color="grey-7"
           >
@@ -187,8 +187,10 @@
             {{ props.row.label }}
             <q-popup-edit v-model="props.row.label">
               <q-input
-                :value="props.row.label > '' ? props.row.label : ''"
-                @input="updateAccount(props.row.id, 'label', $event)"
+                :model-value="props.row.label > '' ? props.row.label : ''"
+                @update:model-value="
+                  updateAccount(props.row.id, 'label', $event)
+                "
                 dense
                 autofocus
                 label="Budget Label"
@@ -217,7 +219,7 @@
               :class="{
                 'bg-green-8': (props.row.balance ? props.row.balance : 0) > 0,
                 'bg-red-8': (props.row.balance ? props.row.balance : 0) < 0,
-                'bg-black': (props.row.balance ? props.row.balance : 0) == 0
+                'bg-black': (props.row.balance ? props.row.balance : 0) == 0,
               }"
               :label="
                 '$' + (props.row.balance ? props.row.balance : 0).toFixed(2)
@@ -231,8 +233,10 @@
           </q-td> -->
           <q-td key="actions" :props="props">
             <q-toggle
-              :value="props.row.inHeader"
-              @input="updateAccount(props.row.id, 'inHeader', $event)"
+              :model-value="props.row.inHeader"
+              @update:model-value="
+                updateAccount(props.row.id, 'inHeader', $event)
+              "
               icon="view_compact"
             >
               <q-tooltip content-class="bg-accent text-black"
@@ -246,12 +250,18 @@
             <q-btn v-if="props.row.inUse" dense color="negative">
               <q-icon name="delete_forever" />
               <q-tooltip content-class="bg-accent text-black"
-                >Cannot Delete Budget while in use</q-tooltip
+                >Cannot delete Account while in use</q-tooltip
+              >
+            </q-btn>
+            <q-btn v-else-if="props.row.systemAccount" dense color="negative">
+              <q-icon name="delete_forever" />
+              <q-tooltip content-class="bg-accent text-black"
+                >Cannot Delete System Accounts</q-tooltip
               >
             </q-btn>
             <sp-delete-btn
               dense
-              v-if="!props.row.inUse"
+              v-else
               :docRef="`/projects/${project.id}/accounts/${props.row.id}`"
             />
           </q-td>
@@ -261,7 +271,7 @@
 
     <q-table
       class="my-sticky-header-table"
-      :data="budgetCategoriesFiltered"
+      :rows="budgetCategoriesFiltered"
       :columns="columns"
       title="Budget Categories"
       :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
@@ -280,7 +290,7 @@
           Categories
           <q-icon
             name="help_outline"
-            style="cursor:pointer;"
+            style="cursor: pointer"
             size="xs"
             color="grey-7"
           >
@@ -318,7 +328,7 @@
             <q-icon name="search" />
           </template>
         </q-input>
-        <sp-category-import />
+        <sp-category-import dense />
         <q-btn
           flat
           round
@@ -334,8 +344,10 @@
             {{ props.row.label }}
             <q-popup-edit v-model="props.row.label">
               <q-input
-                :value="props.row.label > '' ? props.row.label : ''"
-                @input="updateCategory(props.row.id, 'label', $event)"
+                :model-value="props.row.label > '' ? props.row.label : ''"
+                @update:model-value="
+                  updateCategory(props.row.id, 'label', $event)
+                "
                 dense
                 autofocus
                 label="Budget Label"
@@ -369,7 +381,7 @@
             :class="{
               'text-negative':
                 parseFloat(props.row.budget) - parseFloat(props.row.expenses) <
-                0
+                0,
             }"
           >
             ${{ props.row.expenses.toFixed(2) }}
@@ -379,7 +391,7 @@
               :class="{
                 'bg-green-8': (props.row.balance ? props.row.balance : 0) > 0,
                 'bg-red-8': (props.row.balance ? props.row.balance : 0) < 0,
-                'bg-black': (props.row.balance ? props.row.balance : 0) == 0
+                'bg-black': (props.row.balance ? props.row.balance : 0) == 0,
               }"
               :label="
                 '$' + (props.row.balance ? props.row.balance : 0).toFixed(2)
@@ -401,7 +413,7 @@
             <q-btn v-if="props.row.inUse" dense color="negative">
               <q-icon name="delete_forever" />
               <q-tooltip content-class="bg-accent text-black"
-                >Cannot Delete Budget while in use</q-tooltip
+                >Cannot delete Budget Category while in use</q-tooltip
               >
             </q-btn>
             <sp-delete-btn
@@ -413,7 +425,24 @@
         </q-tr>
       </template>
     </q-table>
-    <q-page-sticky position="bottom-left" :offset="fabPos" style="z-index:100">
+    <q-page-sticky position="bottom-left" :offset="fabPos" style="z-index: 100">
+      <q-btn
+        fab
+        icon="add_task"
+        color="primary"
+        direction="up"
+        :disable="draggingFab"
+        v-touch-pan.prevent.mouse="moveFab"
+      >
+        <q-tooltip content-class="bg-accent text-black">
+          Add Actions
+        </q-tooltip>
+        <q-menu persistent>
+          <actionsMenu />
+        </q-menu>
+      </q-btn>
+    </q-page-sticky>
+    <!-- <q-page-sticky position="bottom-left" :offset="fabPos" style="z-index: 100">
       <q-btn
         fab
         icon="add"
@@ -424,23 +453,23 @@
       >
         <q-tooltip content-class="bg-accent text-black">Add Account</q-tooltip>
         <q-menu ref="addCategoryMenu" persistent>
-          <!-- <q-scroll-area> -->
           <sp-budget-form
             :projectId="$route.params.id"
             @onSubmit="$refs.addCategoryMenu.hide()"
             show="category"
           />
-          <!-- </q-scroll-area> -->
         </q-menu>
       </q-btn>
-    </q-page-sticky>
+    </q-page-sticky> -->
   </q-page>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from 'quasar'
-import { $firestore, $analytics, $perform } from './../scripts/firebase.js'
+import { updateCategory, updateAccount } from './../scripts/accounts.js'
+import { updateProjectByKey } from './../scripts/project.js'
+import { defineAsyncComponent } from 'vue'
 
 const columns = [
   {
@@ -448,30 +477,30 @@ const columns = [
     align: 'left',
     label: 'Label',
     field: 'label',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'budgeted',
     align: 'center',
     label: 'Budgeted (AUD)',
     field: 'budgeted',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'spent',
     align: 'center',
     label: 'Spent (AUD)',
     field: 'spent',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'remaining',
     align: 'center',
     label: 'Cash in Hand (AUD)',
     field: 'remaining',
-    sortable: true
+    sortable: true,
   },
-  { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
+  { name: 'actions', label: 'Actions', field: 'actions', align: 'right' },
 ]
 
 const accountColumns = [
@@ -480,16 +509,16 @@ const accountColumns = [
     align: 'left',
     label: 'Label',
     field: 'label',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'balance',
     align: 'center',
     label: 'Balance (AUD)',
     field: 'balance',
-    sortable: true
+    sortable: true,
   },
-  { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
+  { name: 'actions', label: 'Actions', field: 'actions', align: 'right' },
 ]
 
 export default {
@@ -505,27 +534,28 @@ export default {
         'budgeted',
         'spent',
         'remaining',
-        'actions'
+        'actions',
       ],
       pagination: {
         sortBy: 'label',
         descending: false,
         page: 1,
-        rowsPerPage: 10
+        rowsPerPage: 10,
         // rowsNumber: xx if getting data from a server
       },
       accountsPagination: {
         sortBy: 'label',
         descending: false,
         page: 1,
-        rowsPerPage: 10
+        rowsPerPage: 10,
         // rowsNumber: xx if getting data from a server
       },
       fabPos: [18, 18],
-      draggingFab: false
+      draggingFab: false,
     }
   },
   preFetch({ store, currentRoute }) {
+    store.dispatch('auth/fetchContributors', currentRoute.params.id)
     // store.dispatch('fetchBudgets', currentRoute.params.id)
     // store.dispatch('fetchBudgetCategories', currentRoute.params.id)
     // store.dispatch('fetchAccounts', currentRoute.params.id)
@@ -534,20 +564,14 @@ export default {
     this.updateCategory = debounce(this.updateCategory, 1000)
     this.updateAccount = debounce(this.updateAccount, 1000)
     this.updateProject = debounce(this.updateProject, 3000)
-    this.pagination.rowsPerPage = this.$q.localStorage.getItem(
-      'summaryTableRows'
-    )
-    this.accountsPagination.rowsPerPage = this.$q.localStorage.getItem(
-      'accountsTableRows'
-    )
-    $analytics.setCurrentScreen('Summary')
+    this.pagination.rowsPerPage =
+      this.$q.localStorage.getItem('summaryTableRows')
+    this.accountsPagination.rowsPerPage =
+      this.$q.localStorage.getItem('accountsTableRows')
   },
   methods: {
-    ...mapActions([
-      'updateCategoryByKey',
-      'updateAccountByKey',
-      'updateProjectByKey'
-    ]),
+    ...mapActions('budgets', ['updateCategoryByKey', 'updateAccountByKey']),
+    ...mapActions('projects', ['updateProjectByKey']),
     moveFab(ev) {
       this.draggingFab = ev.isFirst !== true && ev.isFinal !== true
 
@@ -556,82 +580,75 @@ export default {
     updateCategory(budgetId, key, val) {
       // console.log(budgetId, key, val)
       this.updateCategoryByKey({ budgetId, key, val })
-      $firestore
-        .collection(`/projects/${this.project.id}/accounts`)
-        .doc(budgetId)
-        .update({ [key]: val })
+      updateCategory(this.project.id, budgetId, key, val)
         .then(() => {
           // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Category: Updated Successfully'
+            message: 'Category: Updated Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
     },
     updateAccount(accountId, key, val) {
       // console.log(budgetId, key, val)
       this.updateAccountByKey({ accountId, key, val })
-      $firestore
-        .collection(`/projects/${this.project.id}/accounts`)
-        .doc(accountId)
-        .update({ [key]: val })
+      updateAccount(this.project.id, accountId, key, val)
         .then(() => {
           // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Account: Updated Successfully'
+            message: 'Account: Updated Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
     },
     updateProject(key, val) {
       this.updateProjectByKey({ projectId: this.project.id, key, val })
-      $firestore
-        .doc(`/projects/${this.project.id}`)
-        .update({ [key]: val })
+      updateProjectByKey(this.project.id, key, val)
         .then(() => {
           // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Project: Updated Successfully'
+            message: 'Project: Updated Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
-    }
+    },
   },
   computed: {
-    ...mapGetters(['project', 'budgetCategories', 'accounts', 'tableKey']),
+    ...mapGetters('projects', ['project']),
+    ...mapGetters('budgets', ['accounts', 'budgetCategories', 'tableKey']),
     budgetCategoriesFiltered() {
       let budgetCategories = []
       for (var category in this.budgetCategories) {
@@ -647,12 +664,18 @@ export default {
         accounts.push(this.accounts[account])
       }
       return accounts
-    }
+    },
   },
   components: {
-    'sp-budget-form': () => import('./../components/sp-budget-form.vue'),
-    'sp-delete-btn': () => import('../components/sp-delete-btn.vue'),
-    'sp-category-import': () => import('../components/sp-category-import.vue')
-  }
+    'sp-delete-btn': defineAsyncComponent(() =>
+      import('../components/sp-delete-btn.vue')
+    ),
+    'sp-category-import': defineAsyncComponent(() =>
+      import('../components/sp-category-import.vue')
+    ),
+    actionsMenu: defineAsyncComponent(() =>
+      import('./../components/actionsMenu.vue')
+    ),
+  },
 }
 </script>

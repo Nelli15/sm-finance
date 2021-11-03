@@ -1,142 +1,83 @@
-<!-- <script>
-import { QUploaderBase, uid } from 'quasar'
-import firebase from 'firebase/app'
-import 'firebase/storage'
-// import uid from 'uuidv4'
-export default {
-  mixins: [ QUploaderBase ],
-  props: {
-    metadata: Object
-  },
-  data () {
-    return {
-      progressUpload: 0,
-      file: File,
-      uploadTask: ''
-      // loading: false
-    }
-  },
-  methods: {
-    upload () {
-      this.files.forEach(file => {
-        const ref = 'uploads/' + uid()
-        // var meta = file.metadata
-        // meta.customMetadata = this.metadata
-        const uploadTask = firebase
-          .storage()
-          .ref()
-          .child(ref)
-          .put(file, this.metadata)
-        uploadTask.on(
-          'state_changed',
-          sp => {
-            // this.loading = true
-            this.uploadSize = sp.totalBytes
-            this.uploadedSize = sp.bytesTransferred
-            // this.Size = sp.bytesTransferred
-          },
-          null,
-          () => {
-            // this.loading = false
-            uploadTask.snapshot.ref.then(downloadURL => {
-              this.$emit('upload', {
-                // url: downloadURL,
-                id: ref,
-                name: file.name,
-                size: file.size,
-                uploadedDate: new Date(),
-                lastModified: file.lastModified,
-                description: ''
-              })
-              this.removeFile(file)
-            })
-          }
-        )
-      })
-    }
-  }
-}
-</script>
- -->
-
 <script>
-import { QUploaderBase, uid } from 'quasar'
-import firebase from 'firebase/app'
-import 'firebase/storage'
-// import uid from 'uuidv4'
-export default {
+import { createUploaderComponent } from 'quasar'
+import { getStorage, ref, uploadBytesResumable } from 'firebase/storage'
+import { $firebase } from './../scripts/firebase.js'
+import { computed } from 'vue'
+import { v4 as uid } from 'uuid'
+
+export default createUploaderComponent({
   name: 'q-firebase-uploader',
-  mixins: [QUploaderBase],
   props: {
-    metadata: Object
+    metadata: Object,
   },
-  data() {
-    return {}
-  },
-  methods: {
+  emits: ['start', 'uploading', 'uploaded', 'failed'],
+  injectPlugin({ props, emit, helpers }) {
+    // console.log(helpers)
+
+    let uploading = ref(false)
+    const isUploading = computed(() => {
+      return uploading.value
+    })
+
     // [REQUIRED]
     // abort and clean up any process
     // that is in progress
-    abort() {
+    function abort() {
       // ...
-    },
+    }
 
     // [REQUIRED]
-    upload() {
-      if (this.canUpload === false) {
-        return
-      }
-      this.$emit('start')
-      this.isBusy = true
-      this.files.forEach(file => {
-        const ref = 'uploads/' + uid()
+    function upload() {
+      // if (canUpload === false) {
+      //   return
+      // }
+      emit('start')
+      // isBusy = true
+      helpers.queuedFiles.value.forEach((file) => {
         // var meta = file.metadata
-        // meta.customMetadata = this.metadata
-        const uploadTask = firebase
-          .storage()
-          .refFromURL('gs://sp-finance-uploads')
-          .child(ref)
-          .put(file, this.metadata)
-        this.$emit('uploading', { file })
+        // meta.customMetadata = metadata
+        const uploadTask = uploadBytesResumable(
+          ref(
+            getStorage($firebase, 'gs://sp-finance-uploads'),
+            'uploads/' + uid()
+          ),
+          file,
+          props.metadata
+        )
+        emit('uploading', { file })
         uploadTask.on('state_changed', {
-          next: snap => {
-            this.isUploading = true
+          next: (snap) => {
+            uploading = true
             // console.log(snap)
-            // this.loading = true
-            this.uploadSize = snap.totalBytes
-            this.uploadedSize = snap.bytesTransferred
-            this.__updateFile(file, 'uploading', snap.bytesTransferred)
-            // this.Size = sp.bytesTransferred
+            // loading = true
+            // uploadSize = snap.totalBytes
+            // uploadedSize = snap.bytesTransferred
+            helpers.updateFileStatus(file, 'uploading', snap.bytesTransferred)
+            // Size = sp.bytesTransferred
           },
-          error: err => {
+          error: (err) => {
             // console.log(err)
-            this.$emit('failed', { file, err })
+            uploading = false
+            helpers.updateFileStatus(file, 'failed')
+            emit('failed', { file, err })
           },
-          complete: () => {
+          complete: (snap) => {
             // console.log('completed')
-            // this.loading = false
-            this.__updateFile(file, 'uploaded')
-          }
-        })
-
-        uploadTask.then(snap => {
-          console.log(snap)
-          this.$emit('uploaded', { file, metadata: snap.metadata })
-          this.isUploading = false
-          this.isBusy = false
-          // this.$emit('upload', {
-          //   // url: downloadURL,
-          //   id: ref,
-          //   name: file.name,
-          //   size: file.size,
-          //   uploadedDate: new Date(),
-          //   lastModified: file.lastModified,
-          //   description: ''
-          // })
-          // this.removeFile(file)
+            // loading = false
+            helpers.updateFileStatus(file, 'uploaded')
+            emit('uploaded', { file })
+            uploading = false
+          },
         })
       })
     }
-  }
-}
+
+    return {
+      isUploading,
+      // isBusy,
+      abort,
+      upload,
+    }
+  },
+})
 </script>

@@ -39,5 +39,145 @@
   <body>
     <!-- DO NOT touch the following DIV -->
     <div id="q-app"></div>
+        <div id="snackbar" style="display:none;">
+      <div role="alert" style="background-color: #c10015" class="q-notification row items-stretch q-notification--multi-line bg-negative text-white">
+        <div class="q-notification__wrapper col relative-position border-radius-inherit column no-wrap justify-center">
+          <div class="q-notification__content row items-center">
+            <svg aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" class="q-notification__icon q-icon notranslate" style="max-width:30px">
+              <path d="M19,8L15,12H18A6,6 0 0,1 12,18C11,18 10.03,17.75 9.2,17.3L7.74,18.76C8.97,19.54 10.43,20 12,20A8,8 0 0,0 20,12H23M6,12A6,6 0 0,1 12,6C13,6 13.97,6.25 14.8,6.7L16.26,5.24C15.03,4.46 13.57,4 12,4A8,8 0 0,0 4,12H1L5,16L9,12"></path>
+            </svg>
+            <div class="q-notification__message col">Updated content is available. Please refresh the page.</div>
+          </div>
+          <div class="q-notification__actions row items-center justify-end q-notification__actions--with-media">
+            <button tabindex="0" type="button" role="button" id="reload" class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--rectangle text-yellow q-btn--actionable q-focusable q-hoverable q-btn--wrap">
+              <span class="q-focus-helper"></span>
+              <span class="q-btn__wrapper col row q-anchor--skip">
+                <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                  <span class="block">Refresh</span>
+                </span>
+              </span>
+            </button>
+            <button tabindex="0" type="button" role="button"  id="dismiss" class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--rectangle text-white q-btn--actionable q-focusable q-hoverable q-btn--wrap">
+              <span class="q-focus-helper"></span>
+              <span class="q-btn__wrapper col row q-anchor--skip">
+                <span class="q-btn__content text-center col items-center q-anchor--skip justify-center row">
+                  <span class="block">Dismiss</span>
+                </span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
+    <style>
+    #snackbar {
+      display:none;
+      /* visibility: hidden; */
+      min-width: 410px;
+      max-width: 410px;
+      margin-left: -205px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 2px;
+      position: fixed;
+      z-index: 1000;
+      left: 50%;
+      bottom: 30px;
+    }
+
+    #snackbar.show {
+      /* visibility: visible; */
+      display:block;
+      -webkit-animation: fadein 0.5s;
+      animation: fadein 0.5s;
+    }
+
+    #snackbar > div {
+      margin: 0px
+    }
+
+    @-webkit-keyframes fadein {
+      from {
+        bottom: 0;
+        opacity: 0;
+      }
+      to {
+        bottom: 30px;
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadein {
+      from {
+        bottom: 0;
+        opacity: 0;
+      }
+      to {
+        bottom: 30px;
+        opacity: 1;
+      }
+    }
+  </style>
+  <script>
+
+// check if running in production mode
+    if (location.hostname !== "localhost"){
+    let newWorker;
+  
+    function showUpdateBar() {
+      let snackbar = document.getElementById('snackbar');
+      snackbar.style = ''
+      snackbar.className = 'show';
+    }
+
+    function hideUpdateBar() {
+      let snackbar = document.getElementById('snackbar');
+      snackbar.className = '';
+    }
+  
+    // The click event on the pop up notification
+    document.getElementById('reload').addEventListener('click', function(){
+      // hideUpdateBar()
+      newWorker.postMessage({ action: 'skipWaiting' });
+    });
+
+    document.getElementById('dismiss').addEventListener('click', function(){
+      hideUpdateBar()
+      // newWorker.postMessage({ action: 'skipWaiting' });
+    });
+  
+    if ('serviceWorker' in navigator) {
+  
+      navigator.serviceWorker.register('/service-worker.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          // A wild service worker has appeared in reg.installing!
+          newWorker = reg.installing;
+  
+          newWorker.addEventListener('statechange', () => {
+            // Has network.state changed?
+            switch (newWorker.state) {
+              case 'installed':
+                if (navigator.serviceWorker.controller) {
+                  // new update available
+                  showUpdateBar();
+                }
+                // No update available
+                break;
+            }
+          });
+        });
+      });
+  
+      let refreshing;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (refreshing) return;
+        // console.log('I want to reload')
+        window.location.reload();
+        refreshing = true;
+      });
+    }}
+  
+  </script>
 </html>

@@ -1,6 +1,5 @@
 // import firebase from '../../scripts/firebase'
-import firebase from 'firebase/app'
-require('firebase/firestore')
+import { getFirestore, onSnapshot, collection, query, where } from 'firebase/firestore'
 // import Vue from 'vue'
 
 const state = {
@@ -11,7 +10,8 @@ const state = {
   accountsLoading: false,
   catLoading: false,
   budgetsLoading: false,
-  loading: false
+  loading: false,
+  listeners: []
 }
 
 export const getters = {
@@ -201,6 +201,16 @@ export const mutations = {
   },
   setBudgetsLoading(state, payload) {
     state.budgetsLoading = payload
+  },
+  addListeners(state, unsub) {
+    state.listeners.push(unsub)
+  },
+  clearListeners(state, {}) {
+    
+    // for(let unsub of state.listeners){
+    //   unsub()
+    // }
+    // state.listeners = []
   }
 }
 
@@ -209,11 +219,8 @@ export const actions = {
     // console.log('Fetch Budget Categories', payload)
     commit('setCatLoading', true)
 
-    firebase
-      .firestore()
-      .collection(`/projects/${payload}/accounts`)
-      .where('type', '==', 'category')
-      .onSnapshot(async categoriesSnap => {
+    // commit('clearListeners', false)
+      let unsub = onSnapshot(query(collection(getFirestore(), `/projects/${payload}/accounts`), where('type', '==', 'category')), async categoriesSnap => {
         commit('setCatLoading', true)
         // console.log('Fetch Budget Categories')
         let budgets = {},
@@ -233,16 +240,13 @@ export const actions = {
 
         // dispatch('fetchPopulateBudgets')
       })
+      commit('addListeners', unsub)
   },
   fetchBudgets({ commit, dispatch }, payload) {
     // console.log('Fetch Budgets', payload)
     commit('setBudgetsLoading', true)
-
-    firebase
-      .firestore()
-      .collection(`/projects/${payload}/accounts`)
-      .where('type', '==', 'budget')
-      .onSnapshot(async budgetsSnap => {
+      // commit('clearListeners', false)
+      let unsub = onSnapshot(query(collection(getFirestore(), `/projects/${payload}/accounts`), where('type', '==', 'budget')),async budgetsSnap => {
         commit('setBudgetsLoading', true)
 
         // console.log('Fetch Budgets')
@@ -262,19 +266,16 @@ export const actions = {
         dispatch('fetchPopulateBudgets')
         commit('setBudgetsLoading', false)
       })
+      commit('addListeners', unsub)
   },
   fetchAccounts({ commit, dispatch }, payload) {
     // console.log('Fetch Budgets', payload)
     commit('setAccountsLoading', true)
-
-    firebase
-      .firestore()
-      .collection(`/projects/${payload}/accounts`)
-      .where('type', '==', 'account')
-      .onSnapshot(async accountsSnap => {
+      // commit('clearListeners', false)
+      let unsub = onSnapshot(query(collection(getFirestore(), `/projects/${payload}/accounts`), where('type', '==', 'account')), async accountsSnap => {
         commit('setAccountsLoading', true)
 
-        // console.log('Fetch accounts')
+        console.log('Fetch accounts')
         let accounts = {},
           account = {}
         let promises = accountsSnap.docs.map(doc => {
@@ -289,6 +290,7 @@ export const actions = {
         dispatch('fetchPopulateBudgets')
         commit('setAccountsLoading', false)
       })
+      commit('addListeners', unsub)
   },
   fetchPopulateBudgets({ rootState, commit }) {
     commit('populateBudgets', rootState)
@@ -304,6 +306,7 @@ export const actions = {
   }
 }
 export default {
+  namespaced: true,
   state,
   getters,
   mutations,

@@ -11,7 +11,7 @@
           Invite People
           <q-icon
             name="help_outline"
-            style="cursor:pointer;"
+            style="cursor: pointer"
             size="xs"
             color="grey-7"
           >
@@ -69,16 +69,19 @@
             :options="['contributor', 'admin']"
             label="Permission"
             stack-label
-            style="min-width:100px"
+            style="min-width: 100px"
           />
           <q-select
             v-if="isAdmin && newInvitation.permission === 'contributor'"
-            value=""
-            @input="addNewInviteBudget"
+            model-value=""
+            @update:model-value="addNewInviteBudget"
             :options="budgetOptionsFiltered"
             label="Budgets"
             stack-label
-            style="min-width:100px"
+            style="min-width: 100px"
+            use-input
+            @filter="budgetsFilterFn"
+            input-debounce="0"
           />
           <div v-if="newInvitation.permission === 'contributor'">
             Accessible Budgets
@@ -126,7 +129,7 @@
           Invite People
           <q-icon
             name="help_outline"
-            style="cursor:pointer;"
+            style="cursor: pointer"
             size="xs"
             color="grey-7"
           >
@@ -184,14 +187,14 @@
               :options="['contributor', 'admin']"
               label="Permission"
               stack-label
-              style="min-width:100px"
+              style="min-width: 100px"
             />
             <q-select
               stack-label
               v-if="isAdmin && newInvitation.permission === 'contributor'"
               :options="budgetOptionsFiltered"
               label="Budgets"
-              style="min-width:100px;max-width:150px"
+              style="min-width: 100px; max-width: 150px"
               v-model="newInvitation.budgets"
               emit-value
               map-options
@@ -203,6 +206,9 @@
               hide-bottom-space
               borderless
               hide-selected
+              use-input
+              @filter="budgetsFilterFn"
+              input-debounce="0"
             />
           </template>
           <template v-slot:after>
@@ -218,7 +224,7 @@
         <div
           v-if="
             newInvitation.budgets.length > 0 &&
-              newInvitation.permission === 'contributor'
+            newInvitation.permission === 'contributor'
           "
         >
           Accessible Budgets
@@ -248,7 +254,7 @@
     <q-table
       v-if="tabs === 'invites'"
       class="my-sticky-header-table q-mt-md"
-      :data="invites"
+      :rows="invites"
       :columns="invitesColumns"
       :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
       row-key="name"
@@ -264,7 +270,7 @@
           Invites
           <q-icon
             name="help_outline"
-            style="cursor:pointer;"
+            style="cursor: pointer"
             size="xs"
             color="grey-7"
           >
@@ -319,24 +325,29 @@
                 :src="
                   props.row.photoURL
                     ? props.row.photoURL
-                    : 'https://api.adorable.io/avatars/100/' +
+                    : 'https://avatars.dicebear.com/api/bottts/' +
                       props.row.uid +
-                      '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                      '.svg'
                 "
                 alt="Profile Picture"
               >
                 <template v-slot:error>
                   <q-img
                     :src="
-                      'https://api.adorable.io/avatars/100/' +
-                        props.row.uid +
-                        '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                      'https://avatars.dicebear.com/api/bottts/' +
+                      props.row.uid +
+                      '.svg'
                     "
                     alt="Profile Picture"
                   >
                     <template v-slot:error>
                       <div
-                        class="absolute-full flex flex-center bg-negative text-white"
+                        class="
+                          absolute-full
+                          flex flex-center
+                          bg-negative
+                          text-white
+                        "
                       >
                         Cannot load image
                       </div>
@@ -356,14 +367,14 @@
             key="budgets"
             :props="props"
             class="q-gutter-xs q-pa-xs"
-            style="white-space: normal;max-width:300px"
+            style="white-space: normal; max-width: 300px"
           >
             <q-select
               :options="budgetOptionsFiltered"
               dense
-              style="min-width:100px;max-width:150px"
-              @input="addInviteBudget($event, props.row.email)"
-              :value="props.row.budgets"
+              style="min-width: 100px; max-width: 150px"
+              @update:model-value="addInviteBudget($event, props.row.email)"
+              :model-value="props.row.budgets"
               emit-value
               map-options
               multiple
@@ -371,6 +382,9 @@
               option-value="id"
               options-dense
               color="primary"
+              use-input
+              @filter="budgetsFilterFn"
+              input-debounce="0"
             />
             <!-- <q-chip
               color="primary"
@@ -412,7 +426,7 @@
     <q-table
       v-if="tabs === 'admins'"
       class="my-sticky-header-table"
-      :data="admins"
+      :rows="admins"
       :columns="adminsColumns"
       :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
       row-key="name"
@@ -428,7 +442,7 @@
           Admins
           <q-icon
             name="help_outline"
-            style="cursor:pointer;"
+            style="cursor: pointer"
             size="xs"
             color="grey-7"
           >
@@ -479,24 +493,29 @@
                 :src="
                   props.row.photoURL
                     ? props.row.photoURL
-                    : 'https://api.adorable.io/avatars/100/' +
+                    : 'https://avatars.dicebear.com/api/bottts/' +
                       props.row.uid +
-                      '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                      '.svg'
                 "
                 alt="Profile Picture"
               >
                 <template v-slot:error>
                   <q-img
                     :src="
-                      'https://api.adorable.io/avatars/100/' +
-                        props.row.uid +
-                        '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                      'https://avatars.dicebear.com/api/bottts/' +
+                      props.row.uid +
+                      '.svg'
                     "
                     alt="Profile Picture"
                   >
                     <template v-slot:error>
                       <div
-                        class="absolute-full flex flex-center bg-negative text-white"
+                        class="
+                          absolute-full
+                          flex flex-center
+                          bg-negative
+                          text-white
+                        "
                       >
                         Cannot load image
                       </div>
@@ -524,7 +543,7 @@
     <q-table
       v-if="tabs === 'contributors'"
       class="my-sticky-header-table"
-      :data="contributors"
+      :rows="contributors"
       :columns="contributorsColumns"
       :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
       row-key="name"
@@ -542,7 +561,7 @@
           Contributors
           <q-icon
             name="help_outline"
-            style="cursor:pointer;"
+            style="cursor: pointer"
             size="xs"
             color="grey-7"
           >
@@ -596,24 +615,29 @@
                 :src="
                   props.row.photoURL
                     ? props.row.photoURL
-                    : 'https://api.adorable.io/avatars/100/' +
+                    : 'https://avatars.dicebear.com/api/bottts/' +
                       props.row.uid +
-                      '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                      '.svg'
                 "
                 alt="Profile Picture"
               >
                 <template v-slot:error>
                   <q-img
                     :src="
-                      'https://api.adorable.io/avatars/100/' +
-                        props.row.uid +
-                        '?theme=bythepool&numcolors=4&size=220&fmt=svg'
+                      'https://avatars.dicebear.com/api/bottts/' +
+                      props.row.uid +
+                      '.svg'
                     "
                     alt="Profile Picture"
                   >
                     <template v-slot:error>
                       <div
-                        class="absolute-full flex flex-center bg-negative text-white"
+                        class="
+                          absolute-full
+                          flex flex-center
+                          bg-negative
+                          text-white
+                        "
                       >
                         Cannot load image
                       </div>
@@ -631,14 +655,14 @@
             key="budgets"
             :props="props"
             class="q-gutter-xs q-pa-xs"
-            style="white-space: normal;max-width:300px"
+            style="white-space: normal; max-width: 300px"
           >
             <q-select
               :options="budgetOptionsFiltered"
               dense
-              style="min-width:100px;max-width:150px"
-              @input="addContributorBudget($event, props.row.uid)"
-              :value="props.row.budgets"
+              style="min-width: 100px; max-width: 150px"
+              @update:model-value="addContributorBudget($event, props.row.uid)"
+              :model-value="props.row.budgets"
               emit-value
               map-options
               multiple
@@ -646,12 +670,15 @@
               option-value="id"
               options-dense
               color="primary"
+              use-input
+              @filter="budgetsFilterFn"
+              input-debounce="0"
             />
             <!-- <q-select
               :options="budgetOptions"
               dense
               style="min-width:100px;max-width:150px"
-              @input="
+              @update:model-value="
                 addContributorBudget(
                   props.row.budgets,
                   $event.id,
@@ -706,12 +733,15 @@
 </template>
 
 <script>
-import { uid } from 'quasar'
 import { mapGetters } from 'vuex'
-import firebase from 'firebase/app'
-require('firebase/firestore')
-require('firebase/analytics')
-// let md5 = require('js-md5')
+import {
+  addContributorBudget,
+  removeContributorBudget,
+  updateInviteBudget,
+  addUser,
+  removeUser,
+  removeInvite,
+} from './../scripts/access.js'
 
 const adminsColumns = [
   { name: 'name', align: 'left', label: 'Name', field: 'name', sortable: true },
@@ -720,9 +750,9 @@ const adminsColumns = [
     align: 'center',
     label: 'Email',
     field: 'email',
-    sortable: true
+    sortable: true,
   },
-  { name: 'actions', align: 'right', label: 'Actions', field: 'actions' }
+  { name: 'actions', align: 'right', label: 'Actions', field: 'actions' },
 ]
 
 const contributorsColumns = [
@@ -732,16 +762,16 @@ const contributorsColumns = [
     align: 'center',
     label: 'Email',
     field: 'email',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'budgets',
     align: 'left',
     label: 'Budgets',
     field: 'budgets',
-    sortable: true
+    sortable: true,
   },
-  { name: 'actions', align: 'right', label: 'Actions', field: 'actions' }
+  { name: 'actions', align: 'right', label: 'Actions', field: 'actions' },
 ]
 
 const invitesColumns = [
@@ -751,23 +781,23 @@ const invitesColumns = [
     align: 'left',
     label: 'Email',
     field: 'email',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'permission',
     align: 'left',
     label: 'Permission',
     field: 'permission',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'budgets',
     align: 'left',
     label: 'Budgets',
     field: 'budgets',
-    sortable: true
+    sortable: true,
   },
-  { name: 'actions', align: 'right', label: 'Actions', field: 'actions' }
+  { name: 'actions', align: 'right', label: 'Actions', field: 'actions' },
 ]
 
 export default {
@@ -783,7 +813,7 @@ export default {
         sent: false,
         projectName: '',
         fromName: '',
-        budgets: []
+        budgets: [],
       },
       // admins: []
       adminsColumns,
@@ -792,7 +822,7 @@ export default {
         sortBy: 'name',
         descending: false,
         page: 1,
-        rowsPerPage: 10
+        rowsPerPage: 10,
         // rowsNumber: xx if getting data from a server
       },
       // contributors: []
@@ -802,7 +832,7 @@ export default {
         sortBy: 'name',
         descending: false,
         page: 1,
-        rowsPerPage: 10
+        rowsPerPage: 10,
         // rowsNumber: xx if getting data from a server
       },
       // invites: []
@@ -812,15 +842,16 @@ export default {
         sortBy: 'name',
         descending: false,
         page: 1,
-        rowsPerPage: 10
+        rowsPerPage: 10,
         // rowsNumber: xx if getting data from a server
-      }
+      },
+      budgetOptionsFiltered: [],
     }
   },
   preFetch({ store, currentRoute }) {
     // store.dispatch('fetchBudgets', currentRoute.params.id)
-    store.dispatch('fetchContributors', currentRoute.params.id)
-    store.dispatch('fetchInvites', currentRoute.params.id)
+    store.dispatch('auth/fetchContributors', currentRoute.params.id)
+    store.dispatch('auth/fetchInvites', currentRoute.params.id)
   },
   created() {
     // console.log(this.$route.name)
@@ -840,7 +871,7 @@ export default {
           sortBy: 'name',
           descending: false,
           page: 1,
-          rowsPerPage: 10
+          rowsPerPage: 10,
           // rowsNumber: xx if getting data from a server
         }
     this.contributorsPagination = this.$q.localStorage.has(
@@ -851,7 +882,7 @@ export default {
           sortBy: 'name',
           descending: false,
           page: 1,
-          rowsPerPage: 10
+          rowsPerPage: 10,
           // rowsNumber: xx if getting data from a server
         }
     this.invitesPagination = this.$q.localStorage.has('invitesTablePagnation')
@@ -860,68 +891,50 @@ export default {
           sortBy: 'name',
           descending: false,
           page: 1,
-          rowsPerPage: 10
+          rowsPerPage: 10,
           // rowsNumber: xx if getting data from a server
         }
-    firebase.analytics().setCurrentScreen('Access')
   },
   computed: {
-    ...mapGetters([
-      'project',
-      'user',
-      'admins',
-      'contributors',
-      'isAdmin',
-      'budgetOptions',
+    ...mapGetters('projects', ['isAdmin', 'isContributor', 'project']),
+    ...mapGetters('budgets', [
       'accounts',
       'budgets',
       'budgetCategories',
-      'invites',
-      'tableKey'
+      'budgetOptions',
+      'tableKey',
     ]),
-    budgetOptionsFiltered() {
-      return this.budgetOptions.filter(
-        val => val.id !== 'debitCard' && val.id !== 'pettyCash'
-      )
-    }
+    ...mapGetters('auth', [
+      'admins',
+      'contributors',
+      'invites',
+      'idToken',
+      'user',
+    ]),
   },
   methods: {
-    uuid() {
-      return uid()
-    },
-    // replaceByDefault (e) {
-    //   console.log('http://tinygraphs.com/spaceinvaders/' + uid() + '?theme=bythepool&numcolors=4&size=220&fmt=svg')
-    //   e.target.src = 'http://tinygraphs.com/spaceinvaders/' + uid() + '?theme=bythepool&numcolors=4&size=220&fmt=svg'
-    // },
-    // getHash (val) {
-    //   return md5(val.trim().toLowerCase())
-    // },
     addContributorBudget(tempBudgets, uid) {
       // console.log(this.newInvitation.budgets.indexOf(event.id) !== -1)
       // let tempBudgets = JSON.parse(JSON.stringify(budgets))
       // if (tempBudgets.indexOf(newBudget) === -1) {
       //   tempBudgets.push(newBudget)
-      firebase
-        .firestore()
-        .collection(`/projects/${this.$route.params.id}/contributors`)
-        .doc(uid)
-        .update({ budgets: tempBudgets })
+      addContributorBudget(this.$route.params.id, tempBudgets, uid)
         .then(() => {
           // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Contributor Added Successfully'
+            message: 'Contributor Added Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
       // }
@@ -933,27 +946,23 @@ export default {
       var index = tempBudgets.indexOf(newBudget)
       if (index > -1) {
         tempBudgets.splice(index, 1)
-        firebase
-          .firestore()
-          .collection(`/projects/${this.$route.params.id}/contributors`)
-          .doc(uid)
-          .update({ budgets: tempBudgets })
+        removeContributorBudget(this.$route.params.id, tempBudgets, uid)
           .then(() => {
             // console.log('updated')
             this.$q.notify({
               color: 'positive',
               textColor: 'white',
               icon: 'cloud_done',
-              message: 'Contributor Removed Successfully'
+              message: 'Contributor Removed Successfully',
             })
           })
-          .catch(err => {
+          .catch((err) => {
             console.log(err)
             this.$q.notify({
               color: 'negative',
               textColor: 'white',
               icon: 'error',
-              message: 'Oops, Something went wrong!'
+              message: 'Oops, Something went wrong!',
             })
           })
       }
@@ -964,27 +973,23 @@ export default {
       // if (tempBudgets.indexOf(newBudget) === -1) {
       //   tempBudgets.push(newBudget)
       //   console.log(tempBudgets, email)
-      firebase
-        .firestore()
-        .collection(`/projects/${this.$route.params.id}/invites`)
-        .doc(email)
-        .update({ budgets: tempBudgets })
+      updateInviteBudget(this.$route.params.id, tempBudgets, email)
         .then(() => {
           // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Contributor Budget Added Successfully'
+            message: 'Contributor Budget Added Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
       // }
@@ -996,27 +1001,23 @@ export default {
       var index = tempBudgets.indexOf(newBudget)
       if (index > -1) {
         tempBudgets.splice(index, 1)
-        firebase
-          .firestore()
-          .collection(`/projects/${this.$route.params.id}/invitess`)
-          .doc(email)
-          .update({ budgets: tempBudgets })
+        updateInviteBudget(this.$route.params.id, tempBudgets, email)
           .then(() => {
             // console.log('updated')
             this.$q.notify({
               color: 'positive',
               textColor: 'white',
               icon: 'cloud_done',
-              message: 'Contributor Budget Removed Successfully'
+              message: 'Contributor Budget Removed Successfully',
             })
           })
-          .catch(err => {
+          .catch((err) => {
             console.log(err)
             this.$q.notify({
               color: 'negative',
               textColor: 'white',
               icon: 'error',
-              message: 'Oops, Something went wrong!'
+              message: 'Oops, Something went wrong!',
             })
           })
       }
@@ -1046,7 +1047,7 @@ export default {
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Invite already sent'
+            message: 'Invite already sent',
           })
           return
         }
@@ -1060,90 +1061,99 @@ export default {
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'User already has access'
+            message: 'User already has access',
           })
           return
         }
       }
-      firebase
-        .firestore()
-        .collection(`/projects/${this.$route.params.id}/invites`)
-        .doc(this.newInvitation.email)
-        .set(this.newInvitation)
+
+      // console.log(this.$route.params.id, this.newInvitation)
+      addUser(this.$route.params.id, this.newInvitation)
         .then(() => {
           // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'User Added Successfully'
+            message: 'User Added Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
     },
     removeUser(uid) {
       // console.log(`/projects/${this.$route.params.id}/contributors/${event}`)
-      firebase
-        .firestore()
-        .doc(`/projects/${this.$route.params.id}/contributors/${uid}`)
-        .delete()
+      removeUser(this.$route.params.id, uid)
         .then(() => {
           // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'User Removed Successfully'
+            message: 'User Removed Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
     },
     removeInvite(email) {
       // console.log(`/projects/${this.$route.params.id}/contributors/${event}`)
-      firebase
-        .firestore()
-        .doc(`/projects/${this.$route.params.id}/invites/${email}`)
-        .delete()
+      removeInvite(this.$route.params.id, email)
         .then(() => {
           // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Invite Removed Successfully'
+            message: 'Invite Removed Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
-    }
+    },
+    budgetsFilterFn(val, update) {
+      if (val === '') {
+        update(() => {
+          this.budgetOptionsFiltered = this.budgetOptions.filter(
+            (val) => val.id !== 'debitCard' && val.id !== 'pettyCash'
+          )
+        })
+        return
+      }
+
+      update(() => {
+        const needle = val.toLowerCase()
+        this.budgetOptionsFiltered = this.budgetOptions
+          .filter((val) => val.id !== 'debitCard' && val.id !== 'pettyCash')
+          .filter((v) => v.label.toLowerCase().indexOf(needle) > -1)
+      })
+    },
   },
   watch: {
     project(oldVal, newVal) {
       this.newInvitation.projectName = this.project.name
-    }
+    },
     //   newInvitation (oldVal, newVal) {
     //     if (oldVal.permission !== newVal.permission) {
     //       if (this.newInvitation.permission === 'contributor') {
@@ -1153,7 +1163,7 @@ export default {
     //       }
     //     }
     //   }
-  }
+  },
 }
 </script>
 

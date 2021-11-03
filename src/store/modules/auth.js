@@ -1,6 +1,5 @@
 // import firebase from '../../scripts/firebase'
-import firebase from 'firebase/app'
-require('firebase/firestore')
+import {getFirestore, collection, onSnapshot } from 'firebase/firestore'
 
 const state = {
   user: {
@@ -10,7 +9,8 @@ const state = {
   contributors: [],
   invites: [],
   idToken: '',
-  userLoadStatus: false
+  userLoadStatus: false,
+  listeners: []
 }
 
 export const getters = {
@@ -61,16 +61,25 @@ export const mutations = {
   },
   setUserLoadStatus(state, payload) {
     state.userLoadStatus = payload
+  },
+  addListeners(state, unsub) {
+    state.listeners.push(unsub)
+  },
+  clearListeners(state, {}) {
+    
+    /*for(let unsub of state.listeners){
+      unsub()
+    }
+    state.listeners = []*/
   }
 }
 
 export const actions = {
   fetchContributors({ commit }, payload) {
-    // console.log('fetching contributors')
-    firebase
-      .firestore()
-      .collection(`/projects/${payload}/contributors`)
-      .onSnapshot(async adminsSnap => {
+    // console.log('fetching contributors', payload)
+    if(state.contributors.length <= 0)
+      commit('clearListeners', false)
+      let unsub = onSnapshot(collection(getFirestore(),`/projects/${payload}/contributors`), async adminsSnap => {
         let contributors = []
         let promises = adminsSnap.docs.map(doc => {
           // console.log('contributor ', doc.data())
@@ -80,13 +89,13 @@ export const actions = {
         // console.log(members)
         commit('setContributors', contributors)
       })
+      commit('addListeners', unsub)
   },
   fetchInvites({ commit }, payload) {
-    // console.log('fetching contributors')
-    firebase
-      .firestore()
-      .collection(`/projects/${payload}/invites`)
-      .onSnapshot(async adminsSnap => {
+    // console.log('fetching admin', payload)
+    if(state.invites.length <= 0)
+      commit('clearListeners', false)
+      let unsub = onSnapshot(collection(getFirestore(), `/projects/${payload}/invites`), async adminsSnap => {
         let invites = []
         let promises = adminsSnap.docs.map(doc => {
           // console.log('contributor ', doc.data())
@@ -96,10 +105,12 @@ export const actions = {
         // console.log(members)
         commit('setInvites', invites)
       })
+      commit('addListeners', unsub)
   }
 }
 
 export default {
+  namespaced: true,
   state,
   getters,
   mutations,

@@ -1,18 +1,36 @@
 <template>
-  <q-btn icon="receipt" @click="showDialog = !showDialog" :loading="loading" dense flat>
-    <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+  <q-btn
+    icon="receipt"
+    @click="showDialog = !showDialog"
+    :loading="loading"
+    dense
+    flat
+  >
+    <q-tooltip
+      anchor="center right"
+      self="center left"
+      content-class="bg-accent text-black"
+    >
       Receipt
     </q-tooltip>
     <!-- {{props.row.showDialogReceipt}} -->
-    <q-dialog v-model="showDialog" style="max-width:100vw">
-      <q-card style="max-width:100%" dark class="bg-black no-scroll">
+    <q-dialog v-model="showDialog" style="max-width: 100vw">
+      <q-card style="max-width: 100%" dark class="bg-black no-scroll">
         <q-card-section class="text-h6">
           Transaction {{ label }} receipt
         </q-card-section>
         <q-card-section class="no-scroll">
           <!-- {{src}} -->
           <!-- {{receiptUrl}} -->
-          <img :src="url" alt="No Receipt" style="max-height: 80vh;max-width:100%;image-orientation: from-image;" />
+          <img
+            :src="url"
+            alt="No Receipt"
+            style="
+              max-height: 80vh;
+              max-width: 100%;
+              image-orientation: from-image;
+            "
+          />
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -23,10 +41,6 @@
 </template>
 
 <script>
-// import firebase from 'firebase/app'
-// require('firebase/auth')
-// require('firebase/firestore')
-
 import { mapGetters } from 'vuex'
 // import { dom } from 'quasar'
 // const { height } = dom
@@ -36,16 +50,16 @@ export default {
     id: String,
     label: String,
     loading: Boolean,
-    url: String
+    url: String,
   },
-  data () {
+  data() {
     return {
       // src: '',
-      showDialog: false
+      showDialog: false,
       // disabled: false
     }
   },
-  created () {
+  created() {
     // this.getReceipt()
   },
   methods: {
@@ -59,7 +73,6 @@ export default {
     //         Authorization: `Bearer ${this.idToken}`
     //       }
     //     }
-
     //     let res = await fetch(src, options)
     //     // console.log(this.id)
     //     // console.log(res.status)
@@ -73,13 +86,11 @@ export default {
     // }
   },
   computed: {
-    ...mapGetters([
-      'project',
-      'idToken'
-    ]),
-    disabled () {
-      return (this.receiptUrl < '')
-    }
+    ...mapGetters('projects', ['project']),
+    ...mapGetters('auth', ['idToken']),
+    disabled() {
+      return this.receiptUrl < ''
+    },
     // receiptUrl () {
     //   if (this.url > '') {
     //     return this.url
@@ -96,7 +107,6 @@ export default {
     //   return (height(window) * 0.8) / 9 * 16
     // }
   },
-  components: {
-  }
+  components: {},
 }
 </script>

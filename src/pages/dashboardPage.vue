@@ -9,12 +9,13 @@
       <div class="text-subtitle-1">Project Currency ({{ project.currency }})</div>
     </q-banner> -->
     <q-table
-      :data="projects"
+      :rows="projects"
       :columns="columns"
-      :rows-per-page-options="[5]"
+      :rows-per-page-options="[5, 10, 15, 20, 25]"
       row-key="name"
       :grid="grid"
       card-style="height:100vh;"
+      v-model:pagination="pagination"
     >
       <template v-slot:top>
         <div class="text-h4">Projects</div>
@@ -64,9 +65,7 @@
               label="Open"
               @click="onProjectOpen(props.row.id, props.row.permission)"
             >
-              <q-tooltip>
-                Open the Project
-              </q-tooltip>
+              <q-tooltip> Open the Project </q-tooltip>
             </q-btn>
             <q-btn
               icon="import_export"
@@ -76,9 +75,7 @@
               :disabled="exportCSVLoading"
               v-if="props.row.permission === 'admin'"
             >
-              <q-tooltip>
-                Export Transactions in a .csv file
-              </q-tooltip>
+              <q-tooltip> Export Transactions in a .csv file </q-tooltip>
             </q-btn>
             <q-btn
               icon="import_export"
@@ -88,16 +85,18 @@
               :disabled="exportZipLoading"
               v-if="props.row.permission === 'admin'"
             >
-              <q-tooltip>
-                Export Receipts images in a .zip file
-              </q-tooltip>
+              <q-tooltip> Export Receipts images in a .zip file </q-tooltip>
             </q-btn>
           </q-td>
         </q-tr>
       </template>
       <template v-slot:item="props">
         <div
-          class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3 grid-style-transition"
+          class="
+            q-pa-xs
+            col-xs-12 col-sm-6 col-md-4 col-lg-3
+            grid-style-transition
+          "
         >
           <q-card
             class="bg-secondary text-white cursor-pointer"
@@ -145,13 +144,11 @@
               <q-btn
                 icon="import_export"
                 label="Add Transaction"
-                style="width:100%"
+                style="width: 100%"
                 class="bg-white text-black"
                 v-if="props.row.permission === 'contributor'"
               >
-                <q-tooltip>
-                  Export transactions in a .csv file
-                </q-tooltip>
+                <q-tooltip> Export transactions in a .csv file </q-tooltip>
               </q-btn>
               <q-btn
                 icon="import_export"
@@ -159,13 +156,11 @@
                 @click.stop="onCSVExport(props.row.id)"
                 :loading="exportCSVLoading"
                 :disabled="exportCSVLoading"
-                style="width:45%"
+                style="width: 45%"
                 class="bg-white text-black"
                 v-if="props.row.permission === 'admin'"
               >
-                <q-tooltip>
-                  Export transactions in a .csv file
-                </q-tooltip>
+                <q-tooltip> Export transactions in a .csv file </q-tooltip>
               </q-btn>
               <q-btn
                 icon="import_export"
@@ -174,13 +169,11 @@
                 :loading="exportZipLoading"
                 :percentage="loading"
                 dark-percentage
-                style="width:45%"
+                style="width: 45%"
                 class="bg-white text-black"
                 v-if="props.row.permission === 'admin'"
               >
-                <q-tooltip>
-                  Export receipt images in a .zip file
-                </q-tooltip>
+                <q-tooltip> Export receipt images in a .zip file </q-tooltip>
               </q-btn>
             </q-card-actions>
           </q-card>
@@ -191,7 +184,6 @@
 </template>
 
 <script>
-import { $firestore, $storage, $analytics } from './../scripts/firebase.js'
 import { mapGetters } from 'vuex'
 import { saveAs } from 'file-saver'
 import JSZip from 'JSZip'
@@ -201,7 +193,7 @@ const columns = [
   { name: 'number', align: 'center', label: 'Number', field: 'number' },
   { name: 'participants', label: '# Participants', field: 'participants' },
   { name: 'currency', label: 'Currency', field: 'currency' },
-  { name: 'export', label: '', field: 'export' }
+  { name: 'export', label: '', field: 'export' },
 ]
 
 export default {
@@ -211,7 +203,7 @@ export default {
       grid: true,
       exportZipLoading: false,
       exportCSVLoading: false,
-      loading: 0
+      loading: 0,
       // blob: {}
       // project: {
       //   name: 'Gold Coast Schoolies',
@@ -219,11 +211,14 @@ export default {
       //   participants: 40,
       //   currency: 'AUD'
       // }
+      pagination: {
+        sortBy: 'name',
+        descending: false,
+        page: 1,
+        rowsPerPage: 15,
+        // rowsNumber: xx if getting data from a server
+      },
     }
-  },
-  created() {
-    // this.$store.dispatch('fetchProjects', this.$route.params.id)
-    $analytics.setCurrentScreen('Dashboard')
   },
   methods: {
     onProjectOpen(projectId, permission) {
@@ -239,7 +234,7 @@ export default {
       // console.log(projectId, this.idToken)
       if (projectId > '' || true) {
         this.$q.loading.show({
-          message: 'Preparing Download'
+          message: 'Preparing Download',
         })
         this.loading = 0
         // var storageRef = $storage.ref()
@@ -247,7 +242,7 @@ export default {
         //   .child('projects')
         //   .child(projectId)
         //   .child('reciepts')
-        // const transactions = await $firestore
+        // const transactions = await firebase.firestore()
         //   .collection(`/projects/${projectId}/transactions`)
         //   .where('receipt', '==', true)
         //   .get()
@@ -259,8 +254,8 @@ export default {
         const src = `/downloadReceiptsZip/?projectId=${projectId}`
         const options = {
           headers: {
-            Authorization: `Bearer ${this.idToken}`
-          }
+            Authorization: `Bearer ${this.idToken}`,
+          },
         }
         let res = await fetch(src, options).catch(() => {
           console.log('error occured')
@@ -269,7 +264,7 @@ export default {
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
         // console.log(res.status, res)
@@ -285,7 +280,7 @@ export default {
             message: `Downloading Receipts: ${counter} of ${
               Object.keys(links).length
             } - ${this.loading}%`,
-            delay: 0
+            delay: 0,
           })
           // console.log('Getting Images: ' + this.loading + '%')
           const res = await fetch(links[link][0], {
@@ -299,32 +294,32 @@ export default {
         this.$q.loading.show({
           message:
             'Zipping everything up, depending on the number of receipts this may take a few minutes. Do not leave this page or refresh',
-          delay: 0
+          delay: 0,
         })
         // console.log('Getting Images: ' + this.loading + '%')
 
         const blob = await zip.generateAsync(
           {
-            type: 'blob'
+            type: 'blob',
           },
-          metadata => {
+          (metadata) => {
             this.$q.loading.show({
               message: `Zipping File: ${
                 metadata.currentFile
               } - ${metadata.percent.toFixed(2)}% `,
-              delay: 0
+              delay: 0,
             })
           }
         )
         this.$q.loading.show({
           message: 'Saving File',
-          delay: 0
+          delay: 0,
         })
         // console.log(this.projects.find)
         saveAs(
           blob,
-          `${this.projects.find(val => val.id === projectId).number}-${
-            this.projects.find(val => val.id === projectId).name
+          `${this.projects.find((val) => val.id === projectId).number}-${
+            this.projects.find((val) => val.id === projectId).name
           }.zip`
         )
         this.exportZipLoading = false
@@ -333,7 +328,7 @@ export default {
           color: 'positive',
           textColor: 'white',
           icon: 'cloud_download',
-          message: '.zip Export Successful'
+          message: '.zip Export Successful',
         })
       }
     },
@@ -344,8 +339,8 @@ export default {
         const src = `/downloadCSV/?projectId=${projectId}`
         const options = {
           headers: {
-            Authorization: `Bearer ${this.idToken}`
-          }
+            Authorization: `Bearer ${this.idToken}`,
+          },
         }
         let res = await fetch(src, options).catch(() => {
           console.log('error occured')
@@ -354,7 +349,7 @@ export default {
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
         // console.log(res.status)
@@ -362,8 +357,8 @@ export default {
         // console.log(blob)
         saveAs(
           blob,
-          `${this.projects.find(val => val.id === projectId).number}-${
-            this.projects.find(val => val.id === projectId).name
+          `${this.projects.find((val) => val.id === projectId).number}-${
+            this.projects.find((val) => val.id === projectId).name
           }.csv`
         )
         this.exportCSVLoading = false
@@ -371,13 +366,14 @@ export default {
           color: 'positive',
           textColor: 'white',
           icon: 'cloud_download',
-          message: '.CSV Export Successful'
+          message: '.CSV Export Successful',
         })
       }
-    }
+    },
   },
   computed: {
-    ...mapGetters(['projects', 'idToken'])
-  }
+    ...mapGetters('projects', ['projects']),
+    ...mapGetters('auth', ['idToken']),
+  },
 }
 </script>

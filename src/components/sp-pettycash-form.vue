@@ -1,33 +1,46 @@
 <template>
   <q-menu>
-    <q-form
-    @reset="onReset"
-    @submit="onSubmit">
+    <q-form @reset="onReset" @submit="onSubmit">
       <q-list style="min-width: 100px">
         <q-item>
-        <!-- <q-item-section> -->
-        Add Pettty Cash
-        <!-- </q-item-section> -->
+          <!-- <q-item-section> -->
+          Add Pettty Cash
+          <!-- </q-item-section> -->
         </q-item>
         <q-item>
-        <!-- <q-item-section> -->
+          <!-- <q-item-section> -->
           <!-- <q-popup-edit v-model="props.row.category"> -->
           <!-- <q-date v-model="newTrans.date" dense  /> -->
-        <q-input v-model="newPetty.date" mask="date" label="Date" :rules="['date']" dense style="width:100%">
-          <template v-slot:append>
-            <q-icon name="event" class="cursor-pointer">
-              <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
-                <q-date v-model="newPetty.date" @input="() => $refs.qDateProxy.hide()" mask="DD/MM/YYYY" />
-              </q-popup-proxy>
-            </q-icon>
-          </template>
-        </q-input>
+          <q-input
+            v-model="newPetty.date"
+            mask="date"
+            label="Date"
+            :rules="['date']"
+            dense
+            style="width: 100%"
+          >
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer">
+                <q-popup-proxy
+                  ref="qDateProxy"
+                  transition-show="scale"
+                  transition-hide="scale"
+                >
+                  <q-date
+                    v-model="newPetty.date"
+                    @update:model-value="() => $refs.qDateProxy.hide()"
+                    mask="DD/MM/YYYY"
+                  />
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
           <!-- </q-popup-edit> -->
-        <!-- </q-item-section> -->
-      </q-item>
+          <!-- </q-item-section> -->
+        </q-item>
         <q-item>
-          <q-btn label="Submit" type="submit" color="teal"/>
-          <q-btn label="Clear" type="reset" color="teal" flat class="q-ml-sm"/>
+          <q-btn label="Submit" type="submit" color="teal" />
+          <q-btn label="Clear" type="reset" color="teal" flat class="q-ml-sm" />
         </q-item>
       </q-list>
     </q-form>
@@ -39,12 +52,10 @@
 
 <script>
 import { mapGetters } from 'vuex'
-// import firebase from 'firebase/app'
-// require('firebase/firestore')
 
 export default {
   props: ['projectId'],
-  data () {
+  data() {
     return {
       newPetty: {
         category: '', // Category of petty cash
@@ -52,17 +63,17 @@ export default {
         date: '', // date of petty cash transaction
         desc: '', // description
         number: '', // id
-        type: '' // Type of petty transaction
+        type: '', // Type of petty transaction
       },
-      loading: false
+      loading: false,
     }
   },
-  created () {
+  created() {
     // this.$store.dispatch('fetchTransactions', this.$route.params.id)
     // this.$store.dispatch('fetchBudgets', this.$route.params.id)
   },
   methods: {
-    onSubmit (event) {
+    onSubmit(event) {
       // this.loading = true
       // this.$q.loading.show()
       // console.log(`/projects/${this.projectId}/budgets`)
@@ -75,14 +86,10 @@ export default {
       //   this.$q.loading.hide()
       // })
       // this.loading = false
-    }
+    },
   },
   computed: {
-    ...mapGetters([
-      'budgets',
-      'budgetCategories',
-      'budgetOptions'
-    ])
-  }
+    ...mapGetters('budgets', ['budgets', 'budgetCategories', 'budgetOptions']),
+  },
 }
 </script>

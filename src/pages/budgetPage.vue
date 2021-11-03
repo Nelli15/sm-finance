@@ -2,7 +2,7 @@
   <q-page padding>
     <q-table
       class="my-sticky-header-table"
-      :data="budgetsFiltered"
+      :rows="budgetsFiltered"
       :columns="columns"
       title="Budget"
       :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
@@ -21,7 +21,7 @@
           Budgets
           <q-icon
             name="help_outline"
-            style="cursor:pointer;"
+            style="cursor: pointer"
             size="xs"
             color="grey-7"
           >
@@ -77,7 +77,7 @@
           </template>
         </q-input>
 
-        <sp-budget-import />
+        <sp-budget-import dense />
 
         <q-btn
           flat
@@ -100,7 +100,7 @@
             }}
             <q-popup-edit v-model="props.row.category">
               <q-select
-                :value="
+                :model-value="
                   props.row.category > ''
                     ? budgets[props.row.category]
                       ? budgets[props.row.category].label
@@ -109,7 +109,9 @@
                       : ''
                     : ''
                 "
-                @input="updateBudget(props.row.id, 'category', $event.id)"
+                @update:model-value="
+                  updateBudget(props.row.id, 'category', $event.id)
+                "
                 dense
                 autofocus
                 label="Budget Category"
@@ -139,8 +141,10 @@
             {{ props.row.label }}
             <q-popup-edit v-model="props.row.label">
               <q-input
-                :value="props.row.label > '' ? props.row.label : ''"
-                @input="updateBudget(props.row.id, 'label', $event)"
+                :model-value="props.row.label > '' ? props.row.label : ''"
+                @update:model-value="
+                  updateBudget(props.row.id, 'label', $event)
+                "
                 dense
                 autofocus
                 label="Budget Label"
@@ -160,15 +164,15 @@
             <q-popup-edit v-model="props.row.budget">
               <!-- <q-input v-model="props.row.budget" dense autofocus label="Budgeted Amount"> -->
               <q-input
-                :value="props.row.budget > '' ? props.row.budget : ''"
-                @input="updateBudget(props.row.id, 'budget', $event)"
+                :model-value="props.row.budget > '' ? props.row.budget : ''"
+                @update:model-value="
+                  updateBudget(props.row.id, 'budget', $event)
+                "
                 dense
                 autofocus
                 label="Budgeted Amount"
               >
-                <template v-slot:prepend>
-                  $
-                </template>
+                <template v-slot:prepend> $ </template>
               </q-input>
             </q-popup-edit>
             <q-tooltip
@@ -186,7 +190,7 @@
             :class="{
               'text-negative':
                 parseFloat(props.row.budget) - parseFloat(props.row.expenses) <
-                0
+                0,
             }"
           >
             ${{ props.row.expenses.toFixed(2) }}
@@ -199,7 +203,7 @@
                 'bg-red-8': (props.row.balance ? props.row.balance : 0) < -0.01,
                 'bg-black':
                   (props.row.balance ? props.row.balance : 0) < 0.01 &&
-                  (props.row.balance ? props.row.balance : 0) > -0.01
+                  (props.row.balance ? props.row.balance : 0) > -0.01,
               }"
               :label="
                 '$' + (props.row.balance ? props.row.balance : 0).toFixed(2)
@@ -221,7 +225,7 @@
             <q-btn
               :to="{
                 name: 'transactions',
-                params: { budgetCategory: props.row.id }
+                params: { budgetCategory: props.row.id },
               }"
               dense
               class="q-mr-sm"
@@ -246,38 +250,52 @@
         </q-tr>
       </template>
     </q-table>
-    <q-page-sticky position="bottom-left" :offset="fabPos" style="z-index:100">
+    <q-page-sticky position="bottom-left" :offset="fabPos" style="z-index: 100">
       <q-btn
         fab
-        icon="add"
+        icon="add_task"
         color="primary"
         direction="up"
         :disable="draggingFab"
         v-touch-pan.prevent.mouse="moveFab"
       >
         <q-tooltip content-class="bg-accent text-black">
-          Add Account
+          Add Actions
         </q-tooltip>
-        <q-menu ref="addBudgetMenu" persistent>
-          <!-- <q-scroll-area> -->
-          <sp-budget-form
-            show="budget"
-            :projectId="$route.params.id"
-            @onSubmit="$refs.addBudgetMenu.hide()"
-          />
-          <!-- </q-scroll-area> -->
+        <q-menu persistent>
+          <actionsMenu />
         </q-menu>
       </q-btn>
     </q-page-sticky>
+    <!-- <q-page-sticky position="bottom-left" :offset="fabPos" style="z-index: 100">
+      <q-btn
+        fab
+        icon="add"
+        color="primary"
+        :disable="draggingFab"
+        v-touch-pan.prevent.mouse="moveFab"
+      >
+        <q-tooltip content-class="bg-accent text-grey-10">
+          Add Action
+        </q-tooltip>
+        <q-menu ref="addTransMenu" persistent>
+          <sp-budget-form
+            :projectId="project.id"
+            @onSubmit="$refs.addTransMenu.hide()"
+            show="action"
+          />
+
+        </q-menu>
+      </q-btn>
+    </q-page-sticky> -->
   </q-page>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from 'quasar'
-import firebase from 'firebase/app'
-require('firebase/firestore')
-require('firebase/analytics')
+import { updateBudgetByKey } from './../scripts/accounts.js'
+import { defineAsyncComponent } from 'vue'
 
 const columns = [
   {
@@ -285,35 +303,35 @@ const columns = [
     align: 'left',
     label: 'Category',
     field: 'category',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'label',
     align: 'left',
     label: 'Label',
     field: 'label',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'budgeted',
     align: 'center',
     label: 'Budgeted (AUD)',
     field: 'budgeted',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'spent',
     align: 'center',
     label: 'Spent (AUD)',
     field: 'spent',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'remaining',
     align: 'center',
     label: 'Cash in Hand (AUD)',
     field: 'remaining',
-    sortable: true
+    sortable: true,
   },
   // {
   //   name: 'awaitingReviews',
@@ -322,7 +340,7 @@ const columns = [
   //   field: 'awaitingReviews',
   //   sortable: true
   // },
-  { name: 'buttons', label: 'Actions', field: 'buttons', align: 'right' }
+  { name: 'buttons', label: 'Actions', field: 'buttons', align: 'right' },
 ]
 
 export default {
@@ -337,20 +355,21 @@ export default {
         'budgeted',
         'spent',
         'remaining',
-        'actions'
+        'actions',
       ],
       pagination: {
         sortBy: 'label',
         descending: false,
         page: 1,
-        rowsPerPage: 10
+        rowsPerPage: 10,
         // rowsNumber: xx if getting data from a server
       },
       fabPos: [18, 18],
-      draggingFab: false
+      draggingFab: false,
     }
   },
   preFetch({ store, currentRoute }) {
+    store.dispatch('auth/fetchContributors', currentRoute.params.id)
     // store.dispatch('fetchBudgets', currentRoute.params.id)
     // store.dispatch('fetchBudgetCategories', currentRoute.params.id)
     // store.dispatch('fetchAccounts', currentRoute.params.id)
@@ -366,13 +385,11 @@ export default {
     // this.$store.dispatch('fetchContributors', this.$route.params.id)
     // this.$store.dispatch('fetchInvites', this.$route.params.id)
     this.updateBudget = debounce(this.updateBudget, 1000)
-    this.pagination.rowsPerPage = this.$q.localStorage.getItem(
-      'budgetTableRows'
-    )
-    firebase.analytics().setCurrentScreen('Budgets')
+    this.pagination.rowsPerPage =
+      this.$q.localStorage.getItem('budgetTableRows')
   },
   methods: {
-    ...mapActions(['updateBudgetByKey']),
+    ...mapActions('budgets', ['updateBudgetByKey']),
     moveFab(ev) {
       this.draggingFab = ev.isFirst !== true && ev.isFinal !== true
 
@@ -381,41 +398,37 @@ export default {
     updateBudget(budgetId, key, val) {
       // console.log(budgetId, key, val)
       this.updateBudgetByKey({ budgetId, key, val })
-      firebase
-        .firestore()
-        .collection(`/projects/${this.project.id}/accounts`)
-        .doc(budgetId)
-        .update({ [key]: val })
+      updateBudgetByKey(budgetId, key, val)
         .then(() => {
           // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Budget: Updated Successfully'
+            message: 'Budget: Updated Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
-    }
+    },
   },
   computed: {
-    ...mapGetters([
-      'project',
+    ...mapGetters('projects', ['project']),
+    ...mapGetters('budgets', [
+      'budgetCategoryOptions',
       'budgets',
       'budgetCategories',
-      'tableKey',
       'budgetOptions',
-      'budgetCategoryOptions',
-      'transactions'
+      'tableKey',
     ]),
+    ...mapGetters('transactions', ['transactions']),
     budgetsFiltered() {
       if (this.$route.params.budgetCategory) {
         let budgets = []
@@ -442,12 +455,18 @@ export default {
         }
         return budgets
       }
-    }
+    },
   },
   components: {
-    'sp-budget-form': () => import('./../components/sp-budget-form.vue'),
-    'sp-delete-btn': () => import('../components/sp-delete-btn.vue'),
-    'sp-budget-import': () => import('../components/sp-budget-import.vue')
-  }
+    actionsMenu: defineAsyncComponent(() =>
+      import('./../components/actionsMenu.vue')
+    ),
+    'sp-delete-btn': defineAsyncComponent(() =>
+      import('../components/sp-delete-btn.vue')
+    ),
+    'sp-budget-import': defineAsyncComponent(() =>
+      import('../components/sp-budget-import.vue')
+    ),
+  },
 }
 </script>

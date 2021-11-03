@@ -2,11 +2,7 @@
   "hosting": {
     "public": "dist/pwa",
     "site": "sp-finance",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "/receipt",
@@ -26,6 +22,17 @@
       }
     ]
   },
+  "storage": {
+    "rules": "storage-default.rules",
+    "target": "default"
+  },
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
   "emulators": {
     "functions": {
       "port": 5001
@@ -34,7 +41,7 @@
       "port": 8080
     },
     "ui": {
-      "enabled": false,
+      "enabled": true,
       "port": 4000
     },
     "auth": {
@@ -43,8 +50,8 @@
     "database": {
       "port": 9000
     },
-    "pubsub": {
-      "port": 8085
+    "storage": {
+      "port": 9199
     }
   },
   "functions": {

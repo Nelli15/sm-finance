@@ -1,0 +1,1364 @@
+<template>
+  <div>
+    <q-table
+      class="my-sticky-header-table"
+      :rows="transactionsFiltered"
+      :columns="columns"
+      :rows-per-page-options="[5, 10, 15, 20, 50, 100, 200]"
+      :row-key="(row) => row.id"
+      :visible-columns="visibleColumns"
+      :filter="filter"
+      :filter-method="filterMethod"
+      rows-per-page-label="Transactions per page:"
+      :pagination.sync="pagination"
+      @update:pagination="
+        $q.localStorage.set('transTableRows', $event.rowsPerPage)
+      "
+      selection="multiple"
+      :selected.sync="rowSelected"
+      dense
+      :loading="loading"
+    >
+      <template v-slot:top="props">
+        <div class="col-4 q-table__title">
+          Transactions{{ pageLabel > '' ? ' for ' + pageLabel : '' }}
+          <q-icon
+            name="help_outline"
+            style="cursor: pointer"
+            size="xs"
+            color="grey-7"
+          >
+            <q-menu max-width="370px" anchor="center right" self="center left">
+              <q-list separator class="q-px-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label header class="text-bold"
+                      >Transactions</q-item-label
+                    >
+                    <q-item-label caption>
+                      Transactions record the transfer of money into, out of,
+                      and within a Project. A Transaction should be recorded
+                      each time money is moved. There are three types of
+                      Transactions.
+                      <br />
+                      <br />
+                      When choosing which Transaction to record, consider any
+                      money in the hands of Missionaries and Project
+                      Participants as 'within' the Project. Money 'outside' the
+                      Project includes money in the hands of Summer Project
+                      National and venders such as the accomodation and grocery
+                      stores.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-expansion-item
+                  expand-separator
+                  label="Income (Green)"
+                  class="text-green-8"
+                >
+                  <q-card>
+                    <q-card-section>
+                      Income Transactions record when a Project receives money
+                      from outside of the Project, usually from Summer Projects
+                      National, and are recorded in green.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+                <q-expansion-item
+                  expand-separator
+                  label="Journal (Blue)"
+                  class="text-blue-8"
+                >
+                  <q-card>
+                    <q-card-section>
+                      Journal Transactions record money being moved amoungst
+                      Accounts and Budgets without leaving the Project and are
+                      recorded in blue.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+                <q-expansion-item
+                  expand-separator
+                  label="Expense (Red)"
+                  class="text-red-8"
+                >
+                  <q-card>
+                    <q-card-section>
+                      Expense Transactions records money leaving the Project and
+                      are recorded in red. eg. buying groceries, or returning
+                      money to Summer Projects National.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+                <q-expansion-item expand-separator label="Columns">
+                  <q-card>
+                    <q-card-section>
+                      Each Transaction contains a number of fields that each
+                      need to have the correct information in them before the
+                      end of the Summer Project. This is what they should
+                      contain.<br /><br />
+                      <ul>
+                        <li>
+                          From - The user who submitted the Transaction (Auto
+                          Generated)
+                        </li>
+                        <li>
+                          Transaction ID - An internal system identifier for the
+                          Transactio (Auto Generated)
+                        </li>
+                        <li>
+                          Type - The physical method used for the Transaction
+                          (Cash, Bank Card, Internet Transfer, Cheque)
+                        </li>
+                        <li>
+                          Category - The Category connected to the relevant
+                          Budget (Auto Generated)
+                        </li>
+                        <li>
+                          Budget/Account - The Budget/s related to the
+                          Transaction
+                        </li>
+                        <li>
+                          Date - The date that the Transaction took place, for
+                          expense Transactions this will be recorded on the Tax
+                          Invoice
+                        </li>
+                        <li>Amount - The amount that was transfered</li>
+                        <li>
+                          GST - The amount of GST that was spent (Expenses only)
+                        </li>
+                        <li>
+                          Paid To - The supplier/business who the Transaction
+                          was made to (Expenses only)
+                        </li>
+                        <li>
+                          Description - A description of what the Transaction
+                          is, why was it made
+                        </li>
+                        <li>
+                          Cheque # - The number of the cheque (Cheque
+                          Transactions only)
+                        </li>
+                      </ul>
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+                <q-expansion-item
+                  expand-separator
+                  label="Processing & Reviewing"
+                >
+                  <q-card>
+                    <q-card-section>
+                      Each time you/or someone else submits a Transaction, you
+                      need to review it. Once you have checked that all of the
+                      details for the Transaction are correct, click the
+                      'Reviewed?' button. This will lock the Transaction and
+                      prevent Contributors from editing this Transaction. At the
+                      end of the Summer Project all Transactions should have
+                      been checked and marked as 'Reviewed!'. Use the
+                      'Reviewed?' button to keep track of what you have and
+                      haven't processed.
+                    </q-card-section>
+                  </q-card>
+                </q-expansion-item>
+              </q-list>
+            </q-menu>
+          </q-icon>
+        </div>
+
+        <q-space />
+
+        <!-- <div v-if="$q.screen.gt.xs" class="col">
+          <q-toggle v-for="column in columns" v-model="visibleColumns" :val="column.name" :label="column.label" :key="column.name" />
+        </div>
+ -->
+        <q-select
+          label="Visible Columns"
+          v-model="visibleColumns"
+          multiple
+          borderless
+          dense
+          options-dense
+          :display-value="$q.lang.table.columns"
+          emit-value
+          map-options
+          :options="columns"
+          option-value="name"
+          style="min-width: 150px"
+        />
+
+        <q-input borderless dense v-model="filter" placeholder="Search">
+          <template v-slot:append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+
+        <q-toggle v-model="showArchived" color="secondary" icon="archive">
+          <q-tooltip
+            anchor="center right"
+            self="center left"
+            content-class="bg-accent text-black"
+          >
+            Show Archived
+          </q-tooltip>
+        </q-toggle>
+        <q-toggle
+          v-model="reviewedVisible"
+          icon="check"
+          color="secondary"
+          class="q-ml-sm"
+        >
+          <q-tooltip
+            anchor="center right"
+            self="center left"
+            content-class="bg-accent text-black"
+          >
+            {{ reviewedVisible ? 'Hide Reviewed' : 'Show Reviewed' }}
+          </q-tooltip>
+        </q-toggle>
+        <q-btn
+          flat
+          round
+          dense
+          :icon="props.inFullscreen ? 'fullscreen_exit' : 'fullscreen'"
+          @click="props.toggleFullscreen"
+          class="q-ml-md"
+          ><q-tooltip
+            anchor="center right"
+            self="center left"
+            content-class="bg-accent text-black"
+          >
+            Fullscreen
+          </q-tooltip>
+        </q-btn>
+      </template>
+      <template v-slot:header="props">
+        <q-tr :props="props">
+          <q-th v-if="visibleColumns.includes('selected')">
+            <q-checkbox dense v-model="props.selected" />
+          </q-th>
+          <q-th v-for="col in columnsFiltered" :key="col.name" :props="props">
+            {{ col.label }}
+          </q-th>
+        </q-tr>
+      </template>
+      <template v-slot:body="props">
+        <q-tr
+          :props="props"
+          class="text-bold"
+          :class="{
+            'bg-red-2': props.row.deleted,
+            'bg-orange-2':
+              props.row.deleteRequested &&
+              !props.row.deleted &&
+              !props.row.reviewed,
+          }"
+        >
+          <q-td key="selected" :props="props">
+            <q-checkbox v-model="props.selected" dense />
+          </q-td>
+          <q-td key="submittedBy" :props="props">
+            <q-avatar v-if="props.row.submittedBy" size="md">
+              <!-- <img
+                :src="
+                  props.row.submittedBy.photoURL
+                    ? props.row.submittedBy.photoURL
+                    : 'https://avatars.dicebear.com/api/bottts/' +
+                      props.row.submittedBy.uid +
+                      '.svg'
+                "
+              /> -->
+              <q-img
+                :src="
+                  props.row.submittedBy.photoURL
+                    ? props.row.submittedBy.photoURL
+                    : 'https://avatars.dicebear.com/api/bottts/' +
+                      props.row.submittedBy.uid +
+                      '.svg'
+                "
+                alt="Profile Picture"
+              >
+                <template v-slot:error>
+                  <q-img
+                    :src="
+                      'https://avatars.dicebear.com/api/bottts/' +
+                      props.row.submittedBy.uid +
+                      '.svg'
+                    "
+                    alt="Profile Picture"
+                  >
+                    <template v-slot:error>
+                      <div
+                        class="
+                          absolute-full
+                          flex flex-center
+                          bg-negative
+                          text-white
+                        "
+                      >
+                        Cannot load image
+                      </div>
+                    </template>
+                  </q-img>
+                </template>
+              </q-img>
+              <div v-show="false">
+                {{ props.row.submittedBy.displayName
+                }}{{ props.row.submittedBy.email }}
+              </div>
+              <q-tooltip content-class="bg-accent text-black">
+                <b>{{ props.row.submittedBy.displayName }}</b
+                ><br />{{ props.row.submittedBy.email }}
+                <div
+                  v-if="
+                    props.row.deleteRequested &&
+                    !props.row.deleted &&
+                    !props.row.reviewed
+                  "
+                  class="text-negative"
+                >
+                  "{{ props.row.submittedBy.displayName }} requested this be
+                  deleted"
+                </div>
+              </q-tooltip>
+              <q-badge
+                v-if="
+                  props.row.deleteRequested &&
+                  !props.row.deleted &&
+                  !props.row.reviewed
+                "
+                floating
+                color="negative"
+                dense
+                style="border-radius: 10px; height: 12px"
+              ></q-badge>
+            </q-avatar>
+          </q-td>
+          <q-td key="number" :props="props">
+            {{ props.row.id }}
+          </q-td>
+          <q-td key="icon" :props="props" class="cursor-pointer">
+            <!-- {{props.row.type}} -->
+            <q-icon
+              v-if="props.row.type === 'Cheque'"
+              name="mdi-checkbook"
+              size="md"
+            >
+              <q-tooltip> Cheque </q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="props.row.type === 'Cash'"
+              name="mdi-cash"
+              size="md"
+            >
+              <q-tooltip> Cash </q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="props.row.type === 'Internet Transfer'"
+              name="mdi-bank-transfer"
+              size="md"
+            >
+              <q-tooltip> Internet Transfer </q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="props.row.type === 'Bank Card'"
+              name="mdi-credit-card"
+              size="md"
+            >
+              <q-tooltip> Bank Card </q-tooltip>
+            </q-icon>
+            <q-popup-edit v-model="props.row.type">
+              <q-select
+                :model-value="props.row.type"
+                dense
+                label="Type"
+                :options="typeOptions"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'type', $event)
+                "
+              />
+            </q-popup-edit>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+            >
+              <q-icon name="edit" />
+              Edit
+            </q-tooltip>
+          </q-td>
+          <q-td key="category" :props="props">
+            <!-- {{props.row.category}} -->
+            <!-- {{budgets[props.row.category].category}} -->
+            <!-- {{ props.row.id }} -->
+            <div v-if="props.row.category !== 'Journal'">
+              {{
+                props.row.category !== 'Journal'
+                  ? getCategoryById(props.row.budget)
+                  : ''
+              }}
+            </div>
+          </q-td>
+          <q-td key="budget" :props="props" class="cursor-pointer">
+            <div v-if="props.row.category !== 'Journal'">
+              {{
+                budgets[props.row.budget]
+                  ? budgets[props.row.budget].label
+                  : accounts[props.row.budget]
+                  ? accounts[props.row.budget].label
+                  : ''
+              }}
+              <q-popup-edit v-model="props.row.budget" v-if="!props.row.action">
+                <q-select
+                  :model-value="
+                    budgets[props.row.budget] > ''
+                      ? budgets[props.row.budget].label
+                      : ''
+                  "
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'budget', $event.id)
+                  "
+                  dense
+                  autofocus
+                  label="Budget"
+                  :options="budgetOptions"
+                />
+              </q-popup-edit>
+              <q-tooltip
+                anchor="center right"
+                self="center left"
+                content-class="bg-accent text-black"
+                v-if="!props.row.action"
+              >
+                <q-icon name="edit" />
+                Edit
+              </q-tooltip>
+            </div>
+            <div v-if="props.row.category === 'Journal'" class="cursor-pointer">
+              {{
+                accounts[props.row.from] ? accounts[props.row.from].label : ''
+              }}
+              {{
+                budgetCategories[props.row.from]
+                  ? budgetCategories[props.row.from].label
+                  : ''
+              }}
+              {{ budgets[props.row.from] ? budgets[props.row.from].label : '' }}
+              <q-icon
+                name="arrow_forward"
+                v-if="props.row.category === 'Journal'"
+              />
+              {{ accounts[props.row.to] ? accounts[props.row.to].label : '' }}
+              {{
+                budgetCategories[props.row.to]
+                  ? budgetCategories[props.row.to].label
+                  : ''
+              }}
+              {{ budgets[props.row.to] ? budgets[props.row.to].label : '' }}
+              <q-popup-edit v-model="props.row.from" v-if="!props.row.action">
+                <q-select
+                  v-if="
+                    accounts[props.row.from] ||
+                    budgets[props.row.from] ||
+                    budgetCategories[props.row.from]
+                  "
+                  :model-value="
+                    accounts[props.row.from]
+                      ? accounts[props.row.from].label
+                      : budgets[props.row.from]
+                      ? budgets[props.row.from].label
+                      : budgetCategories[props.row.from].label
+                  "
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'from', $event.id)
+                  "
+                  dense
+                  autofocus
+                  label="From"
+                  stack-label
+                  :options="budgetOptions"
+                />
+
+                <q-select
+                  v-if="props.row.category === 'Journal'"
+                  :model-value="
+                    accounts[props.row.to]
+                      ? accounts[props.row.to].label
+                      : budgets[props.row.to]
+                      ? budgets[props.row.to].label
+                      : budgetCategories[props.row.to]
+                      ? budgetCategories[props.row.to].label
+                      : null
+                  "
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'to', $event.id)
+                  "
+                  dense
+                  autofocus
+                  label="To"
+                  stack-label
+                  :options="budgetOptions"
+                />
+              </q-popup-edit>
+              <q-tooltip
+                anchor="center right"
+                self="center left"
+                content-class="bg-accent text-black"
+                v-if="!props.row.action"
+              >
+                <q-icon name="edit" />
+                Edit
+              </q-tooltip>
+            </div>
+          </q-td>
+          <q-td key="date" :props="props" class="cursor-pointer">
+            {{ props.row.date }}
+            <q-popup-edit v-model="props.row.date">
+              <!-- <q-date
+                v-model="props.row.date"
+                dense
+                minimal
+                label="Date"
+              /> -->
+              <q-date
+                :model-value="props.row.date"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'date', $event)
+                "
+                mask="DD/MM/YYYY"
+              />
+            </q-popup-edit>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+            >
+              <q-icon name="edit" />
+              Edit
+            </q-tooltip>
+          </q-td>
+          <q-td
+            key="amount"
+            :props="props"
+            :class="{
+              'text-red-8': props.row.category === 'Expense',
+              'text-green-8': props.row.category === 'Income',
+              'text-blue-8': props.row.category === 'Journal',
+            }"
+            class="cursor-pointer"
+          >
+            <!-- {{ getAmount(props.row.text) }} -->
+            <!-- {{props.row}} -->
+            {{ parseFloat(props.row.amount).toFixed(2) }}
+            <q-popup-edit v-model="props.row.amount">
+              <q-input
+                :model-value="props.row.amount"
+                @update:model-value="
+                  updateTransaction(
+                    props.row.id,
+                    'amount',
+                    props.row.type === 'Cash' ? round5($event) : $event
+                  )
+                "
+                dense
+                autofocus
+                :label="'Amount (' + project.currency + ')'"
+              />
+            </q-popup-edit>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+            >
+              <q-icon name="edit" />
+              Edit
+            </q-tooltip>
+          </q-td>
+          <q-td
+            key="GST"
+            :props="props"
+            :class="{ 'cursor-pointer': props.row.category !== 'Journal' }"
+          >
+            <!-- {{ getGST(props.row.text) }} -->
+            {{ parseFloat(props.row.GST ? props.row.GST : 0).toFixed(2) }}
+            <q-popup-edit
+              v-model="props.row.GST"
+              v-if="props.row.category !== 'Journal'"
+            >
+              <q-input
+                :model-value="props.row.GST"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'GST', $event)
+                "
+                dense
+                autofocus
+                label="GST"
+              />
+            </q-popup-edit>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+              v-if="props.row.category !== 'Journal'"
+            >
+              <q-icon name="edit" />
+              Edit
+            </q-tooltip>
+          </q-td>
+          <q-td
+            key="payTo"
+            :props="props"
+            class="cursor-pointer"
+            style="white-space: normal"
+          >
+            <div v-if="props.row.category === 'Expense'">
+              {{ props.row.payTo ? props.row.payTo : '' }}
+              <q-popup-edit v-model="props.row.payTo">
+                <q-input
+                  :model-value="props.row.payTo"
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'payTo', $event)
+                  "
+                  dense
+                  autofocus
+                  label="Business/Supplier"
+                />
+              </q-popup-edit>
+              <q-tooltip
+                anchor="center right"
+                self="center left"
+                content-class="bg-accent text-black"
+              >
+                <q-icon name="edit" />
+                Edit
+              </q-tooltip>
+            </div>
+            <div v-else :props="props" />
+          </q-td>
+          <q-td
+            key="desc"
+            :props="props"
+            class="cursor-pointer"
+            style="white-space: normal; min-width: 300px"
+          >
+            {{ props.row.desc }}
+            <q-popup-edit v-model="props.row.desc">
+              <q-input
+                :model-value="props.row.desc"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'desc', $event)
+                "
+                dense
+                autofocus
+                label="Description"
+              />
+            </q-popup-edit>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+            >
+              <q-icon name="edit" />
+              Edit
+            </q-tooltip>
+          </q-td>
+          <q-td
+            key="cheque"
+            :props="props"
+            class="{ 'cursor-pointer': props.row.type === 'Cheque' }"
+          >
+            {{ props.row.cheque }}
+            <q-popup-edit
+              v-model="props.row.cheque"
+              v-if="props.row.type === 'Cheque'"
+            >
+              <q-input
+                :model-value="props.row.cheque"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'cheque', $event)
+                "
+                dense
+                autofocus
+                label="Cheque #"
+              />
+            </q-popup-edit>
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              content-class="bg-accent text-black"
+              v-if="props.row.type === 'Cheque'"
+            >
+              <q-icon name="edit" />
+              Edit
+            </q-tooltip>
+          </q-td>
+          <q-td key="linked-action" :props="props">
+            <div v-if="props.row.category === 'Expense'">
+              {{
+                actions[props.row.action] ? actions[props.row.action].desc : ''
+              }}
+
+              <q-popup-edit v-model="props.row.action">
+                <q-select
+                  :model-value="props.row.action"
+                  @update:model-value="
+                    updateAction(props.row.id, props.row.action, $event)
+                  "
+                  dense
+                  autofocus
+                  cover
+                  label="Action"
+                  :options="
+                    actionOptions.filter(
+                      (val) => val.budget === props.row.budget
+                    )
+                  "
+                  map-options
+                  emit-value
+                  option-label="desc"
+                  option-value="id"
+                />
+              </q-popup-edit>
+
+              <q-icon name="edit" size="sm">
+                <q-tooltip
+                  anchor="center right"
+                  self="center left"
+                  content-class="bg-accent text-black"
+                >
+                  <q-icon name="edit" />
+                  Edit
+                </q-tooltip>
+              </q-icon>
+            </div>
+            <div v-else>
+              {{
+                actions[props.row.action] ? actions[props.row.action].desc : ''
+              }}
+            </div>
+          </q-td>
+          <q-td key="actions" :props="props" auto-width>
+            <sp-receipt
+              :id="props.row.id"
+              :label="props.row.id"
+              :url="props.row.receiptURL"
+              v-if="
+                props.row.category === 'Expense' &&
+                (props.row.receiptURL > ''
+                  ? props.row.receiptURL.startsWith('https://')
+                  : false)
+              "
+              class="q-mr-sm"
+            />
+            <q-icon
+              name="img:../icons/no-receipt.png"
+              style="height: 30px; width: 30px; padding: 3.99px"
+              v-else-if="
+                props.row.category === 'Expense' &&
+                (props.row.receiptURL > ''
+                  ? !props.row.receiptURL.startsWith('https://')
+                  : true)
+              "
+              class="q-mr-sm"
+            />
+            <q-spinner-gears
+              size="30px"
+              color="primary"
+              v-else-if="
+                props.row.category === 'Expense' &&
+                !props.row.receiptURL &&
+                props.row.receipt
+              "
+            >
+              <q-tooltip
+                anchor="center right"
+                self="center left"
+                content-class="bg-accent text-black"
+              >
+                Looking for receipt
+              </q-tooltip>
+            </q-spinner-gears>
+
+            <q-btn
+              icon="check"
+              round
+              :color="props.row.reviewed ? 'positive' : ''"
+              @click="
+                updateTransaction(props.row.id, 'reviewed', !props.row.reviewed)
+              "
+              outline
+              dense
+              class="q-mr-sm shadow-1"
+            >
+              <q-tooltip
+                anchor="center right"
+                self="center left"
+                content-class="bg-accent text-black"
+              >
+                {{ props.row.reviewed ? 'Reviewed!' : 'Mark Reviewed' }}
+              </q-tooltip>
+            </q-btn>
+            <q-btn
+              :model-value="props.row.deleted ? props.row.deleted : false"
+              @click="
+                updateTransaction(props.row.id, 'deleted', !props.row.deleted)
+              "
+              :icon="props.row.deleted ? 'unarchive' : 'archive'"
+              dense
+              class="q-mr-sm"
+            >
+              <q-tooltip
+                anchor="center right"
+                self="center left"
+                content-class="bg-accent text-black"
+              >
+                {{ props.row.deleted ? 'Unarchive' : 'Archive' }}
+              </q-tooltip>
+            </q-btn>
+            <sp-delete-btn
+              dense
+              :docRef="`/projects/${project.id}/transactions/${props.row.id}`"
+              class="q-mr-sm"
+              @deleted="$emit('deleted', $event)"
+            />
+          </q-td>
+        </q-tr>
+      </template>
+    </q-table>
+    <q-page-sticky
+      position="bottom-right"
+      :offset="sumFabPos"
+      style="z-index: 100"
+      v-if="rowSelected.length > 0"
+    >
+      <q-card
+        class="bg-primary text-white"
+        :disable="draggingSumFab"
+        v-touch-pan.prevent.mouse="moveSumFab"
+      >
+        <q-card-section>
+          Amount ({{ project.currency }}): ${{ calcSelected }}
+          <q-tooltip content-class="bg-accent text-grey-10">
+            Sum of Selected
+          </q-tooltip>
+        </q-card-section>
+      </q-card>
+    </q-page-sticky>
+  </div>
+</template>
+
+<script>
+import { debounce } from 'quasar'
+import { mapGetters } from 'vuex'
+import { defineAsyncComponent } from 'vue'
+import { doc, getFirestore, updateDoc, deleteField } from '@firebase/firestore'
+
+var cc = require('currency-codes')
+
+export default {
+  props: ['columnsProp', 'transactions'],
+  data() {
+    return {
+      columns: [
+        {
+          name: 'selected',
+          label: 'Selected',
+          field: 'selected',
+          align: 'left',
+          sortable: true,
+        },
+        {
+          name: 'submittedBy',
+          label: 'From',
+          field: 'submittedBy',
+          align: 'left',
+          sortable: true,
+        },
+        {
+          name: 'number',
+          label: 'Transaction ID',
+          field: 'id',
+          align: 'center',
+          sortable: true,
+        },
+        { name: 'icon', label: 'Type', field: 'type', align: 'center' },
+        {
+          name: 'category',
+          label: 'Category',
+          field: 'category',
+          align: 'left',
+          sortable: true,
+        },
+        {
+          name: 'budget',
+          label: 'Budget/Account',
+          field: 'budget',
+          align: 'left',
+          sortable: true,
+        },
+        {
+          name: 'date',
+          label: 'Date',
+          field: 'date',
+          align: 'center',
+          sortable: true,
+          sort: (a, b, rowA, rowB) => {
+            let aArray = a.split('/')
+            let bArray = b.split('/')
+            return (
+              new Date(bArray[2], bArray[1], bArray[0]) -
+              new Date(aArray[2], aArray[1], aArray[0])
+            )
+          },
+        },
+        {
+          name: 'amount',
+          label: `Amount (currency)`,
+          field: 'amount',
+          align: 'center',
+          sortable: true,
+        },
+        {
+          name: 'GST',
+          label: `GST (currency)`,
+          field: 'GST',
+          align: 'center',
+          sortable: true,
+        },
+        {
+          name: 'payTo',
+          label: 'Business/Supplier',
+          field: 'payTo',
+          align: 'center',
+          sortable: true,
+        },
+        {
+          name: 'desc',
+          label: 'Description',
+          field: 'desc',
+          align: 'center',
+          sortable: true,
+        },
+        {
+          name: 'cheque',
+          label: 'Cheque #',
+          field: 'cheque',
+          align: 'center',
+          sortable: true,
+        },
+        {
+          name: 'linked-action',
+          label: 'Action',
+          field: 'action',
+          align: 'center',
+          sortable: true,
+        },
+        { name: 'actions', label: 'Actions', field: 'actions', align: 'right' },
+      ],
+      filter: '',
+      ccOptions: [],
+      visibleColumns: [
+        'selected',
+        'submittedBy',
+        'icon',
+        'date',
+        'amount',
+        'GST',
+        'type',
+        'category',
+        'budget',
+        'payTo',
+        'desc',
+        'linked-action',
+        'actions',
+      ],
+      pagination: {
+        sortBy: 'date',
+        descending: true,
+        page: 1,
+        rowsPerPage: 10,
+        // rowsNumber: xx if getting data from a server
+      },
+      rowSelected: [],
+      showArchived: false,
+      typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card'],
+      fabPos: [18, 18],
+      draggingFab: false,
+      sumFabPos: [18, 18],
+      draggingSumFab: false,
+      reviewedVisible: false,
+    }
+  },
+  created() {
+    if (this.columnsProp) {
+      this.visibleColumns = this.columnsProp
+    }
+    if (this.project.currency) {
+      for (var key in this.columns) {
+        if (this.columns[key].label.search('(currency)') !== -1) {
+          this.columns[key].label = this.columns[key].label.replace(
+            '(currency)',
+            `(${this.project.currency})`
+          )
+        }
+      }
+    }
+
+    this.updateTransaction = debounce(this.updateTransaction, 1000)
+    this.pagination.rowsPerPage = this.$q.localStorage.getItem('transTableRows')
+    if (this.$route.params.budgetCategory) {
+      this.reviewedVisible = true
+    }
+  },
+  methods: {
+    moveFab(ev) {
+      this.draggingFab = ev.isFirst !== true && ev.isFinal !== true
+
+      this.fabPos = [this.fabPos[0] + ev.delta.x, this.fabPos[1] - ev.delta.y]
+    },
+    moveSumFab(ev) {
+      this.draggingSumFab = ev.isFirst !== true && ev.isFinal !== true
+
+      this.sumFabPos = [
+        this.sumFabPos[0] - ev.delta.x,
+        this.sumFabPos[1] - ev.delta.y,
+      ]
+    },
+    filterFn(val, update) {
+      if (val === '') {
+        update(() => {
+          this.ccOptions = cc.codes()
+        })
+        return
+      }
+
+      update(() => {
+        const needle = val.toLowerCase()
+        this.ccOptions = cc
+          .codes()
+          .filter((v) => v.toLowerCase().indexOf(needle) > -1)
+      })
+    },
+    getCategoryById(id) {
+      if (this.budgets[id]) {
+        return this.budgetCategories[this.budgets[id].category].label
+      } else if (this.budgetCategories[id]) {
+        return this.budgetCategories[id].label
+      } else {
+        return ''
+      }
+    },
+    getAmount(text) {
+      if (text > '') {
+        let totalFound = false
+        // let amountFound
+        let textArray = text.split('\n').join(' ').split(' ')
+        for (var key in textArray) {
+          if (
+            textArray[key].toLowerCase().indexOf('total') !== -1 &&
+            !(textArray[key].toLowerCase().indexOf('subtotal') !== -1)
+          ) {
+            totalFound = true
+          }
+          if (totalFound && textArray[key].indexOf('$') !== -1) {
+            return parseFloat(textArray[key].split('$').join(''))
+          }
+        }
+      }
+    },
+    async updateAction(transId, oldAction, newAction) {
+      if (oldAction > '')
+        await updateDoc(
+          doc(
+            getFirestore(),
+            `/projects/${this.project.id}/actions/${oldAction}`
+          ),
+          { [`transaction.${transId}`]: deleteField() }
+        )
+      if (newAction > '')
+        await updateDoc(
+          doc(
+            getFirestore(),
+            `/projects/${this.project.id}/actions/${newAction}`
+          ),
+          { [`transactions.${transId}`]: { purpose: 'expense', id: transId } }
+        )
+      this.updateTransaction(transId, 'action', newAction)
+    },
+    updateTransaction(trans, key, val) {
+      this.$emit('onTransUpdate', { trans, key, val })
+    },
+    filterMethod(rows, terms, cols, cellValue) {
+      const lowerTerms = terms ? terms.toLowerCase() : ''
+      let res = rows.filter((row) =>
+        cols.some((col) => {
+          if (!cellValue(col, row)) return false
+          if (col.name === 'budget') {
+            return (
+              (this.budgetsAndAccounts[row.budget] &&
+                this.budgetsAndAccounts[row.budget].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1) ||
+              (this.budgetsAndAccounts[row.to] &&
+                this.budgetsAndAccounts[row.to].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1) ||
+              (this.budgetsAndAccounts[row.from] &&
+                this.budgetsAndAccounts[row.from].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1)
+            )
+          }
+          if (col.name === 'category') {
+            return (
+              (this.budgetsAndAccounts[row.budget] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.budget].category
+                ] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.budget].category
+                ].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1) ||
+              (this.budgetsAndAccounts[row.to] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.to].category
+                ] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.to].category
+                ].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1) ||
+              (this.budgetsAndAccounts[row.from] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.from].category
+                ] &&
+                this.budgetCategories[
+                  this.budgetsAndAccounts[row.from].category
+                ].label
+                  .toLowerCase()
+                  .indexOf(lowerTerms) !== -1)
+            )
+          }
+          return typeof cellValue(col, row) === 'object'
+            ? (Object.values(cellValue(col, row)) + '')
+                .toLowerCase()
+                .indexOf(lowerTerms) > -1
+            : (cellValue(col, row) + '').toLowerCase().indexOf(lowerTerms) !==
+                -1
+        })
+      )
+      return res
+    },
+    round5(x) {
+      var mod = (x - Math.floor(x)) * 100
+      if (mod % 5 > 0) {
+        mod % 5 <= 2 ? (mod = mod - (mod % 5)) : (mod = mod + (5 - (mod % 5)))
+        return parseFloat(Math.floor(x) + mod / 100)
+      } else {
+        return parseFloat(x)
+      }
+    },
+  },
+  computed: {
+    ...mapGetters('projects', ['project']),
+    ...mapGetters('budgets', [
+      'accounts',
+      'budgets',
+      'budgetCategories',
+      'budgetOptions',
+      'loading',
+    ]),
+    ...mapGetters('auth', ['idToken']),
+    ...mapGetters('actions', ['actions', 'actionOptions']),
+    ...mapGetters('transactions', ['transactionOptions', 'myTransactions']),
+    columnsFiltered() {
+      let columns = []
+      for (var key in this.columns) {
+        if (this.columns[key].name !== 'selected') {
+          columns.push(this.columns[key])
+        }
+      }
+      return columns
+    },
+    transactionsFiltered() {
+      let transactions = []
+      let localTransactions = this.transactions.filter((val) => {
+        if (!this.reviewedVisible === true) {
+          return !val.reviewed
+        }
+        return true
+      })
+      // check if the budget filter exists
+      if (this.$route.params.budgetCategory) {
+        let budgets = []
+        // check if the filter is a category
+        if (this.budgetCategories[this.$route.params.budgetCategory]) {
+          // the filter is a category
+          // find all budgets in the category
+          for (var key in this.budgets) {
+            // check if the category
+            if (
+              this.budgets[key].category === this.$route.params.budgetCategory
+            ) {
+              // add the budget to the array of budgets
+              budgets.push(key)
+            }
+          }
+        } else if (this.accounts[this.$route.params.budgetCategory]) {
+          // the filter is an account
+          // find all transactions in the account
+          for (var transKey in localTransactions) {
+            // check if the transaction exists in the budgets array
+            if (
+              !localTransactions[transKey].deleted ||
+              (localTransactions[transKey].deleted && this.showArchived)
+            ) {
+              // check it's not archieved and if it is archieve check if the archive is showing
+              if (
+                (this.$route.params.budgetCategory ===
+                  localTransactions[transKey].budget &&
+                  localTransactions[transKey].category !== 'Journal') ||
+                (this.$route.params.budgetCategory ===
+                  localTransactions[transKey].to &&
+                  localTransactions[transKey].category === 'Journal') ||
+                (this.$route.params.budgetCategory ===
+                  localTransactions[transKey].from &&
+                  localTransactions[transKey].category === 'Journal')
+              ) {
+                // add the transactions to the transaction array
+                transactions.push(localTransactions[transKey])
+              }
+            }
+          }
+          return transactions
+        } else {
+          // the filter is not a category
+          // add the budget to the array of budgets
+          budgets = [this.$route.params.budgetCategory]
+        }
+
+        // find all transactions in the budgets
+        for (transKey in localTransactions) {
+          // check if the transaction exists in the budgets array
+          // if (budgets.includes(localTransactions[transKey].budget)) {
+          //   // check it's not archieved and if it is archieve check if the archive is showing
+          //   if (!localTransactions[transKey].deleted || (localTransactions[transKey].deleted && this.showArchived)) {
+          //     // add the transactions to the transaction array
+          //     transactions.push(localTransactions[transKey])
+          //   }
+          // }
+          if (
+            !localTransactions[transKey].deleted ||
+            (localTransactions[transKey].deleted && this.showArchived)
+          ) {
+            // check it's not archieved and if it is archieve check if the archive is showing
+            if (
+              (budgets.includes(localTransactions[transKey].budget) &&
+                localTransactions[transKey].category !== 'Journal') ||
+              (budgets.includes(localTransactions[transKey].to) &&
+                localTransactions[transKey].category === 'Journal') ||
+              (budgets.includes(localTransactions[transKey].from) &&
+                localTransactions[transKey].category === 'Journal')
+            ) {
+              // add the transactions to the transaction array
+              transactions.push(localTransactions[transKey])
+            }
+          }
+        }
+      } else {
+        // find all transactions in the budgets
+        for (transKey in localTransactions) {
+          // check it's not archieved and if it is archieve check if the archive is showing
+          if (
+            !localTransactions[transKey].deleted ||
+            (localTransactions[transKey].deleted && this.showArchived)
+          ) {
+            // add the transactions to the transaction array
+            transactions.push(localTransactions[transKey])
+          }
+        }
+      }
+      return transactions
+    },
+    calcSelected() {
+      let total = 0
+      for (var key in this.rowSelected) {
+        total += parseFloat(this.rowSelected[key].amount)
+      }
+      return total.toFixed(2)
+    },
+    pageLabel() {
+      let category = this.$route.params.budgetCategory
+      return category > ''
+        ? this.budgets[category]
+          ? this.budgets[category].label
+          : this.budgetCategories[category]
+          ? this.budgetCategories[category].label
+          : this.accounts[category]
+          ? this.accounts[category].label
+          : ''
+        : ''
+    },
+    budget() {
+      if (this.$route.params.budgetCategory) {
+        if (this.budgetCategories[this.$route.params.budgetCategory]) {
+          return this.budgetCategories[this.$route.params.budgetCategory]
+        } else if (this.accounts[this.$route.params.budgetCategory]) {
+          return this.accounts[this.$route.params.budgetCategory]
+        } else {
+          return this.budgets[this.$route.params.budgetCategory]
+        }
+      } else {
+        return false
+      }
+    },
+    budgetsAndAccounts() {
+      return { ...this.accounts, ...this.budgets }
+    },
+  },
+  watch: {
+    project(oldVal, newVal) {
+      for (var key in this.columns) {
+        if (this.columns[key].label.search('(currency)') !== -1) {
+          this.columns[key].label = this.columns[key].label.replace(
+            '(currency)',
+            `(${this.project.currency})`
+          )
+        }
+      }
+    },
+  },
+  components: {
+    'sp-budget-form': defineAsyncComponent(() =>
+      import('./sp-budget-form.vue')
+    ),
+    'sp-receipt': defineAsyncComponent(() => import('./sp-receipt.vue')),
+    'sp-delete-btn': defineAsyncComponent(() => import('./sp-delete-btn.vue')),
+  },
+}
+</script>
+
+<style lang="sass">
+.my-sticky-header-table
+  /* max height is important */
+  .q-table__middle
+    max-height: 100%
+
+  .q-table__top,
+  .q-table__bottom,
+  /*thead tr:first-child th*/
+    /* bg color is important for th; just specify one */
+    /*background-color: #c1f4cd*/
+
+  thead tr th
+    position: sticky
+    z-index: 1
+  thead tr:first-child th
+    top: 0
+
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th
+    /* height of all previous header rows */
+    top: 48px
+</style>

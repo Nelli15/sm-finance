@@ -1,6 +1,5 @@
 // import firebase from '../../scripts/firebase'
-import firebase from 'firebase/app'
-require('firebase/firestore')
+import { getFirestore, onSnapshot, query, where, collection, getDoc, doc } from 'firebase/firestore'
 
 async function getReceipt(projectId, idToken, transId) {
   // return firebase.auth().onAuthStateChanged(async (user) => {
@@ -25,12 +24,13 @@ async function getReceipt(projectId, idToken, transId) {
 
 const state = {
   transactions: [],
-  myTransactions: []
+  myTransactions: [],
+  listeners: []
 }
 
 export const getters = {
   transactions: state => state.transactions,
-  myTransactions: state => state.myTransactions
+  myTransactions: state => state.myTransactions,
 }
 
 export const mutations = {
@@ -49,17 +49,24 @@ export const mutations = {
     state.myTransactions[
       state.myTransactions.findIndex(x => x.id === payload.trans)
     ][payload.key] = payload.val
+  },
+  addListeners(state, unsub) {
+    state.listeners.push(unsub)
+  },
+  clearListeners(state, {}) {
+    
+    // for(let unsub of state.listeners){
+    //   unsub()
+    // }
+    // state.listeners = []
   }
 }
 
 export const actions = {
   fetchTransactions({ commit, dispatch, rootState }, payload) {
     // let transaction = {}
-    firebase
-      .firestore()
-      .doc(`/projects/${payload}`)
-      .collection('/transactions')
-      .onSnapshot(async transactionsSnap => {
+    commit('clearListeners', false)
+      let unsub = onSnapshot(collection(getFirestore(), `/projects/${payload}/transactions`),async transactionsSnap => {
         // console.log('transaction updated')
         let transactions = []
         let promises = transactionsSnap.docs.map(async doc => {
@@ -84,18 +91,15 @@ export const actions = {
         await Promise.all(promises)
         // console.log(members)
         commit('setTransactions', transactions)
-        dispatch('fetchPopulateBudgets')
+        dispatch('budgets/fetchPopulateBudgets', false, { root: true})
         // return true
       })
+      commit('addListeners', unsub)
   },
-  fetchMyTransactions({ commit, dispatch, rootState }, payload) {
+  async fetchMyTransactions({ commit, dispatch, rootState }, payload) {
     // let transaction = {}
-    firebase
-      .firestore()
-      .doc(`/projects/${payload.projectId}`)
-      .collection('/transactions')
-      .where('submittedBy.uid', '==', payload.uid)
-      .onSnapshot(async transactionsSnap => {
+      commit('clearListeners', false)
+      let unsub = onSnapshot(query(collection(getFirestore(),`/projects/${payload.projectId}/transactions`), where('submittedBy.uid', '==', payload.uid)), async transactionsSnap => {
         // console.log('transaction updated')
         let transactions = []
         let promises = transactionsSnap.docs.map(async doc => {
@@ -121,6 +125,39 @@ export const actions = {
         commit('setMyTransactions', transactions)
         // return true
       })
+      commit('addListeners', unsub)
+  },
+  fetchTransById({state, rootState}, {projectId, id}) {
+    if (state.transactions.find(o => o.id === id)) {
+      //   console.log('1')
+      return state.transactions.find(o => o.id === id)
+    } else {
+      return getDoc(
+        doc(
+          getFirestore(),
+          `/projects/${projectId}/transactions/${id}`
+        )
+      ).then(async doc => {
+        let transaction = doc.data()
+          transaction.id = doc.id
+          transaction.currency =
+            transaction.currency > '' ? transaction.currency : 'AUD'
+          transaction.deleted = transaction.deleted
+            ? transaction.deleted
+            : false
+          // console.log(transaction)
+          if (transaction.receipt === true) {
+            transaction.receiptURL = await getReceipt(
+              rootState.projects.project.id,
+              rootState.auth.idToken,
+              transaction.id
+            )
+          }
+        return transaction
+      }).catch(err => {
+        console.error(err)
+      })
+    }
   },
   updateTransactionByKey({ commit }, payload) {
     commit('setTransactionKey', payload)
@@ -131,6 +168,7 @@ export const actions = {
 }
 
 export default {
+  namespaced: true,
   state,
   getters,
   mutations,

@@ -725,6 +725,10 @@ exports.onTransactionDelete = functions.firestore
     let projectId = context.params.projectId
     let transId = context.params.transId
 
+    if(snap.data().action > '') {
+      await admin.firestore().doc(`/projects/${projectId}/actions/${snap.data().action}`).update({ ['transactions.'+transId]: admin.firestore.FieldValue.delete()})
+    }
+
     var bucket = admin.storage().bucket()
     const file = bucket.file(`/projects/${projectId}/receipts/${transId}.jpg`)
     if (await !file.exists()) return
@@ -1021,7 +1025,6 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
 })
 
 exports.createProject = functions.https.onCall(async (data, context) => {
-  // console.log(context.auth)
   let projectRef = admin
     .firestore()
     .collection(`/projects`)
@@ -1032,6 +1035,7 @@ exports.createProject = functions.https.onCall(async (data, context) => {
     participants: '',
     currency: 'AUD',
     internationalProject: false,
+    contributorTransTypeOpts: ['Cash'],
     petty: {
       dollars: {
         hundreds: 0,
@@ -1054,22 +1058,22 @@ exports.createProject = functions.https.onCall(async (data, context) => {
     .collection('/contributors')
     .doc(context.auth.uid)
     .set({
-      email: context.auth.token.email,
-      name: context.auth.token.name,
+      email: context.auth.token.email ? context.auth.token.email : '',
+      name: context.auth.token.name ? context.auth.token.name : '',
       uid: context.auth.uid,
       permission: 'admin',
-      photoUrl: context.auth.token.picture
+      photoUrl: context.auth.token.picture ? context.auth.token.picture : ''
     })
   let accountsRef = projectRef.collection('/accounts')
   accountsRef.doc('debitCard').set({
     label: 'Debit Card',
-    systemAccount: false,
+    systemAccount: true,
     type: 'account',
     inHeader: true
   })
   accountsRef.doc('pettyCash').set({
     label: 'Petty Cash',
-    systemAccount: false,
+    systemAccount: true,
     type: 'account',
     inHeader: true
   })

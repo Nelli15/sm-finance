@@ -4,17 +4,12 @@
   </div>
 </template>
 <script>
-import firebase from 'firebase/app'
-require('firebase/firestore')
-
+import { signOut, getAuth } from 'firebase/auth'
 export default {
   mounted() {
-    firebase
-      .auth()
-      .signOut()
-      .then(() => {
-        window.location.href = '/#/login'
-      })
-  }
+    signOut(getAuth()).then(() => {
+      window.location.href = '/login'
+    })
+  },
 }
 </script>

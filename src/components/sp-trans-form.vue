@@ -1,7 +1,7 @@
 <template>
   <q-form @reset="onReset" @submit="onSubmit" ref="transForm">
     <q-list
-      style="min-width: 100px; max-width:500px;"
+      style="min-width: 100px; max-width: 500px"
       :style="$q.platform.is.desktop ? 'width:400px;' : ''"
     >
       <q-item class="text-h6 justify-center">
@@ -9,7 +9,7 @@
         Add Transaction
         <q-icon
           name="help_outline"
-          style="cursor:pointer;"
+          style="cursor: pointer"
           size="xs"
           color="grey-7"
         >
@@ -127,9 +127,7 @@
               </q-expansion-item>
               <q-expansion-item expand-separator label="Submit">
                 <q-card>
-                  <q-card-section>
-                    Submit the Transaction
-                  </q-card-section>
+                  <q-card-section> Submit the Transaction </q-card-section>
                 </q-card>
               </q-expansion-item>
               <q-expansion-item expand-separator label="Clear">
@@ -147,8 +145,8 @@
       <q-item
         v-show="
           isAdmin ||
-            (project.contributorTransTypeOpts &&
-              project.contributorTransTypeOpts.length > 1)
+          (project.contributorTransTypeOpts &&
+            project.contributorTransTypeOpts.length > 1)
         "
       >
         <!-- {{ project }} -->
@@ -156,15 +154,13 @@
         <!-- <q-popup-edit v-model="props.row.category"> -->
         <q-select
           v-if="isAdmin"
-          :value="newTrans.category"
+          :model-value="newTrans.category"
           dense
           label="Category"
           :options="categoryOptions"
-          @input="newTrans.category = $event"
-          style="
-            width:50%
-          "
-          :rules="[v => !!v || 'Required value']"
+          @update:model-value="newTrans.category = $event"
+          style="width: 50%"
+          :rules="[(v) => !!v || 'Required value']"
           :disable="isContributor"
           hide-bottom-space
         >
@@ -176,8 +172,8 @@
         <q-select
           v-show="
             isAdmin ||
-              (project.contributorTransTypeOpts &&
-                project.contributorTransTypeOpts.length > 1)
+            (project.contributorTransTypeOpts &&
+              project.contributorTransTypeOpts.length > 1)
           "
           v-model="newTrans.type"
           dense
@@ -189,7 +185,7 @@
               ? 'width:100%;'
               : 'width:50%;'
           "
-          :rules="[v => !!v || 'Required value']"
+          :rules="[(v) => !!v || 'Required value']"
           hide-bottom-space
         />
         <!-- </q-popup-edit> -->
@@ -202,8 +198,8 @@
             customMetadata: {
               projectId: project.id,
               transId: transRef.id,
-              expiry: expiry(1)
-            }
+              expiry: expiry(1),
+            },
           }"
           color="secondary"
           flat
@@ -233,13 +229,13 @@
           mask="##/##/####"
           label="Date"
           :rules="[
-            v =>
+            (v) =>
               /^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/.test(
                 v
-              ) || 'Not a Date'
+              ) || 'Not a Date',
           ]"
           dense
-          style="width:100%"
+          style="width: 100%"
         >
           <template v-slot:append>
             <q-icon name="event" class="cursor-pointer">
@@ -250,7 +246,7 @@
               >
                 <q-date
                   v-model="newTrans.date"
-                  @input="() => $refs.qDateProxy.hide()"
+                  @update:model-value="() => $refs.qDateProxy.hide()"
                   mask="DD/MM/YYYY"
                 />
               </q-popup-proxy>
@@ -263,7 +259,7 @@
 
       <q-item v-if="newTrans.category !== 'Journal'">
         <q-select
-          :value="
+          :model-value="
             newTrans.budget > ''
               ? budgets[newTrans.budget]
                 ? budgets[newTrans.budget].label
@@ -274,20 +270,18 @@
           label="Budget"
           :options="budgetsFiltered"
           option-label="label"
-          :option-value="item => (item === null ? null : item.id)"
-          @input="newTrans.budget = $event.id"
+          :option-value="(item) => (item === null ? null : item.id)"
+          @update:model-value="newTrans.budget = $event.id"
           :style="newTrans.category === 'Expense' ? 'width:50%' : 'width:100%'"
           use-input
           @filter="filterBudgets"
           :rules="[
-            v => newTrans.category !== 'Journal' || !!v || 'Required value'
+            (v) => newTrans.category !== 'Journal' || !!v || 'Required value',
           ]"
         >
           <template v-slot:no-option>
             <q-item>
-              <q-item-section class="text-grey">
-                No results
-              </q-item-section>
+              <q-item-section class="text-grey"> No results </q-item-section>
             </q-item>
           </template>
         </q-select>
@@ -295,16 +289,16 @@
           v-model="newTrans.payTo"
           dense
           label="Business"
-          style="width:50%"
+          style="width: 50%"
           v-if="newTrans.category === 'Expense'"
-          :rules="[v => v > '' || 'Required']"
+          :rules="[(v) => v > '' || 'Required']"
         />
       </q-item>
       <q-item v-if="newTrans.category === 'Journal'">
         <!-- <q-item-section> -->
         <!-- <q-popup-edit v-model="props.row.category"> -->
         <q-select
-          :value="
+          :model-value="
             newTrans.from > ''
               ? budgets[newTrans.from]
                 ? budgets[newTrans.from].label
@@ -315,22 +309,21 @@
           label="From"
           :options="budgetsFiltered"
           option-label="label"
-          :option-value="item => (item === null ? null : item.id)"
-          @input="newTrans.from = $event.id"
-          style="width:50%"
+          :option-value="(item) => (item === null ? null : item.id)"
+          @update:model-value="newTrans.from = $event.id"
+          style="width: 50%"
           use-input
           @filter="filterBudgets"
           :rules="[
-            v => !!v || 'Required value',
-            v => newTrans.to !== newTrans.from || 'To & From must be different'
+            (v) => !!v || 'Required value',
+            (v) =>
+              newTrans.to !== newTrans.from || 'To & From must be different',
           ]"
           hide-bottom-space
         >
           <template v-slot:no-option>
             <q-item>
-              <q-item-section class="text-grey">
-                No results
-              </q-item-section>
+              <q-item-section class="text-grey"> No results </q-item-section>
             </q-item>
           </template>
         </q-select>
@@ -339,7 +332,7 @@
         <!-- <q-item-section> -->
         <!-- <q-popup-edit v-model="props.row.category"> -->
         <q-select
-          :value="
+          :model-value="
             newTrans.to > ''
               ? budgets[newTrans.to]
                 ? budgets[newTrans.to].label
@@ -350,22 +343,21 @@
           label="To"
           :options="budgetsFiltered"
           option-label="label"
-          :option-value="item => (item === null ? null : item.id)"
-          @input="newTrans.to = $event.id"
-          style="width:50%"
+          :option-value="(item) => (item === null ? null : item.id)"
+          @update:model-value="newTrans.to = $event.id"
+          style="width: 50%"
           use-input
           @filter="filterBudgets"
           hide-bottom-space
           :rules="[
-            v => !!v || 'Required value',
-            v => newTrans.to !== newTrans.from || 'To & From must be different'
+            (v) => !!v || 'Required value',
+            (v) =>
+              newTrans.to !== newTrans.from || 'To & From must be different',
           ]"
         >
           <template v-slot:no-option>
             <q-item>
-              <q-item-section class="text-grey">
-                No results
-              </q-item-section>
+              <q-item-section class="text-grey"> No results </q-item-section>
             </q-item>
           </template>
         </q-select>
@@ -379,8 +371,8 @@
           v-model="newTrans.cheque"
           dense
           label="Cheque #"
-          style="width:100%"
-          :rules="[v => !!v || 'Required value']"
+          style="width: 100%"
+          :rules="[(v) => !!v || 'Required value']"
         />
         <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
@@ -390,7 +382,7 @@
           v-model="newTrans.amount"
           dense
           :label="'Amount (' + this.project.currency + ')'"
-          :rules="[v => !!v || 'Required value']"
+          :rules="[(v) => !!v || 'Required value']"
           :style="newTrans.receipt ? 'width:50%;' : 'width: 100%;'"
           prefix="$"
         />
@@ -400,12 +392,12 @@
           dense
           :label="'GST (' + this.project.currency + ')'"
           :rules="[
-            v =>
+            (v) =>
               parseFloat(v) <= parseFloat(newTrans.amount) * 0.1 ||
               'GST must be <= 10% of amount',
-            v => !!v || 'Required value'
+            (v) => !!v || 'Required value',
           ]"
-          style="width:50%"
+          style="width: 50%"
           prefix="$"
         />
       </q-item>
@@ -414,8 +406,8 @@
           v-model="newTrans.desc"
           dense
           label="Description"
-          style="width:100%"
-          :rules="[v => v > '' || 'Description Required']"
+          style="width: 100%"
+          :rules="[(v) => v > '' || 'Description Required']"
         />
       </q-item>
       <q-item v-if="error > ''" class="text-red">
@@ -443,10 +435,11 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import firebase from 'firebase/app'
-require('firebase/firestore')
+import { getFirestore, setDoc, doc, collection } from 'firebase/firestore'
+import { defineAsyncComponent } from 'vue'
 
 export default {
+  props: ['actionId'],
   data() {
     return {
       newTrans: {
@@ -462,30 +455,29 @@ export default {
         desc: '',
         category: 'Expense',
         reviewed: false,
-        payTo: ''
+        payTo: '',
       },
       error: '',
       transRef: {},
       readOnly: false,
       uploading: false,
-      budgetsFiltered: []
+      budgetsFiltered: [],
     }
   },
   created() {
     // this.$q.dark.set(true)
     // console.log(`/projects/${this.projectId}/transactions`)
     this.newTrans.type = this.typeOptions[0]
-    this.transRef = firebase
-      .firestore()
-      .collection(`/projects/${this.project.id}/transactions`)
-      .doc()
+    this.transRef = doc(
+      collection(getFirestore(), `/projects/${this.project.id}/transactions`)
+    )
     let date = new Date()
-    this.newTrans.date = `${date
-      .getDate()
-      .toString()
-      .padStart(2, '0')}/${(date.getMonth() + 1)
+    this.newTrans.date = `${date.getDate().toString().padStart(2, '0')}/${(
+      date.getMonth() + 1
+    )
       .toString()
       .padStart(2, '0')}/${date.getFullYear()}`
+    if (this.actionId) this.newTrans.action = this.actionId
     // this.$store.dispatch('fetchAccounts', this.$route.params.id)
     // this.$store.dispatch('fetchBudgets', this.$route.params.id)
   },
@@ -494,11 +486,11 @@ export default {
       // console.log(event)
     },
     onAdded(files) {
-      console.log('file added', files)
+      // console.log('file added', files)
       // files[0].name = 'blah.jpeg'
     },
     onStart(event) {
-      console.log('upload started', event)
+      // console.log('upload started', event)
       this.uploading = true
     },
     onSubmit() {
@@ -516,10 +508,10 @@ export default {
       }
       if (
         (this.newTrans.category === 'Journal' &&
-          !this.budgetsFiltered.some(val => val.id === this.newTrans.to) &&
-          !this.budgetsFiltered.some(val => val.id === this.newTrans.from)) ||
+          !this.budgetsFiltered.some((val) => val.id === this.newTrans.to) &&
+          !this.budgetsFiltered.some((val) => val.id === this.newTrans.from)) ||
         (this.newTrans.category !== 'Journal' &&
-          !this.budgetsFiltered.some(val => val.id === this.newTrans.budget))
+          !this.budgetsFiltered.some((val) => val.id === this.newTrans.budget))
       ) {
         this.error = 'Budget Missing'
         return
@@ -554,28 +546,27 @@ export default {
           ? round5(this.newTrans.amount)
           : this.newTrans.amount
       this.newTrans.submittedBy = this.user
-      this.transRef
-        .set(this.newTrans)
-        .then(res => {
+      setDoc(this.transRef, this.newTrans)
+        .then((res) => {
           // console.log('form submitted', res)
           this.$q.loading.hide()
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: `Transaction: Submitted Successfully`
+            message: `Transaction: Submitted Successfully`,
           })
           this.$refs.transForm.reset()
           this.$emit('onSubmit', this.newTrans)
         })
-        .catch(err => {
+        .catch((err) => {
           console.error(err)
           this.$q.loading.hide()
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
       // this.$refs.transUpload.upload()
@@ -605,12 +596,11 @@ export default {
         receipt: false,
         desc: '',
         category: 'Expense',
-        reviewed: false
+        reviewed: false,
       }
-      this.transRef = firebase
-        .firestore()
-        .collection(`/projects/${this.project.id}/transactions`)
-        .doc()
+      this.transRef = doc(
+        collection(getFirestore(), `/projects/${this.project.id}/transactions`)
+      )
       this.readOnly = false
       let date = new Date()
       // console.log(
@@ -622,33 +612,32 @@ export default {
       //     .toString()
       //     .padStart(2, '0')}/${date.getFullYear()}`
       // )
-      this.newTrans.date = `${date
-        .getDate()
-        .toString()
-        .padStart(2, '0')}/${(date.getMonth() + 1)
+      this.newTrans.date = `${date.getDate().toString().padStart(2, '0')}/${(
+        date.getMonth() + 1
+      )
         .toString()
         .padStart(2, '0')}/${date.getFullYear()}`
       this.$refs.transUpload.reset()
     },
     onUploaded(event) {
-      console.log('file uploaded', event)
+      // console.log('file uploaded', event)
       this.readOnly = true
       this.$q.notify({
         color: 'positive',
         textColor: 'white',
         icon: 'cloud_done',
-        message: 'Receipt Uploaded'
+        message: 'Receipt Uploaded',
       })
       this.newTrans.receipt = true
       this.uploading = false
     },
     onFailed(event) {
-      console.log('file upload failed', event)
+      // console.log('file upload failed', event)
       this.$q.notify({
         color: 'negative',
         textColor: 'white',
         icon: 'cloud_done',
-        message: 'Upload Failed'
+        message: 'Upload Failed',
       })
       this.uploading = false
     },
@@ -671,23 +660,21 @@ export default {
       update(() => {
         const needle = val.toLowerCase()
         this.budgetsFiltered = budgets.filter(
-          v => v.label.toLowerCase().indexOf(needle) > -1
+          (v) => v.label.toLowerCase().indexOf(needle) > -1
         )
       })
-    }
+    },
   },
   computed: {
-    ...mapGetters([
-      'project',
+    ...mapGetters('projects', ['isAdmin', 'isContributor', 'project']),
+    ...mapGetters('budgets', [
       'accounts',
       'budgets',
       'budgetCategories',
       'budgetOptions',
       'contributorBudgets',
-      'isAdmin',
-      'isContributor',
-      'user'
     ]),
+    ...mapGetters('auth', ['user']),
     typeOptions() {
       let options =
         this.isContributor &&
@@ -713,18 +700,19 @@ export default {
     },
     categoryOptions() {
       return this.isAdmin ? ['Expense', 'Income', 'Journal'] : ['Expense']
-    }
+    },
   },
   watch: {
     project() {
-      this.transRef = firebase
-        .firestore()
-        .collection(`/projects/${this.project.id}/transactions`)
-        .doc()
-    }
+      this.transRef = doc(
+        collection(getFirestore(), `/projects/${this.project.id}/transactions`)
+      )
+    },
   },
   components: {
-    'q-firebase-uploader': () => import('../components/q-firebase-uploader.vue')
-  }
+    'q-firebase-uploader': defineAsyncComponent(() =>
+      import('../components/q-firebase-uploader.vue')
+    ),
+  },
 }
 </script>

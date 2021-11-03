@@ -1,5 +1,4 @@
-import { $firestore } from './../../scripts/firebase.js'
-import Vue from 'vue'
+import { getFirestore, onSnapshot, query, collectionGroup, where, doc } from 'firebase/firestore'
 
 function waitForUid (payload, rootState, dispatch) {
   // console.log('RootState', rootState.auth.user.uid)
@@ -15,7 +14,13 @@ function waitForUid (payload, rootState, dispatch) {
 const state = {
   project: {},
   projects: {},
-  projectsTableKey: 1
+  projectsTableKey: 1,
+  listeners: []
+  // listeners: {
+  //   project: [],
+  //   projects: [],
+
+  // }
 }
 
 export const getters = {
@@ -76,50 +81,73 @@ export const getters = {
 export const mutations = {
   setProject (state, payload) {
     // state.project = payload
-    Vue.set(state, 'project', payload)
+    state.project = payload
   },
   setProjects (state, payload) {
     // state.projects = payload
-    Vue.set(state, 'projects', payload)
+    state.projects = payload
   },
   setPermissions (state, payload) {
-    Vue.set(state.project, 'permissions', payload)
+    state.project = {...state.project, permissions: payload}
   },
   updateProjects (state, payload) {
-    Vue.set(state.projects, payload.index, payload.project)
+    // console.log(payload)
+    // var elementPos = state.projects.map(function(x) {return x.id; }).indexOf(payload.index);
+    // if(elementPos !== -1) {
+    //   state.projects.slice(elementPos, 1, payload.project)
+    // } else {
+    //   state.projects.push(payload.project)
+    // }
+    state.projects[payload.index] = payload.project
+  },
+  removeProject (state, id) {
+  delete state.projects[id]
   },
   setProjectKey (state, payload) {
-    Vue.set(state.project, payload.key, payload.val)
+    state.project, payload.key, payload.val
     if (state.projects[payload.projectId]) {
-      Vue.set(state.projects[payload.projectId], payload.key, payload.val)
+      state.projects[payload.projectId], payload.key, payload.val
     }
+  },
+  addListeners(state, { type, unsub}) {
+    state.listeners.push(unsub)
+  },
+  clearListeners(state, type) {
+    
+    // for(let unsub of state.listeners[type]){
+    //   unsub()
+    // }
+    // state.listeners.type = []
   }
 }
 
 export const actions = {
   fetchProject ({ dispatch, commit, rootState }, payload) {
-    console.log('fetching project')
+    // console.log('fetching project')
     let project = {}
-    $firestore
-      .doc(`/projects/${payload.projectId}`)
-      .onSnapshot(async projectSnap => {
+      commit('clearListeners', false)
+      let unsub = onSnapshot(doc(getFirestore(),`/projects/${payload.projectId}`), async projectSnap => {
         project = projectSnap.data()
         project.id = projectSnap.id
         commit('setProject', project)
-        commit('setPetty', project.petty)
+        commit('petty/setPetty', project.petty, { root: true })
         waitForUid(payload, rootState, dispatch)
       })
+      commit('addListeners', unsub)
   },
-  fetchProjects ({ commit }, payload) {
-    // console.log(payload)
-    $firestore
-      .collectionGroup('contributors')
-      .where('uid', '==', payload)
-      .onSnapshot(async projectsSnap => {
+  async fetchProjects ({ commit }, payload) {
+    // console.log('fetching projects', payload)
+      commit('clearListeners', false)
+      let unsub = onSnapshot(query(collectionGroup(getFirestore(), 'contributors'), where('uid', '==', payload)), async projectsSnap => {
+        // console.log('some error', projectsSnap)
         let projects = [],
           project = {}
-        var promises = projectsSnap.docs.map(userDoc => {
-          userDoc.ref.parent.parent.onSnapshot(projectDoc => {
+          
+        var promises = projectsSnap.docChanges().map(userDoc => {
+          if (userDoc.type === 'added') {
+            userDoc = userDoc.doc
+      let unsub = onSnapshot(userDoc.ref.parent.parent, projectDoc => {
+            // console.log(projectDoc.data())
             project = projectDoc.data()
             project.id = projectDoc.id
             project.permission = userDoc.data().permission
@@ -128,16 +156,25 @@ export const actions = {
               project
             })
           })
+        } else if (userDoc.type === 'removed') {
+          // console.log(userDoc.doc.ref.parent.parent)
+          // userDoc.ref.parent.parent.get(movementDoc => {
+          commit('removeProject', userDoc.doc.ref.parent.parent.id)
+          // })
+        }
+
         })
+      
       })
+      commit('addListeners', {type: 'permission', unsub})
   },
   fetchPermissions ({ commit }, payload) {
     // console.log(payload)
-    $firestore
-      .doc(`/projects/${payload.projectId}/contributors/${payload.uid}`)
-      .onSnapshot(async contributorSnap => {
+    commit('clearListeners', 'permissions')
+      let unsub = onSnapshot(doc(getFirestore(), `/projects/${payload.projectId}/contributors/${payload.uid}`), async contributorSnap => {
         commit('setPermissions', contributorSnap.data())
       })
+      commit('addListeners', {type: 'permission', unsub})
   },
   updateProjectByKey ({ commit }, payload) {
     commit('setProjectKey', payload)
@@ -145,6 +182,7 @@ export const actions = {
 }
 
 export default {
+  namespaced: true,
   state,
   getters,
   mutations,

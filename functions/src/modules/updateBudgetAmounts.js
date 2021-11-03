@@ -9,6 +9,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
 
   // Get an object with the previous document value (for update or delete)
   const oldDoc = change.before.exists ? change.before.data() : null
+
+  // console.log('docs', newDoc, oldDoc)
   //create a status object
   let status = {
     change: 'create' || 'update' || 'delete',
@@ -36,6 +38,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       new: 0
     }
   }
+
+  // console.log('status doc', status)
 
   // check if created, updated, deleted and generate status object
   if (oldDoc !== null && newDoc !== null) {
@@ -105,7 +109,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     // deleted
     status.change = 'delete'
     status.category = oldDoc.category
-    status.deleted = oldDoc.deleted
+    status.deleted = oldDoc.deleted === true ? true : false
 
     status.reviewed =
       oldDoc.reviewed === true ? true : oldDoc.reviewed !== true ? false : false
@@ -125,7 +129,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     status.amount.old = oldDoc.amount
     status.amount.new = 0
   }
-  // console.log(status)
+  // console.log('filled in status', status)
 
   // check for each condition
 
@@ -136,7 +140,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.budget.new),
-      1,
+      status.reviewed ? 0 : 1,
       -status.amount.new,
       status.amount.new
     )
@@ -147,7 +151,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.budget.new),
-      1,
+      status.reviewed ? 0 : 1,
       status.amount.new,
       0
     )
@@ -158,14 +162,14 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.from.new),
-      1,
+      status.reviewed ? 0 : 1,
       -status.amount.new,
       0
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.to.new),
-      1,
+      status.reviewed ? 0 : 1,
       status.amount.new,
       0
     )
@@ -917,13 +921,13 @@ function updateBudget(db, budgetRef, awaitReviewAdj, balanceAdj, expenseAdj) {
         ? parseInt(data.transAwaitingReview) + parseInt(awaitReviewAdj)
         : 0 + parseInt(awaitReviewAdj)
 
-      newData.expenses = data.expenses
-        ? parseFloat(data.expenses) + parseFloat(expenseAdj)
-        : 0 + parseFloat(expenseAdj)
-
-      newData.balance = data.balance
-        ? parseFloat(data.balance) + parseFloat(balanceAdj)
-        : 0 + parseFloat(balanceAdj)
+        console.log(data.expenses, expenseAdj, parseFloat((0 + parseFloat(expenseAdj)).toFixed(2)))
+      newData.expenses = parseFloat((data.expenses
+        ? (parseFloat(data.expenses) + parseFloat(expenseAdj))
+        : (0 + parseFloat(expenseAdj))).toFixed(2))
+      newData.balance = parseFloat((data.balance
+        ? (parseFloat(data.balance) + parseFloat(balanceAdj))
+        : (0 + parseFloat(balanceAdj))).toFixed(2))
 
       // console.log(newData)
       t.update(budgetRef, newData)

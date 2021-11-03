@@ -3,10 +3,10 @@
     <!-- {{budgetCategories}} -->
     <q-table
       class="my-sticky-header-table"
-      :data="myTransactionsFiltered"
+      :rows="myTransactionsFiltered"
       :columns="columns"
       :rows-per-page-options="[5, 10, 15, 20, 50, 100, 200]"
-      :row-key="row => row.id"
+      :row-key="(row) => row.id"
       :visible-columns="visibleColumns"
       :filter="filter"
       :filter-method="filterMethod"
@@ -85,7 +85,7 @@
           class="text-bold"
           :class="{
             'bg-red-2': props.row.deleted,
-            'bg-orange-2': props.row.deleteRequested && !props.row.deleted
+            'bg-orange-2': props.row.deleteRequested && !props.row.deleted,
           }"
           v-if="!props.row.reviewed"
         >
@@ -103,43 +103,37 @@
               name="mdi-checkbook"
               size="md"
             >
-              <q-tooltip>
-                Cheque
-              </q-tooltip>
+              <q-tooltip> Cheque </q-tooltip>
             </q-icon>
             <q-icon v-if="props.row.type === 'Cash'" name="mdi-cash" size="md">
-              <q-tooltip>
-                Cash
-              </q-tooltip>
+              <q-tooltip> Cash </q-tooltip>
             </q-icon>
             <q-icon
               v-if="props.row.type === 'Internet Transfer'"
               name="mdi-bank-transfer"
               size="md"
             >
-              <q-tooltip>
-                Internet Transfer
-              </q-tooltip>
+              <q-tooltip> Internet Transfer </q-tooltip>
             </q-icon>
             <q-icon
               v-if="props.row.type === 'Bank Card'"
               name="mdi-credit-card"
               size="md"
             >
-              <q-tooltip>
-                Bank Card
-              </q-tooltip>
+              <q-tooltip> Bank Card </q-tooltip>
             </q-icon>
             <q-popup-edit
               v-model="props.row.type"
               v-if="typeOptions.length > 1"
             >
               <q-select
-                :value="props.row.type"
+                :model-value="props.row.type"
                 dense
                 label="Type"
                 :options="typeOptions"
-                @input="updateTransaction(props.row.id, 'type', $event)"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'type', $event)
+                "
               />
             </q-popup-edit>
           </q-td>
@@ -167,12 +161,14 @@
               }}
               <q-popup-edit v-model="props.row.budget">
                 <q-select
-                  :value="
+                  :model-value="
                     budgets[props.row.budget] > ''
                       ? budgets[props.row.budget].label
                       : ''
                   "
-                  @input="updateTransaction(props.row.id, 'budget', $event.id)"
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'budget', $event.id)
+                  "
                   dense
                   autofocus
                   label="Budget"
@@ -199,12 +195,14 @@
               }}
               <q-popup-edit v-model="props.row.budget">
                 <q-select
-                  :value="
+                  :model-value="
                     budgets[props.row.budget] > ''
                       ? budgets[props.row.budget].label
                       : ''
                   "
-                  @input="updateTransaction(props.row.id, 'budget', $event.id)"
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'budget', $event.id)
+                  "
                   dense
                   autofocus
                   label="Budget Category"
@@ -244,8 +242,10 @@
               <q-popup-edit v-model="props.row.from">
                 <q-select
                   v-if="accounts[props.row.from]"
-                  :value="accounts[props.row.from].label"
-                  @input="updateTransaction(props.row.id, 'from', $event.id)"
+                  :model-value="accounts[props.row.from].label"
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'from', $event.id)
+                  "
                   dense
                   autofocus
                   label="From"
@@ -254,8 +254,10 @@
                 />
                 <q-select
                   v-if="budgets[props.row.from]"
-                  :value="budgets[props.row.from].label"
-                  @input="updateTransaction(props.row.id, 'from', $event.id)"
+                  :model-value="budgets[props.row.from].label"
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'from', $event.id)
+                  "
                   dense
                   autofocus
                   label="From"
@@ -264,8 +266,10 @@
                 />
                 <q-select
                   v-if="budgetCategories[props.row.from]"
-                  :value="budgetCategories[props.row.from].label"
-                  @input="updateTransaction(props.row.id, 'from', $event.id)"
+                  :model-value="budgetCategories[props.row.from].label"
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'from', $event.id)
+                  "
                   dense
                   autofocus
                   label="From"
@@ -274,8 +278,10 @@
                 />
                 <q-select
                   v-if="accounts[props.row.to]"
-                  :value="accounts[props.row.to].label"
-                  @input="updateTransaction(props.row.id, 'to', $event.id)"
+                  :model-value="accounts[props.row.to].label"
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'to', $event.id)
+                  "
                   dense
                   autofocus
                   label="To"
@@ -284,8 +290,10 @@
                 />
                 <q-select
                   v-if="budgets[props.row.to]"
-                  :value="budgets[props.row.to].label"
-                  @input="updateTransaction(props.row.id, 'to', $event.id)"
+                  :model-value="budgets[props.row.to].label"
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'to', $event.id)
+                  "
                   dense
                   autofocus
                   label="To"
@@ -294,8 +302,10 @@
                 />
                 <q-select
                   v-if="budgetCategories[props.row.to]"
-                  :value="budgetCategories[props.row.to].label"
-                  @input="updateTransaction(props.row.id, 'to', $event.id)"
+                  :model-value="budgetCategories[props.row.to].label"
+                  @update:model-value="
+                    updateTransaction(props.row.id, 'to', $event.id)
+                  "
                   dense
                   autofocus
                   label="To"
@@ -323,8 +333,10 @@
                 label="Date"
               /> -->
               <q-date
-                :value="props.row.date"
-                @input="updateTransaction(props.row.id, 'date', $event)"
+                :model-value="props.row.date"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'date', $event)
+                "
                 mask="DD/MM/YYYY"
               />
             </q-popup-edit>
@@ -343,7 +355,7 @@
             :class="{
               'text-red-8': props.row.category === 'Expense',
               'text-green-8': props.row.category === 'Income',
-              'text-blue-8': props.row.category === 'Journal'
+              'text-blue-8': props.row.category === 'Journal',
             }"
           >
             <!-- {{ getAmount(props.row.text) }} -->
@@ -351,8 +363,8 @@
             {{ parseFloat(props.row.amount).toFixed(2) }}
             <q-popup-edit v-model="props.row.amount">
               <q-input
-                :value="props.row.amount"
-                @input="
+                :model-value="props.row.amount"
+                @update:model-value="
                   updateTransaction(
                     props.row.id,
                     'amount',
@@ -385,8 +397,10 @@
               v-if="props.row.category !== 'Journal'"
             >
               <q-input
-                :value="props.row.GST"
-                @input="updateTransaction(props.row.id, 'GST', $event)"
+                :model-value="props.row.GST"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'GST', $event)
+                "
                 dense
                 autofocus
                 label="GST"
@@ -406,13 +420,15 @@
             key="payTo"
             :props="props"
             class="cursor-pointer"
-            style="white-space: normal;"
+            style="white-space: normal"
           >
             {{ props.row.payTo ? props.row.payTo : '' }}
             <q-popup-edit v-model="props.row.payTo">
               <q-input
-                :value="props.row.payTo"
-                @input="updateTransaction(props.row.id, 'payTo', $event)"
+                :model-value="props.row.payTo"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'payTo', $event)
+                "
                 dense
                 autofocus
                 label="Business/Supplier"
@@ -430,13 +446,15 @@
           <q-td
             key="desc"
             :props="props"
-            style="white-space: normal;min-width:300px"
+            style="white-space: normal; min-width: 300px"
           >
             {{ props.row.desc }}
             <q-popup-edit v-model="props.row.desc">
               <q-input
-                :value="props.row.desc"
-                @input="updateTransaction(props.row.id, 'desc', $event)"
+                :model-value="props.row.desc"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'desc', $event)
+                "
                 dense
                 autofocus
                 label="Description"
@@ -462,8 +480,10 @@
               v-if="props.row.type === 'Cheque'"
             >
               <q-input
-                :value="props.row.cheque"
-                @input="updateTransaction(props.row.id, 'cheque', $event)"
+                :model-value="props.row.cheque"
+                @update:model-value="
+                  updateTransaction(props.row.id, 'cheque', $event)
+                "
                 dense
                 autofocus
                 label="Cheque #"
@@ -481,7 +501,7 @@
           </q-td>
           <!-- <q-td key="reviewed" :props="props"> -->
           <!-- {{props.row.deleted}} -->
-          <!-- <q-checkbox :value="props.row.reviewed" @input="updateTransaction(props.row.id, 'reviewed', $event)" /> -->
+          <!-- <q-checkbox :model-value="props.row.reviewed" @update:model-value="updateTransaction(props.row.id, 'reviewed', $event)" /> -->
           <!-- </q-td> -->
           <!-- <q-td key="receipt" :props="props"> -->
           <!-- <a :href="props.row.receipt">Receipt</a> -->
@@ -492,7 +512,7 @@
           <!-- </q-td> -->
           <q-td key="actions" :props="props" auto-width>
             <q-btn
-              :value="
+              :model-value="
                 props.row.deleteRequested ? props.row.deleteRequested : false
               "
               @click="
@@ -524,20 +544,20 @@
               :url="props.row.receiptURL"
               v-if="
                 props.row.category === 'Expense' &&
-                  (props.row.receiptURL > ''
-                    ? props.row.receiptURL.startsWith('https://')
-                    : false)
+                (props.row.receiptURL > ''
+                  ? props.row.receiptURL.startsWith('https://')
+                  : false)
               "
               class="q-mr-sm"
             />
             <q-icon
               name="img:../icons/no-receipt.png"
-              style="height:30px;width:30px;padding:3.99px"
+              style="height: 30px; width: 30px; padding: 3.99px"
               v-if="
                 props.row.category === 'Expense' &&
-                  (props.row.receiptURL > ''
-                    ? !props.row.receiptURL.startsWith('https://')
-                    : true)
+                (props.row.receiptURL > ''
+                  ? !props.row.receiptURL.startsWith('https://')
+                  : true)
               "
               class="q-mr-sm"
             />
@@ -546,8 +566,8 @@
               color="primary"
               v-if="
                 props.row.category === 'Expense' &&
-                  !props.row.receiptURL &&
-                  props.row.receipt
+                !props.row.receiptURL &&
+                props.row.receipt
               "
             >
               <q-tooltip
@@ -565,7 +585,7 @@
           class="text-bold"
           :class="{
             'bg-red-2': props.row.deleted,
-            'bg-green-2': !props.row.deleted
+            'bg-green-2': !props.row.deleted,
           }"
           v-if="props.row.reviewed"
         >
@@ -583,32 +603,24 @@
               name="mdi-checkbook"
               size="md"
             >
-              <q-tooltip>
-                Cheque
-              </q-tooltip>
+              <q-tooltip> Cheque </q-tooltip>
             </q-icon>
             <q-icon v-if="props.row.type === 'Cash'" name="mdi-cash" size="md">
-              <q-tooltip>
-                Cash
-              </q-tooltip>
+              <q-tooltip> Cash </q-tooltip>
             </q-icon>
             <q-icon
               v-if="props.row.type === 'Internet Transfer'"
               name="mdi-bank-transfer"
               size="md"
             >
-              <q-tooltip>
-                Internet Transfer
-              </q-tooltip>
+              <q-tooltip> Internet Transfer </q-tooltip>
             </q-icon>
             <q-icon
               v-if="props.row.type === 'Bank Card'"
               name="mdi-credit-card"
               size="md"
             >
-              <q-tooltip>
-                Bank Card
-              </q-tooltip>
+              <q-tooltip> Bank Card </q-tooltip>
             </q-icon>
           </q-td>
           <q-td key="category" :props="props">
@@ -676,7 +688,7 @@
             :class="{
               'text-red-8': props.row.category === 'Expense',
               'text-green-8': props.row.category === 'Income',
-              'text-blue-8': props.row.category === 'Journal'
+              'text-blue-8': props.row.category === 'Journal',
             }"
           >
             {{ parseFloat(props.row.amount).toFixed(2) }}
@@ -689,14 +701,14 @@
             key="payTo"
             :props="props"
             class="cursor-pointer"
-            style="white-space: normal;"
+            style="white-space: normal"
           >
             {{ props.row.payTo ? props.row.payTo : '' }}
           </q-td>
           <q-td
             key="desc"
             :props="props"
-            style="white-space: normal;min-width:300px"
+            style="white-space: normal; min-width: 300px"
           >
             {{ props.row.desc }}
           </q-td>
@@ -709,8 +721,8 @@
               color="primary"
               v-if="
                 props.row.category === 'Expense' &&
-                  !props.row.receiptURL &&
-                  props.row.receipt
+                !props.row.receiptURL &&
+                props.row.receipt
               "
             >
               <q-tooltip
@@ -727,25 +739,25 @@
               :url="props.row.receiptURL"
               v-if="
                 props.row.category === 'Expense' &&
-                  (props.row.receiptURL > ''
-                    ? props.row.receiptURL.startsWith('https://')
-                    : false)
+                (props.row.receiptURL > ''
+                  ? props.row.receiptURL.startsWith('https://')
+                  : false)
               "
               class="q-mr-sm"
             />
             <q-icon
               name="img:../icons/no-receipt.png"
-              style="height:30px;width:30px;padding:3.99px"
+              style="height: 30px; width: 30px; padding: 3.99px"
               v-if="
                 props.row.category === 'Expense' &&
-                  (props.row.receiptURL > ''
-                    ? !props.row.receiptURL.startsWith('https://')
-                    : true)
+                (props.row.receiptURL > ''
+                  ? !props.row.receiptURL.startsWith('https://')
+                  : true)
               "
               class="q-mr-sm"
             />
             <!--             <q-btn
-              :value="props.row.deleteRequested ? props.row.deleteRequested : false"
+              :model-value="props.row.deleteRequested ? props.row.deleteRequested : false"
               @click="updateTransaction(props.row.id, 'deleteRequested', !props.row.deleteRequested)"
               icon="archive"
               dense
@@ -762,7 +774,7 @@
     <q-page-sticky
       position="bottom-left"
       :offset="[18, 18]"
-      style="z-index:100"
+      style="z-index: 100"
     >
       <q-btn fab icon="add" color="primary" :to="{ name: 'addTrans' }">
         <q-tooltip content-class="bg-accent text-grey-10">
@@ -773,7 +785,7 @@
     <q-page-sticky
       position="bottom-right"
       :offset="[18, 18]"
-      style="z-index:100"
+      style="z-index: 100"
       v-if="rowSelected.length > 0"
     >
       <q-card class="bg-primary text-white">
@@ -785,16 +797,15 @@
         </q-card-section>
       </q-card>
     </q-page-sticky>
-    <div style="min-height:60px" />
+    <div style="min-height: 60px" />
   </q-page>
 </template>
 
 <script>
 import { debounce } from 'quasar'
-import firebase from 'firebase/app'
-require('firebase/firestore')
-require('firebase/analytics')
+import { updateTransactionByKey } from './../scripts/transactions.js'
 
+import { defineAsyncComponent } from 'vue'
 import { mapGetters, mapActions } from 'vuex'
 
 var cc = require('currency-codes')
@@ -808,14 +819,14 @@ export default {
           label: '',
           field: 'selected',
           align: 'left',
-          sortable: true
+          sortable: true,
         },
         {
           name: 'number',
           label: 'Transaction ID',
           field: 'number',
           align: 'center',
-          sortable: true
+          sortable: true,
         },
         { name: 'icon', label: 'Type', field: 'icon', align: 'center' },
         {
@@ -823,60 +834,60 @@ export default {
           label: 'Category',
           field: 'category',
           align: 'left',
-          sortable: true
+          sortable: true,
         },
         {
           name: 'budget',
           label: 'Budget',
           field: 'budget',
           align: 'left',
-          sortable: true
+          sortable: true,
         },
         {
           name: 'date',
           label: 'Date',
           field: 'date',
           align: 'center',
-          sortable: true
+          sortable: true,
         },
         {
           name: 'amount',
           label: `Amount (currency)`,
           field: 'amount',
           align: 'center',
-          sortable: true
+          sortable: true,
         },
         {
           name: 'GST',
           label: `GST (currency)`,
           field: 'GST',
           align: 'center',
-          sortable: true
+          sortable: true,
         },
         {
           name: 'payTo',
           label: 'Business/Supplier',
           field: 'payTo',
           align: 'center',
-          sortable: true
+          sortable: true,
         },
         {
           name: 'desc',
           label: 'Description',
           field: 'desc',
           align: 'center',
-          sortable: true
+          sortable: true,
         },
         {
           name: 'cheque',
           label: 'Cheque #',
           field: 'cheque',
           align: 'center',
-          sortable: true
+          sortable: true,
         },
         // { name: 'reviewed', label: 'Reviewed', field: 'reviewed', align: 'center', sortable: true },
         // { name: 'receipt', label: 'Receipt', field: 'receipt', align: 'center' },
-        { name: 'actions', label: 'Actions', field: 'actions', align: 'right' }
+        { name: 'actions', label: 'Actions', field: 'actions', align: 'right' },
       ],
       filter: '',
       ccOptions: [],
@@ -889,17 +900,17 @@ export default {
         'budget',
         'payTo',
         'desc',
-        'actions'
+        'actions',
       ],
       pagination: {
         sortBy: 'date',
         descending: true,
         page: 1,
-        rowsPerPage: 10
+        rowsPerPage: 10,
         // rowsNumber: xx if getting data from a server
       },
       rowSelected: [],
-      showArchived: false
+      showArchived: false,
     }
   },
   preFetch({ store, currentRoute }) {
@@ -908,14 +919,14 @@ export default {
     // store.dispatch('fetchAccounts', currentRoute.params.id)
     store.dispatch('fetchMyTransactions', {
       projectId: currentRoute.params.id,
-      uid: store.state.auth.user.uid
+      uid: store.state.auth.user.uid,
     })
   },
   created() {
     // console.log(this.project.currency)
     this.$store.dispatch('fetchMyTransactions', {
       projectId: this.$route.params.id,
-      uid: this.user.uid
+      uid: this.user.uid,
     })
     if (this.project.currency) {
       for (var key in this.columns) {
@@ -930,10 +941,9 @@ export default {
 
     this.updateTransaction = debounce(this.updateTransaction, 1000)
     this.pagination.rowsPerPage = this.$q.localStorage.getItem('transTableRows')
-    firebase.analytics().setCurrentScreen('My Transactions')
   },
   methods: {
-    ...mapActions(['updateMyTransactionByKey']),
+    ...mapActions('transactions', ['updateMyTransactionByKey']),
     filterFn(val, update) {
       if (val === '') {
         update(() => {
@@ -946,7 +956,7 @@ export default {
         const needle = val.toLowerCase()
         this.ccOptions = cc
           .codes()
-          .filter(v => v.toLowerCase().indexOf(needle) > -1)
+          .filter((v) => v.toLowerCase().indexOf(needle) > -1)
       })
     },
     getCategoryById(id) {
@@ -962,10 +972,7 @@ export default {
       if (text > '') {
         let totalFound = false
         // let amountFound
-        let textArray = text
-          .split('\n')
-          .join(' ')
-          .split(' ')
+        let textArray = text.split('\n').join(' ').split(' ')
         // console.log(textArray.length)
         for (var key in textArray) {
           // console.log(key, textArray[key].toLowerCase())
@@ -1011,7 +1018,7 @@ export default {
         parseFloat(val) >
           parseFloat(
             this.myTransactions[
-              this.myTransactions.findIndex(x => x.id === trans)
+              this.myTransactions.findIndex((x) => x.id === trans)
             ].amount
           ) *
             0.1
@@ -1020,39 +1027,35 @@ export default {
           color: 'negative',
           textColor: 'white',
           icon: 'error',
-          message: 'GST must be <= Amount'
+          message: 'GST must be <= Amount',
         })
         return
       }
       this.updateMyTransactionByKey({ trans, key, val })
-      firebase
-        .firestore()
-        .collection(`/projects/${this.project.id}/transactions`)
-        .doc(trans)
-        .update({ [key]: val })
+      updateTransactionByKey(this.project.id, trans, key, val)
         .then(() => {
           // console.log('updated')
           this.$q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
-            message: 'Transaction: Updated Successfully'
+            message: 'Transaction: Updated Successfully',
           })
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
-            message: 'Oops, Something went wrong!'
+            message: 'Oops, Something went wrong!',
           })
         })
     },
     filterMethod(rows, terms, cols, cellValue) {
       const lowerTerms = terms ? terms.toLowerCase() : ''
-      let res = rows.filter(row =>
-        cols.some(col =>
+      let res = rows.filter((row) =>
+        cols.some((col) =>
           typeof cellValue(col, row) === 'object'
             ? (Object.values(cellValue(col, row)) + '')
                 .toLowerCase()
@@ -1071,20 +1074,19 @@ export default {
       } else {
         return parseFloat(x)
       }
-    }
+    },
   },
   computed: {
-    ...mapGetters([
-      'project',
-      'idToken',
-      'myTransactions',
+    ...mapGetters('projects', ['project']),
+    ...mapGetters('budgets', [
       'accounts',
       'budgets',
       'budgetOptions',
       'budgetCategories',
-      'user',
-      'isContributor'
+      'budgetCategoryOptions',
     ]),
+    ...mapGetters('auth', ['isContributor', 'idToken', 'user']),
+    ...mapGetters('transactions', ['myTransactions']),
     typeOptions() {
       let options =
         this.isContributor &&
@@ -1096,7 +1098,7 @@ export default {
     },
     budgetOptionsFiltered() {
       return this.budgetOptions.filter(
-        val => val.id !== 'debitCard' && val.id !== 'pettyCash'
+        (val) => val.id !== 'debitCard' && val.id !== 'pettyCash'
       )
     },
     columnsFiltered() {
@@ -1131,24 +1133,13 @@ export default {
           // find all myTransactions in the account
           for (var transKey in this.myTransactions) {
             // check if the transaction exists in the budgets array
-            console.log(
-              !this.myTransactions[transKey].deleted ||
-                (this.myTransactions[transKey].deleted && this.showArchived)
-            )
+
             if (
               !this.myTransactions[transKey].deleted ||
               (this.myTransactions[transKey].deleted && this.showArchived)
             ) {
               // check it's not archieved and if it is archieve check if the archive is showing
-              console.log(
-                this.myTransactions[transKey],
-                this.$route.params.budgetCategory ===
-                  this.myTransactions[transKey].budget,
-                this.$route.params.budgetCategory ===
-                  this.myTransactions[transKey].to,
-                this.$route.params.budgetCategory ===
-                  this.myTransactions[transKey].from
-              )
+
               if (
                 (this.$route.params.budgetCategory ===
                   this.myTransactions[transKey].budget &&
@@ -1237,7 +1228,7 @@ export default {
           ? this.accounts[category].label
           : ''
         : ''
-    }
+    },
   },
   watch: {
     project(oldVal, newVal) {
@@ -1254,15 +1245,16 @@ export default {
     user() {
       this.$store.dispatch('fetchMyTransactions', {
         projectId: this.$route.params.id,
-        uid: this.user.uid
+        uid: this.user.uid,
       })
-    }
+    },
   },
   components: {
     // 'sp-trans-form': () => import('../components/sp-trans-form.vue'),
-    'sp-receipt': () => import('../components/sp-receipt.vue')
+    'sp-receipt': () =>
+      defineAsyncComponent(import('../components/sp-receipt.vue')),
     // 'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
-  }
+  },
 }
 </script>
 

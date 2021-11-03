@@ -11,8 +11,6 @@
 <script>
 export default {
   name: 'Error404',
-  created() {
-    firebase.analytics().setCurrentScreen('Error 404')
-  }
+  created() {}
 }
 </script>

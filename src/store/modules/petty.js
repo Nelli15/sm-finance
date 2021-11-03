@@ -1,10 +1,21 @@
-// import firebase from '../../scripts/firebase'
-// import firebase from 'firebase/app'
-// require('firebase/firestore')
-// import Vue from 'vue'
-
 const state = {
-  petty: {},
+  petty: {
+    dollars: {
+      hundreds: 0,
+      fifties: 0,
+      twenties: 0,
+      tens: 0,
+      fives: 0,
+      twos: 0,
+      ones: 0
+    },
+    cents: {
+      fifties: 0,
+      twenties: 0,
+      tens: 0,
+      fives: 0,
+    }
+  },
   transactions: {}
 }
 
@@ -32,7 +43,24 @@ export const getters = {
 
 export const mutations = {
   setPetty (state, payload) {
-    state.petty = payload
+    console.log(payload)
+    state.petty = payload ? payload : {
+      dollars: {
+        hundreds: 0,
+        fifties: 0,
+        twenties: 0,
+        tens: 0,
+        fives: 0,
+        twos: 0,
+        ones: 0
+      },
+      cents: {
+        fifties: 0,
+        twenties: 0,
+        tens: 0,
+        fives: 0,
+      }
+    }
   },
   setPettyKey (state, payload) {
     state.petty[payload.key] = payload.val
@@ -46,6 +74,7 @@ export const actions = {
 }
 
 export default {
+  namespaced: true,
   state,
   getters,
   mutations,

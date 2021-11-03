@@ -134,19 +134,22 @@ module.exports = function(ctx) {
         //     formatter: require('eslint').CLIEngine.getFormatter('stylish')
         //   }
         // })
+      },
+      chainWebpack (chain, { isServer, isClient }) {
+        chain.output.globalObject('self')
       }
     },
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
     devServer: {
       // https: true,
-      port: 5000,
+      port: 5100,
       open: true // opens browser window automatically
     },
 
     // animations: 'all', // --- includes all animations
     // https://quasar.dev/options/animations
-    animations: [],
+    animations: ['fadeIn', 'fadeOut'],
 
     // https://quasar.dev/quasar-cli/developing-ssr/configuring-ssr
     ssr: {
@@ -155,37 +158,37 @@ module.exports = function(ctx) {
 
     // https://quasar.dev/quasar-cli/developing-pwa/configuring-pwa
     pwa: {
-      workboxPluginMode: 'GenerateSW',
+      workboxPluginMode: 'InjectManifest',
       workboxOptions: {
         // Do not precache images
         exclude: [/\.(?:png|jpg|jpeg|svg)$/],
 
         // Define runtime caching rules.
-        runtimeCaching: [
-          {
-            // Match any request that ends with .png, .jpg, .jpeg or .svg.
-            urlPattern: /\.(?:png|jpg|jpeg|svg)$/,
+        // runtimeCaching: [
+        //   {
+        //     // Match any request that ends with .png, .jpg, .jpeg or .svg.
+        //     urlPattern: /\.(?:png|jpg|jpeg|svg)$/,
 
-            // Apply a cache-first strategy.
-            handler: 'CacheFirst',
+        //     // Apply a cache-first strategy.
+        //     handler: 'CacheFirst',
 
-            options: {
-              // Use a custom cache name.
-              cacheName: 'images',
+        //     options: {
+        //       // Use a custom cache name.
+        //       cacheName: 'images',
 
-              // Only cache 10 images.
-              expiration: {
-                maxEntries: 10
-              }
-            }
-          }
-        ],
+        //       // Only cache 10 images.
+        //       expiration: {
+        //         maxEntries: 10
+        //       }
+        //     }
+        //   }
+        // ],
         dontCacheBustURLsMatching: /.*\.(js|css)/,
         // exclude: [/^public/],
         maximumFileSizeToCacheInBytes: 3000000,
-        skipWaiting: true,
-        clientsClaim: true,
-        cleanupOutdatedCaches: true
+        // skipWaiting: true,
+        // clientsClaim: true,
+        // cleanupOutdatedCaches: true
       }, // only for GeneratedGW mode (default)
       manifest: {
         name: 'Summer Project Finances',
