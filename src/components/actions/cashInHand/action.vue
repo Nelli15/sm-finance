@@ -94,6 +94,7 @@ export default {
         2: false,
         3: false,
       },
+      responsiblePerson: '',
     })
     const transactions = ref({})
     if (props.actionProp) {
@@ -101,17 +102,19 @@ export default {
     }
     const admins = computed(() => store.getters['auth/admins'])
     const contributors = computed(() => store.getters['auth/contributors'])
+    const users = computed(() => {
+      let arr = [...admins.value, ...contributors.value]
+      return arr.reduce(
+        (obj, item) => ({
+          ...obj,
+          [item['uid']]: item,
+        }),
+        {}
+      )
+    })
     const responsiblePerson = computed(() => {
-      return admins.value.length > 0 &&
-        admins.value.find((x) => x.uid === action.value.responsiblePerson)
-        ? admins.value.find((x) => x.uid === action.value.responsiblePerson)
-        : contributors.value.length > 0 &&
-          contributors.value.find(
-            (x) => x.uid === action.value.responsiblePerson
-          )
-        ? contributors.value.find(
-            (x) => x.uid === action.value.responsiblePerson
-          )
+      return action.value.responsiblePerson
+        ? users.value[action.value.responsiblePerson]
         : {}
     })
     // const idToken = computed(() => store.getters['auth/idToken'])
@@ -369,7 +372,7 @@ export default {
                   } in cash, please make sure the balance is as close to $0.00 as possible before marking as complete`)
                 }
                 if (!refs.value[`step-returnCash`].amountReturned) {
-                  return (error.value = `${responsiblePerson.value.name} has returned too many receipts or too much cash. Either pay them some of the cash back or if the expense was greater than expected you can give the ${responsiblePerson.name} the additional amount and increase the cash given in step 2.`)
+                  return (error.value = `${responsiblePerson.value.name} has returned too many receipts or too much cash. Either pay them some of the cash back or if the expense was greater than expected you can give the ${responsiblePerson.value.name} the additional amount and increase the cash given in step 2.`)
                 }
                 action.value.complete = true
                 updateAction(route.params.id, action.value.id, {
@@ -447,7 +450,15 @@ export default {
         immediate: true,
       }
     )
-    return { currentStep, error, steps, refs, parentRef, action }
+    return {
+      currentStep,
+      error,
+      steps,
+      refs,
+      parentRef,
+      action,
+      responsiblePerson,
+    }
   },
 }
 </script>

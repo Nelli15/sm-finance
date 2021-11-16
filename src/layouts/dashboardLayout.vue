@@ -15,15 +15,11 @@
               user.email.includes('@example.com'))
           "
         >
-          <q-tooltip content-class="bg-accent text-grey-10">
-            Add a Project
-          </q-tooltip>
+          <q-tooltip class="bg-accent text-grey-10"> Add a Project </q-tooltip>
         </q-btn>
         <q-btn flat no-caps>
           <!-- {{ user }} -->
-          <q-tooltip content-class="bg-accent text-grey-10">
-            Who am I?
-          </q-tooltip>
+          <q-tooltip class="bg-accent text-grey-10"> Who am I? </q-tooltip>
           <q-avatar>
             <img
               :src="

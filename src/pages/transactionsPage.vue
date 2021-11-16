@@ -95,9 +95,7 @@
         :disable="draggingFab"
         v-touch-pan.prevent.mouse="moveFab"
       >
-        <q-tooltip content-class="bg-accent text-black">
-          Add Actions
-        </q-tooltip>
+        <q-tooltip class="bg-accent text-black"> Add Actions </q-tooltip>
         <q-menu persistent>
           <actionsMenu />
         </q-menu>
@@ -111,7 +109,7 @@
         :disable="draggingFab"
         v-touch-pan.prevent.mouse="moveFab"
       >
-        <q-tooltip content-class="bg-accent text-grey-10">
+        <q-tooltip class="bg-accent text-grey-10">
           Add Transaction
         </q-tooltip>
         <q-menu ref="addTransMenu" persistent>

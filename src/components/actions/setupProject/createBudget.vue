@@ -45,7 +45,7 @@
             {{ account.label }}
             <q-popup-edit v-model="account.label">
               <q-input
-                :value="account.label > '' ? account.label : ''"
+                :model-value="account.label > '' ? account.label : ''"
                 @update:model-value="updateBudget(account.id, 'label', $event)"
                 dense
                 autofocus
@@ -55,7 +55,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />Edit
             </q-tooltip>
@@ -80,7 +80,7 @@
             >
             <q-btn v-if="account.inUse" dense color="negative">
               <q-icon name="delete_forever" />
-              <q-tooltip content-class="bg-accent text-black"
+              <q-tooltip class="bg-accent text-black"
                 >Cannot Delete Budget while in use</q-tooltip
               >
             </q-btn>
@@ -156,7 +156,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
-import { createAccount } from '../../../scripts/accounts.js'
+import { createAccount, updateBudgetByKey } from '../../../scripts/accounts.js'
 import { defineAsyncComponent } from 'vue'
 
 export default {
@@ -210,10 +210,10 @@ export default {
           })
         })
     },
-    updateBudget(accountId, key, val) {
+    updateBudget(budgetId, key, val) {
       // console.log(budgetId, key, val)
-      this.updateBudgetByKey({ accountId, key, val })
-      updateBudget(this.project.id, accountId, key, val)
+      this.updateBudgetByKey({ budgetId, key, val })
+      updateBudgetByKey(this.$route.params.id, budgetId, key, val)
         .then(() => {
           // console.log('updated')
           this.$q.notify({

@@ -416,7 +416,7 @@
               @click="removeInvite(props.row.email)"
             />
             <!--  ${{ props.row.expenses.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
+            <q-tooltip class="bg-accent text-black">
               Auto Calculated
             </q-tooltip> -->
           </q-td>
@@ -722,7 +722,7 @@
               @click="removeUser(props.row.uid)"
             />
             <!--  ${{ props.row.expenses.toFixed(2) }}
-            <q-tooltip content-class="bg-accent text-black">
+            <q-tooltip class="bg-accent text-black">
               Auto Calculated
             </q-tooltip> -->
           </q-td>

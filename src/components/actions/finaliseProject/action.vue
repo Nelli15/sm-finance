@@ -332,7 +332,7 @@ export default {
             label: 'Export CSV',
             icon: 'import_export',
             click: async () => {
-              let res = await refs[`step-emailNSP`].onCSVExport(project.id)
+              let res = await refs[`step-emailNSP`].onCSVExport(route.params.id)
             },
             color: 'positive',
           },
@@ -340,7 +340,7 @@ export default {
             label: 'Export Zip',
             icon: 'import_export',
             click: async () => {
-              let res = await refs[`step-emailNSP`].onZipExport(project.id)
+              let res = await refs[`step-emailNSP`].onZipExport(route.params.id)
             },
             color: 'positive',
           },

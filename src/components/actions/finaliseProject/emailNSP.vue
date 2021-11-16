@@ -41,7 +41,6 @@ export default {
     ...mapGetters('budgets', ['budgets']),
   },
   methods: {
-    ...mapActions('budgets', ['updateBudgetByKey']),
     createAccount() {
       createAccount(this.$route.params.id, {
         label: this.account,
@@ -63,29 +62,6 @@ export default {
             textColor: 'white',
             icon: 'error',
             message: 'Error creating account',
-          })
-        })
-    },
-    updateBudget(accountId, key, val) {
-      // console.log(budgetId, key, val)
-      this.updateBudgetByKey({ accountId, key, val })
-      updateBudget(this.project.id, accountId, key, val)
-        .then(() => {
-          // console.log('updated')
-          this.$q.notify({
-            color: 'positive',
-            textColor: 'white',
-            icon: 'cloud_done',
-            message: 'Account: Updated Successfully',
-          })
-        })
-        .catch((err) => {
-          console.log(err)
-          this.$q.notify({
-            color: 'negative',
-            textColor: 'white',
-            icon: 'error',
-            message: 'Oops, Something went wrong!',
           })
         })
     },
@@ -117,6 +93,7 @@ export default {
         }
         let res = await fetch(src, options).catch(() => {
           console.log('error occured')
+          this.$q.loading.hide()
           this.$q.notify({
             color: 'negative',
             textColor: 'white',
@@ -125,7 +102,16 @@ export default {
           })
         })
         // console.log(res.status, res)
-        let links = await res.json()
+        let links = await res.json().catch(() => {
+          console.log('error occured')
+          this.$q.loading.hide()
+          this.$q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'Oops, Something went wrong!',
+          })
+        })
         let zip = new JSZip()
         let counter = 0
         for (var link in links) {
@@ -144,9 +130,30 @@ export default {
             // mode: 'no-cors',
             // headers: { 'Access-Control-Allow-Origin': '*' },
             // credentials: 'omit'
+          }).catch(() => {
+            console.log('error occured')
+            this.$q.loading.hide()
+            this.$q.notify({
+              color: 'negative',
+              textColor: 'white',
+              icon: 'error',
+              message: 'Oops, Something went wrong!',
+            })
           })
           // console.log(await res.blob())
-          zip.file(link, await res.blob())
+          zip.file(
+            link,
+            await res.blob().catch(() => {
+              console.log('error occured')
+              this.$q.loading.hide()
+              this.$q.notify({
+                color: 'negative',
+                textColor: 'white',
+                icon: 'error',
+                message: 'Oops, Something went wrong!',
+              })
+            })
+          )
         }
         this.$q.loading.show({
           message:
@@ -155,30 +162,35 @@ export default {
         })
         // console.log('Getting Images: ' + this.loading + '%')
 
-        const blob = await zip.generateAsync(
-          {
-            type: 'blob',
-          },
-          (metadata) => {
-            this.$q.loading.show({
-              message: `Zipping File: ${
-                metadata.currentFile
-              } - ${metadata.percent.toFixed(2)}% `,
-              delay: 0,
+        const blob = await zip
+          .generateAsync(
+            {
+              type: 'blob',
+            },
+            (metadata) => {
+              this.$q.loading.show({
+                message: `Zipping File: ${
+                  metadata.currentFile
+                } - ${metadata.percent.toFixed(2)}% `,
+                delay: 0,
+              })
+            }
+          )
+          .catch(() => {
+            console.log('error occured')
+            this.$q.loading.hide()
+            this.$q.notify({
+              color: 'negative',
+              textColor: 'white',
+              icon: 'error',
+              message: 'Oops, Something went wrong!',
             })
-          }
-        )
+          })
         this.$q.loading.show({
           message: 'Saving File',
           delay: 0,
         })
-        // console.log(this.projects.find)
-        saveAs(
-          blob,
-          `${this.projects.find((val) => val.id === projectId).number}-${
-            this.projects.find((val) => val.id === projectId).name
-          }.zip`
-        )
+        saveAs(blob, `${this.project.number}-${this.project.name}.zip`)
         this.$q.loading.hide()
         this.$q.notify({
           color: 'positive',
@@ -187,6 +199,7 @@ export default {
           message: '.zip Export Successful',
         })
       }
+      this.$q.loading.hide()
     },
     async onCSVExport(projectId) {
       this.$q.loading.show({
@@ -213,12 +226,7 @@ export default {
         // console.log(res.status)
         let blob = await res.blob()
         // console.log(blob)
-        saveAs(
-          blob,
-          `${this.projects.find((val) => val.id === projectId).number}-${
-            this.projects.find((val) => val.id === projectId).name
-          }.csv`
-        )
+        saveAs(blob, `${this.project.number}-${this.project.name}.csv`)
         this.$q.loading.hide()
         this.$q.notify({
           color: 'positive',
@@ -227,6 +235,7 @@ export default {
           message: '.CSV Export Successful',
         })
       }
+      this.$q.loading.hide()
     },
   },
   components: {

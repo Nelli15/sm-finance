@@ -9,7 +9,7 @@
     <q-tooltip
       anchor="center right"
       self="center left"
-      content-class="bg-accent text-black"
+      class="bg-accent text-black"
     >
       Receipt
     </q-tooltip>

@@ -371,7 +371,7 @@
 
     <!--     <q-page-sticky position="bottom-left" :offset="[18, 18]" style="z-index:100">
       <q-btn fab icon="add" color="primary" >
-        <q-tooltip content-class="bg-accent text-grey-10">
+        <q-tooltip class="bg-accent text-grey-10">
           Add to Petty Cash
         </q-tooltip>
         <sp-pettycash-form :projectId="$route.params.id" />
@@ -383,7 +383,7 @@
       style="z-index:100"
     >
       <q-btn fab icon="help" color="primary">
-        <q-tooltip content-class="bg-accent text-grey-10">
+        <q-tooltip class="bg-accent text-grey-10">
           Help
         </q-tooltip>
         <q-menu>

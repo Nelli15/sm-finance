@@ -53,7 +53,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />Edit
             </q-tooltip>
@@ -81,7 +81,7 @@
             >
             <q-btn v-if="account.inUse" dense color="negative">
               <q-icon name="delete_forever" />
-              <q-tooltip content-class="bg-accent text-black"
+              <q-tooltip class="bg-accent text-black"
                 >Cannot Delete Budget while in use</q-tooltip
               >
             </q-btn>

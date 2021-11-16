@@ -9,12 +9,15 @@
       :visible-columns="visibleColumns"
       :filter="filter"
       rows-per-page-label="Actions per page:"
-      :pagination.sync="pagination"
+      :pagination="pagination"
       @update:pagination="
-        q.localStorage.set('actionsTableRows', $event.rowsPerPage)
+        ($event) => {
+          pagination = $event
+          q.localStorage.set('actionsPagination', $event)
+        }
       "
       selection="multiple"
-      :selected.sync="rowSelected"
+      v-model:selected="rowSelected"
       dense
       :loading="loading"
     >
@@ -196,7 +199,7 @@
           <q-tooltip
             anchor="center right"
             self="center left"
-            content-class="bg-accent text-black"
+            class="bg-accent text-black"
           >
             {{ completedVisible ? 'Hide Completed' : 'Show Completed' }}
           </q-tooltip>
@@ -252,7 +255,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 {{ props.row.complete ? 'Complete' : 'Mark Complete' }}
               </q-tooltip>
@@ -266,7 +269,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 Edit
               </q-tooltip>
@@ -310,9 +313,7 @@
         :disable="draggingFab"
         v-touch-pan.prevent.mouse="moveFab"
       >
-        <q-tooltip content-class="bg-accent text-black">
-          Add Actions
-        </q-tooltip>
+        <q-tooltip class="bg-accent text-black"> Add Actions </q-tooltip>
         <q-menu persistent>
           <actionsMenu />
         </q-menu>
@@ -323,7 +324,7 @@
 </template>
 
 <script>
-import { debounce, useQuasar } from 'quasar'
+import { useQuasar } from 'quasar'
 import { updateAction } from './../scripts/actions.js'
 import { useRoute } from 'vue-router'
 import { defineAsyncComponent, ref, computed } from 'vue'
@@ -374,8 +375,20 @@ export default {
           )
         },
       },
-      { name: 'type', label: 'Action Type', field: 'type', align: 'center' },
-      { name: 'desc', label: 'Description', field: 'desc', align: 'center' },
+      {
+        name: 'type',
+        label: 'Action Type',
+        field: 'type',
+        align: 'center',
+        sortable: true,
+      },
+      {
+        name: 'desc',
+        label: 'Description',
+        field: 'desc',
+        align: 'center',
+        sortable: true,
+      },
       { name: 'actions', label: 'Actions', field: 'actions', align: 'right' },
     ])
     const filter = ref('')
@@ -392,7 +405,15 @@ export default {
     const draggingFab = ref(false)
 
     // updateAction = debounce(updateAction, 1000)
-    pagination.value.rowsPerPage = q.localStorage.getItem('transTableRows')
+    pagination.value = q.localStorage.has('actionPagination')
+      ? q.localStorage.getItem('actionPagination')
+      : {
+          sortBy: 'date',
+          descending: true,
+          page: 1,
+          rowsPerPage: 10,
+          // rowsNumber: xx if getting data from a server
+        }
     function updateActionByKey(val) {
       store.dispatch('actions/updateActionByKey', val)
     }

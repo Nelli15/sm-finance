@@ -1,5 +1,8 @@
 <template>
   <div>
+    A Reimbursement Action is used when you receive a receipt for an approved
+    expense that has been paid from an individuals pocket. <br />
+    <br />
     First we need some details from you.
     <q-list>
       <q-item>
@@ -73,10 +76,9 @@ export default {
     //on created
     if (props.action) {
       localAction.value = JSON.parse(JSON.stringify(props.action))
-      desc.value =
-        localAction.value.desc.split('for ')[
-          localAction.value.desc.split('for ').length - 1
-        ]
+      let arr = localAction.value.desc.split('for ')
+      arr.shift()
+      desc.value = arr.join('for ')
     }
     if (!localAction.value.id) {
       let date = new Date()

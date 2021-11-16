@@ -1,11 +1,19 @@
 <template>
   <div>
     Give the expected cash to
-    {{
-      responsiblePerson.uid ? responsiblePerson.name : 'the Responsible Person'
-    }}
+    {{ responsiblePerson ? responsiblePerson.name : 'the Responsible Person' }}
     and record the details below.
     <q-list>
+      <q-item>
+        <q-item-label caption v-if="action.budget && budgets[action.budget]">
+          Budget Remaining: ${{
+            (
+              parseFloat(budgets[action.budget].budget) -
+              parseFloat(budgets[action.budget].expenses)
+            ).toFixed(2)
+          }}</q-item-label
+        >
+      </q-item>
       <q-item>
         <q-input
           v-model="newTrans.date"
@@ -39,6 +47,7 @@
         <!-- </q-popup-edit> -->
         <!-- </q-item-section> -->
       </q-item>
+
       <q-item>
         <q-input
           v-model="newTrans.amount"
@@ -165,6 +174,7 @@ export default {
   computed: {
     ...mapGetters('projects', ['project']),
     ...mapGetters('auth', ['user']),
+    ...mapGetters('budgets', ['budgets']),
   },
   watch: {
     async project() {

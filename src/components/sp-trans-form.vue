@@ -449,7 +449,7 @@ export default {
         type: '',
         date: '',
         amount: '',
-        GST: '0',
+        GST: '',
         cheque: '',
         receipt: false,
         desc: '',
@@ -479,7 +479,7 @@ export default {
       .padStart(2, '0')}/${date.getFullYear()}`
     if (this.actionId) this.newTrans.action = this.actionId
     // this.$store.dispatch('fetchAccounts', this.$route.params.id)
-    // this.$store.dispatch('fetchBudgets', this.$route.params.id)
+    this.$store.dispatch('budgets/fetchBudgets', this.$route.params.id)
   },
   methods: {
     onLog(event) {
@@ -666,13 +666,17 @@ export default {
     },
   },
   computed: {
-    ...mapGetters('projects', ['isAdmin', 'isContributor', 'project']),
+    ...mapGetters('projects', [
+      'isAdmin',
+      'isContributor',
+      'project',
+      'contributorBudgets',
+    ]),
     ...mapGetters('budgets', [
       'accounts',
       'budgets',
       'budgetCategories',
       'budgetOptions',
-      'contributorBudgets',
     ]),
     ...mapGetters('auth', ['user']),
     typeOptions() {

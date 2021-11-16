@@ -5,9 +5,7 @@
         <q-toolbar-title> SP Finances - {{ project.name }} </q-toolbar-title>
 
         <q-btn flat no-caps>
-          <q-tooltip content-class="bg-accent text-grey-10">
-            Who am I?
-          </q-tooltip>
+          <q-tooltip class="bg-accent text-grey-10"> Who am I? </q-tooltip>
           <q-avatar>
             <img
               :src="

@@ -10,12 +10,15 @@
       :filter="filter"
       :filter-method="filterMethod"
       rows-per-page-label="Transactions per page:"
-      :pagination.sync="pagination"
+      :pagination="pagination"
       @update:pagination="
-        $q.localStorage.set('transTableRows', $event.rowsPerPage)
+        ($event) => {
+          pagination = $event
+          $q.localStorage.set('transPagination', $event)
+        }
       "
       selection="multiple"
-      :selected.sync="rowSelected"
+      v-model:selected="rowSelected"
       dense
       :loading="loading"
     >
@@ -197,7 +200,7 @@
           <q-tooltip
             anchor="center right"
             self="center left"
-            content-class="bg-accent text-black"
+            class="bg-accent text-black"
           >
             Show Archived
           </q-tooltip>
@@ -211,7 +214,7 @@
           <q-tooltip
             anchor="center right"
             self="center left"
-            content-class="bg-accent text-black"
+            class="bg-accent text-black"
           >
             {{ reviewedVisible ? 'Hide Reviewed' : 'Show Reviewed' }}
           </q-tooltip>
@@ -226,7 +229,7 @@
           ><q-tooltip
             anchor="center right"
             self="center left"
-            content-class="bg-accent text-black"
+            class="bg-accent text-black"
           >
             Fullscreen
           </q-tooltip>
@@ -306,7 +309,7 @@
                 {{ props.row.submittedBy.displayName
                 }}{{ props.row.submittedBy.email }}
               </div>
-              <q-tooltip content-class="bg-accent text-black">
+              <q-tooltip class="bg-accent text-black">
                 <b>{{ props.row.submittedBy.displayName }}</b
                 ><br />{{ props.row.submittedBy.email }}
                 <div
@@ -381,7 +384,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -427,7 +430,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
                 v-if="!props.row.action"
               >
                 <q-icon name="edit" />
@@ -503,7 +506,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
                 v-if="!props.row.action"
               >
                 <q-icon name="edit" />
@@ -531,7 +534,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -568,7 +571,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -598,7 +601,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
               v-if="props.row.category !== 'Journal'"
             >
               <q-icon name="edit" />
@@ -627,7 +630,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 <q-icon name="edit" />
                 Edit
@@ -656,7 +659,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -685,7 +688,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
               v-if="props.row.type === 'Cheque'"
             >
               <q-icon name="edit" />
@@ -724,7 +727,7 @@
                 <q-tooltip
                   anchor="center right"
                   self="center left"
-                  content-class="bg-accent text-black"
+                  class="bg-accent text-black"
                 >
                   <q-icon name="edit" />
                   Edit
@@ -773,7 +776,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 Looking for receipt
               </q-tooltip>
@@ -793,7 +796,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 {{ props.row.reviewed ? 'Reviewed!' : 'Mark Reviewed' }}
               </q-tooltip>
@@ -810,7 +813,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 {{ props.row.deleted ? 'Unarchive' : 'Archive' }}
               </q-tooltip>
@@ -837,8 +840,11 @@
         v-touch-pan.prevent.mouse="moveSumFab"
       >
         <q-card-section>
-          Amount ({{ project.currency }}): ${{ calcSelected }}
-          <q-tooltip content-class="bg-accent text-grey-10">
+          Sum ({{ project.currency }}): ${{ calcSelected.total }}<br />
+          Expenses ({{ project.currency }}): -${{ calcSelected.expenses }}<br />
+          Income ({{ project.currency }}): ${{ calcSelected.income }}<br />
+          Journal ({{ project.currency }}): ${{ calcSelected.journal }}
+          <q-tooltip class="bg-accent text-grey-10">
             Sum of Selected
           </q-tooltip>
         </q-card-section>
@@ -895,6 +901,9 @@ export default {
           field: 'budget',
           align: 'left',
           sortable: true,
+          sort: (a, b, rowA, rowB) => {
+            return a - b
+          },
         },
         {
           name: 'date',
@@ -1005,7 +1014,15 @@ export default {
     }
 
     this.updateTransaction = debounce(this.updateTransaction, 1000)
-    this.pagination.rowsPerPage = this.$q.localStorage.getItem('transTableRows')
+    this.pagination = this.$q.localStorage.has('transPagination')
+      ? this.$q.localStorage.getItem('transPagination')
+      : {
+          sortBy: 'date',
+          descending: true,
+          page: 1,
+          rowsPerPage: 10,
+          // rowsNumber: xx if getting data from a server
+        }
     if (this.$route.params.budgetCategory) {
       this.reviewedVisible = true
     }
@@ -1283,10 +1300,27 @@ export default {
     },
     calcSelected() {
       let total = 0
+      let expenses = 0
+      let income = 0
+      let journal = 0
+
       for (var key in this.rowSelected) {
-        total += parseFloat(this.rowSelected[key].amount)
+        if (this.rowSelected[key].category === 'Expense') {
+          expenses += parseFloat(this.rowSelected[key].amount)
+          total -= parseFloat(this.rowSelected[key].amount)
+        } else if (this.rowSelected[key].category === 'Income') {
+          income += parseFloat(this.rowSelected[key].amount)
+          total += parseFloat(this.rowSelected[key].amount)
+        } else if (this.rowSelected[key].category === 'Journal') {
+          journal += parseFloat(this.rowSelected[key].amount)
+        }
       }
-      return total.toFixed(2)
+      return {
+        total: total.toFixed(2),
+        expenses: expenses.toFixed(2),
+        income: income.toFixed(2),
+        journal: journal.toFixed(2),
+      }
     },
     pageLabel() {
       let category = this.$route.params.budgetCategory

@@ -1,5 +1,9 @@
 <template>
   <div>
+    A Cash in Hand action is used when you want to provide an individual with
+    cash so they can purchase something, you should expect the receipt and
+    remaining money returned.<br />
+    <br />
     First we need some details from you.
     <q-list>
       <q-item>
@@ -108,6 +112,58 @@
                   }}</q-item-label
                 >
               </q-item-section>
+              <q-item-section
+                avatar
+                v-if="
+                  localAction.responsiblePerson &&
+                  (users[localAction.responsiblePerson].permission ===
+                    'admin' ||
+                    users[localAction.responsiblePerson].budgets.includes(
+                      scope.opt.id
+                    ))
+                "
+              >
+                <q-avatar class="q-pr-md" size="md">
+                  <q-img
+                    :src="
+                      users[localAction.responsiblePerson].photoURL
+                        ? users[localAction.responsiblePerson].photoURL
+                        : 'https://avatars.dicebear.com/api/bottts/' +
+                          localAction.responsiblePerson +
+                          '.svg'
+                    "
+                    alt="Profile Picture"
+                  >
+                    <template v-slot:error>
+                      <q-img
+                        :src="
+                          'https://avatars.dicebear.com/api/bottts/' +
+                          localAction.responsiblePerson +
+                          '.svg'
+                        "
+                        alt="Profile Picture"
+                      >
+                        <template v-slot:error>
+                          <div
+                            class="
+                              absolute-full
+                              flex flex-center
+                              bg-negative
+                              text-white
+                            "
+                          >
+                            Cannot load image
+                          </div>
+                        </template>
+                      </q-img>
+                    </template>
+                  </q-img>
+                </q-avatar>
+                <q-tooltip class="bg-cyan-2 text-black">
+                  {{ users[localAction.responsiblePerson].name }}
+                  has access to this budget</q-tooltip
+                >
+              </q-item-section>
             </q-item>
           </template>
         </q-select>
@@ -187,11 +243,20 @@ export default {
     }
 
     const project = computed(() => store.getters['projects/project'])
-    const budgetOptions = computed(() =>
-      store.getters['budgets/budgetOptions'].filter(
+    const budgetOptions = computed(() => {
+      // if (localAction.value.responsiblePerson) {
+      //   let contBudgets = contributors.value.find(
+      //     (val) => (val.uid = localAction.value.responsiblePerson)
+      //   ).budgets
+      //   return store.getters['budgets/budgetOptions'].filter(
+      //     (val) => val.type !== 'account' && contBudgets.includes(val.id)
+      //   )
+      // } else {
+      return store.getters['budgets/budgetOptions'].filter(
         (val) => val.type !== 'account'
       )
-    )
+      // }
+    })
     const admins = computed(() => store.getters['auth/admins'])
     const contributors = computed(() => store.getters['auth/contributors'])
     const users = computed(() => {
@@ -206,19 +271,9 @@ export default {
     })
     function updateDesc() {
       localAction.value.desc = `Cash in Hand to ${
-        admins.value.length > 0 &&
-        admins.value.find((x) => x.uid === localAction.value.responsiblePerson)
-          ? admins.value.find(
-              (x) => x.uid === localAction.value.responsiblePerson
-            ).name
-          : contributors.value.length > 0 &&
-            contributors.value.find(
-              (x) => x.uid === localAction.value.responsiblePerson
-            )
-          ? contributors.value.find(
-              (x) => x.uid === localAction.value.responsiblePerson
-            ).name
-          : ''
+        users.value[localAction.value.responsiblePerson]
+          ? users.value[localAction.value.responsiblePerson].name
+          : '?'
       } for ${desc.value}`
     }
 

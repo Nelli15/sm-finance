@@ -907,7 +907,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
 }
 
 function updateBudget(db, budgetRef, awaitReviewAdj, balanceAdj, expenseAdj) {
-  // console.log(awaitReviewAdj, balanceAdj, expenseAdj)
+  console.log(balanceAdj, typeof balanceAdj, expenseAdj, typeof expenseAdj)
   // console.log(budgetRef.path)
   return db
     .runTransaction(async t => {

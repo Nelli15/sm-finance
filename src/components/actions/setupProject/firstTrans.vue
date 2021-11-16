@@ -6,9 +6,10 @@
           Before the Project starts, National Summer Projects will transfer your
           total Project finances onto the cash card. You will receive an email
           letting you know how much was transferred and when. When you receive
-          this email, record the date and amount below. This is your first
-          income transactions, if you recieve any further income you can record
-          it using a manual Income transaction.
+          the transaction in your cash card, record the date (the date the money
+          arrived in the account) amount below. This is your first income
+          transaction, if you recieve any further income you can record it using
+          a manual Income transaction.
         </q-item>
         <q-item>
           <!-- <q-item-section> -->
@@ -71,7 +72,7 @@ export default {
     return {
       newTrans: {
         budget: 'debitCard',
-        type: 'Bank Card',
+        type: 'Internet Transfer',
         date: '',
         amount: '',
         GST: 0,
@@ -149,7 +150,7 @@ export default {
       // console.log('form reset')
       this.newTrans = {
         budget: 'debitCard',
-        type: 'Bank Card',
+        type: 'Internet Transfer',
         date: '',
         amount: '',
         GST: 0,

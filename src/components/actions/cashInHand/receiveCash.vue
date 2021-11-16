@@ -147,6 +147,16 @@ export default {
     const user = computed(() => store.getters['auth/user'])
     const admins = computed(() => store.getters['auth/admins'])
     const contributors = computed(() => store.getters['auth/contributors'])
+    const users = computed(() => {
+      let arr = [...admins.value, ...contributors.value]
+      return arr.reduce(
+        (obj, item) => ({
+          ...obj,
+          [item['uid']]: item,
+        }),
+        {}
+      )
+    })
     const remainingBalance = computed(() => {
       let total = 0
       for (let trans in props.action.transactions) {
@@ -215,18 +225,7 @@ export default {
       .padStart(2, '0')}/${date.getFullYear()}`
 
     newTrans.value.desc = `Return of remaining cash from ${
-      admins.value.length > 0 &&
-      admins.value.find((x) => x.uid === props.action.responsiblePerson)
-        ? admins.value.find((x) => x.uid === props.action.responsiblePerson)
-            .name
-        : contributors.value.length > 0 &&
-          contributors.value.find(
-            (x) => x.uid === props.action.responsiblePerson
-          )
-        ? contributors.value.find(
-            (x) => x.uid === props.action.responsiblePerson
-          ).name
-        : ''
+      users.value[props.action.responsiblePerson]
     } for ${
       props.action.desc.split('for ')[
         props.action.desc.split('for ').length - 1

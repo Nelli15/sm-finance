@@ -1,7 +1,6 @@
 import { getFirestore, updateDoc, doc } from 'firebase/firestore'
 
   export function updateProject(projectId, fields) {
-    // console.log(projectId, fields)
     return updateDoc(doc(getFirestore(), `/projects/${projectId}`), fields).then(() => true)
   }
 

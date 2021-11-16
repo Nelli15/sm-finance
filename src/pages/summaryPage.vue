@@ -15,7 +15,7 @@
         <q-tooltip
           anchor="bottom middle"
           self="top middle"
-          content-class="bg-accent text-black"
+          class="bg-accent text-black"
         >
           <q-icon name="edit" />Edit
         </q-tooltip>
@@ -36,7 +36,7 @@
         <q-tooltip
           anchor="bottom middle"
           self="top middle"
-          content-class="bg-accent text-black"
+          class="bg-accent text-black"
         >
           <q-icon name="edit" />Edit
         </q-tooltip>
@@ -56,7 +56,7 @@
         <q-tooltip
           anchor="bottom middle"
           self="top middle"
-          content-class="bg-accent text-black"
+          class="bg-accent text-black"
         >
           <q-icon name="edit" />Edit
         </q-tooltip>
@@ -75,7 +75,7 @@
         <q-tooltip
           anchor="bottom middle"
           self="top middle"
-          content-class="bg-accent text-black"
+          class="bg-accent text-black"
         >
           <q-icon name="edit" />Edit
         </q-tooltip>
@@ -126,10 +126,13 @@
       :key="'accounts' + tableKey"
       :filter="accountsFilter"
       rows-per-page-label="Accounts per page:"
-      :pagination.sync="accountsPagination"
+      :pagination="accountsPagination"
       dense
       @update:pagination="
-        $q.localStorage.set('accountsTableRows', $event.rowsPerPage)
+        ($event) => {
+          accountsPagination = $event
+          $q.localStorage.set('accountsPagination', $event)
+        }
       "
     >
       <template v-slot:top="props">
@@ -199,7 +202,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />Edit
             </q-tooltip>
@@ -239,9 +242,7 @@
               "
               icon="view_compact"
             >
-              <q-tooltip content-class="bg-accent text-black"
-                >View in Header</q-tooltip
-              >
+              <q-tooltip class="bg-accent text-black">View in Header</q-tooltip>
             </q-toggle>
             <!-- <q-btn :to="'budget/'+props.row.id" dense class="q-mr-sm">Budgets</q-btn> -->
             <q-btn :to="'transactions/' + props.row.id" dense class="q-mr-sm"
@@ -249,13 +250,13 @@
             >
             <q-btn v-if="props.row.inUse" dense color="negative">
               <q-icon name="delete_forever" />
-              <q-tooltip content-class="bg-accent text-black"
+              <q-tooltip class="bg-accent text-black"
                 >Cannot delete Account while in use</q-tooltip
-              >
+              >class
             </q-btn>
             <q-btn v-else-if="props.row.systemAccount" dense color="negative">
               <q-icon name="delete_forever" />
-              <q-tooltip content-class="bg-accent text-black"
+              <q-tooltip class="bg-accent text-black"
                 >Cannot Delete System Accounts</q-tooltip
               >
             </q-btn>
@@ -279,10 +280,13 @@
       :key="'budgets' + tableKey"
       :filter="summaryFilter"
       rows-per-page-label="Budgets per page:"
-      :pagination.sync="pagination"
+      :pagination="categoryPagination"
       dense
       @update:pagination="
-        $q.localStorage.set('summaryTableRows', $event.rowsPerPage)
+        ($event) => {
+          categoryPagination = $event
+          $q.localStorage.set('categoryPagination', $event)
+        }
       "
     >
       <template v-slot:top="props">
@@ -356,7 +360,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-cyan-2 text-black"
             >
               <q-icon name="edit" />Edit
             </q-tooltip>
@@ -412,7 +416,7 @@
             >
             <q-btn v-if="props.row.inUse" dense color="negative">
               <q-icon name="delete_forever" />
-              <q-tooltip content-class="bg-accent text-black"
+              <q-tooltip class="bg-cyan-2 text-black"
                 >Cannot delete Budget Category while in use</q-tooltip
               >
             </q-btn>
@@ -434,9 +438,7 @@
         :disable="draggingFab"
         v-touch-pan.prevent.mouse="moveFab"
       >
-        <q-tooltip content-class="bg-accent text-black">
-          Add Actions
-        </q-tooltip>
+        <q-tooltip class="bg-accent text-black"> Add Actions </q-tooltip>
         <q-menu persistent>
           <actionsMenu />
         </q-menu>
@@ -451,7 +453,7 @@
         :disable="draggingFab"
         v-touch-pan.prevent.mouse="moveFab"
       >
-        <q-tooltip content-class="bg-accent text-black">Add Account</q-tooltip>
+        <q-tooltip class="bg-accent text-black">Add Account</q-tooltip>
         <q-menu ref="addCategoryMenu" persistent>
           <sp-budget-form
             :projectId="$route.params.id"
@@ -536,7 +538,7 @@ export default {
         'remaining',
         'actions',
       ],
-      pagination: {
+      categoryPagination: {
         sortBy: 'label',
         descending: false,
         page: 1,
@@ -564,10 +566,24 @@ export default {
     this.updateCategory = debounce(this.updateCategory, 1000)
     this.updateAccount = debounce(this.updateAccount, 1000)
     this.updateProject = debounce(this.updateProject, 3000)
-    this.pagination.rowsPerPage =
-      this.$q.localStorage.getItem('summaryTableRows')
-    this.accountsPagination.rowsPerPage =
-      this.$q.localStorage.getItem('accountsTableRows')
+    this.categoryPagination = this.$q.localStorage.has('categoryPagination')
+      ? this.$q.localStorage.getItem('categoryPagination')
+      : {
+          sortBy: 'label',
+          descending: false,
+          page: 1,
+          rowsPerPage: 10,
+          // rowsNumber: xx if getting data from a server
+        }
+    this.accountsPagination = this.$q.localStorage.has('accountsPagination')
+      ? this.$q.localStorage.getItem('accountsPagination')
+      : {
+          sortBy: 'label',
+          descending: false,
+          page: 1,
+          rowsPerPage: 10,
+          // rowsNumber: xx if getting data from a server
+        }
   },
   methods: {
     ...mapActions('budgets', ['updateCategoryByKey', 'updateAccountByKey']),

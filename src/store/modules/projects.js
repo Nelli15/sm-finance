@@ -49,11 +49,11 @@ export const getters = {
       if (state.project.permissions) {
         let budgets = []
         for (var budget in state.project.permissions.budgets) {
-          // console.log(getters.budgets)
-          // console.log(state.project.permissions.budgets[budget])
-          if (getters.budgets[state.project.permissions.budgets[budget]]) {
+          console.log(rootState.budgets.budgets)
+          console.log(state.project.permissions.budgets[budget])
+          if (rootState.budgets.budgets[state.project.permissions.budgets[budget]]) {
             budgets.push(
-              getters.budgets[state.project.permissions.budgets[budget]]
+              rootState.budgets.budgets[state.project.permissions.budgets[budget]]
             )
           }
         }
@@ -61,10 +61,10 @@ export const getters = {
           // console.log(getters.budgetCategories)
           // console.log(state.project.permissions.budgets[budget])
           if (
-            getters.budgetCategories[state.project.permissions.budgets[budget]]
+            rootState.budgets.budgetCategories[state.project.permissions.budgets[budget]]
           ) {
             budgets.push(
-              getters.budgetCategories[
+              rootState.budgets.budgetCategories[
                 state.project.permissions.budgets[budget]
               ]
             )

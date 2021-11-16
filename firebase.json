@@ -23,8 +23,7 @@
     ]
   },
   "storage": {
-    "rules": "storage-default.rules",
-    "target": "default"
+    "rules": "storage.rules"
   },
   "database": {
     "rules": "database.rules.json"

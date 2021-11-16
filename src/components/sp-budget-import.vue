@@ -13,7 +13,7 @@
       max-width="150px"
       anchor="center right"
       self="center left"
-      content-class="bg-cyan-2 text-black"
+      class="bg-cyan-2 text-black"
     >
       Import Budgets by CSV
     </q-tooltip>
@@ -39,7 +39,7 @@
                     max-width="150px"
                     anchor="center right"
                     self="center left"
-                    content-class="bg-cyan-2 text-black"
+                    class="bg-cyan-2 text-black"
                   >
                     Download Template
                   </q-tooltip>
@@ -59,7 +59,7 @@
                   max-width="150px"
                   anchor="center right"
                   self="center left"
-                  content-class="bg-cyan-2 text-black"
+                  class="bg-cyan-2 text-black"
                 >
                   Download Template
                 </q-tooltip>

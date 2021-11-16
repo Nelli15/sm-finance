@@ -10,9 +10,12 @@
       :key="tableKey"
       :filter="filter"
       rows-per-page-label="Budgets per page:"
-      :pagination.sync="pagination"
+      :pagination="pagination"
       @update:pagination="
-        $q.localStorage.set('budgetTableRows', $event.rowsPerPage)
+        ($event) => {
+          pagination = $event
+          $q.localStorage.set('budgetPagination', $event)
+        }
       "
       dense
     >
@@ -121,7 +124,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -153,7 +156,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -178,7 +181,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -231,13 +234,13 @@
               class="q-mr-sm"
             >
               Transactions
-              <q-tooltip content-class="bg-accent text-black">
+              <q-tooltip class="bg-accent text-black">
                 View this Budgets Transactions
               </q-tooltip>
             </q-btn>
             <q-btn v-if="props.row.inUse" dense color="negative">
               <q-icon name="delete_forever" />
-              <q-tooltip content-class="bg-accent text-black">
+              <q-tooltip class="bg-accent text-black">
                 Cannot Delete Budget while in use
               </q-tooltip>
             </q-btn>
@@ -259,9 +262,7 @@
         :disable="draggingFab"
         v-touch-pan.prevent.mouse="moveFab"
       >
-        <q-tooltip content-class="bg-accent text-black">
-          Add Actions
-        </q-tooltip>
+        <q-tooltip class="bg-accent text-black"> Add Actions </q-tooltip>
         <q-menu persistent>
           <actionsMenu />
         </q-menu>
@@ -275,7 +276,7 @@
         :disable="draggingFab"
         v-touch-pan.prevent.mouse="moveFab"
       >
-        <q-tooltip content-class="bg-accent text-grey-10">
+        <q-tooltip class="bg-accent text-grey-10">
           Add Action
         </q-tooltip>
         <q-menu ref="addTransMenu" persistent>
@@ -385,8 +386,15 @@ export default {
     // this.$store.dispatch('fetchContributors', this.$route.params.id)
     // this.$store.dispatch('fetchInvites', this.$route.params.id)
     this.updateBudget = debounce(this.updateBudget, 1000)
-    this.pagination.rowsPerPage =
-      this.$q.localStorage.getItem('budgetTableRows')
+    ;(this.pagination = this.$q.localStorage).has('budgetPagination')
+      ? this.$q.localStorage.getItem('budgetPagination')
+      : {
+          sortBy: 'label',
+          descending: false,
+          page: 1,
+          rowsPerPage: 10,
+          // rowsNumber: xx if getting data from a server
+        }
   },
   methods: {
     ...mapActions('budgets', ['updateBudgetByKey']),
@@ -398,7 +406,7 @@ export default {
     updateBudget(budgetId, key, val) {
       // console.log(budgetId, key, val)
       this.updateBudgetByKey({ budgetId, key, val })
-      updateBudgetByKey(budgetId, key, val)
+      updateBudgetByKey(this.$route.params.id, budgetId, key, val)
         .then(() => {
           // console.log('updated')
           this.$q.notify({

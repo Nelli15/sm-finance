@@ -891,7 +891,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
 
   try {
     const decodedIdToken = await admin.auth().verifyIdToken(idToken)
-    console.log('ID Token correctly decoded', decodedIdToken)
+    // console.log('ID Token correctly decoded', decodedIdToken)
     req.user = decodedIdToken
     // next();
     // return;
@@ -967,7 +967,46 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           '', // equivalent amount in AUD
           transData.date,
           transData.type,
-          categoryDoc.label,
+          '"'+categoryDoc.label.replace(/(\r\n|\n|\r)/gm,"")+'"',
+          transData.cheque,
+          !transData.payTo
+            ? ''
+            : typeof transData.payTo === 'string'
+            ? transData.payTo.replace(/,/g, '-')
+            : transData.payTo,
+          transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
+          transData.deleted === true ? 1 : 0
+        ]
+        index++
+      } else if (transData.desc = 'petty cash out - fee') {
+        // Get the category label
+        let categoryId
+        let accountArr = Object.values(accountDocs)
+        function filterIt(arr, searchKey) {
+          return arr.filter(obj => Object.keys(obj).some(key => obj[key] === searchKey));
+        }
+        if (filterIt(accountArr,"Food/Household").length > 0) {
+          console.log(filterIt(accountArr,"Food/Household"))
+          categoryId = Object.keys(filterIt(accountArr,"Food/Household"))[0]
+        } else if (filterIt(accountArr,"Team Building").length > 0) {
+          console.log(filterIt(accountArr,"Team Building"))
+          categoryId = Object.keys(filterIt(accountArr,"Team Building"))[0]
+        } else {
+          categoryId = Object.keys(accountDocs)[0]
+        }
+        let categoryDoc = accountDocs[categoryId]
+        transArray[index] = [
+          project.get('number'),
+          project.get('number') + transaction.id,
+          0, // international transfer? 0 if no, 1? if yes
+          transData.amount,
+          transData.GST,
+          '', // currency, blank if not international transfer
+          '', // amount in international currency
+          '', // equivalent amount in AUD
+          transData.date,
+          transData.type,
+          '"'+categoryDoc.label.replace(/(\r\n|\n|\r)/gm,"")+'"',
           transData.cheque,
           !transData.payTo
             ? ''

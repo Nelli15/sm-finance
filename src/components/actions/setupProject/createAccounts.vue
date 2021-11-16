@@ -39,7 +39,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />Edit
             </q-tooltip>
@@ -58,9 +58,7 @@
               "
               icon="view_compact"
             >
-              <q-tooltip content-class="bg-accent text-black"
-                >View in Header</q-tooltip
-              >
+              <q-tooltip class="bg-accent text-black">View in Header</q-tooltip>
             </q-toggle>
             <!-- <q-btn :to="'budget/'+account.id" dense class="q-mr-sm">Budgets</q-btn> -->
             <q-btn :to="'transactions/' + account.id" dense class="q-mr-sm"
@@ -72,7 +70,7 @@
               color="red-3"
             >
               <q-icon name="delete_forever" />
-              <q-tooltip content-class="bg-accent text-black"
+              <q-tooltip class="bg-accent text-black"
                 >Cannot Delete Budget while in use</q-tooltip
               >
             </q-btn>

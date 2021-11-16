@@ -9,6 +9,43 @@
         along with the amount deposited below.
       </q-item>
       <q-item>
+        <q-firebase-uploader
+          :metadata="{
+            customMetadata: {
+              projectId: project.id,
+              transId: transRef.id,
+              expiry: expiry(1),
+            },
+          }"
+          color="secondary"
+          flat
+          bordered
+          style="max-width: 500px"
+          ref="transUpload"
+          @uploaded="onUploaded"
+          @failed="onFailed"
+          @added="onAdded"
+          @start="onStart"
+          auto-upload
+          hide-upload-btn
+          accept=".jpg, image/*"
+          dark
+          :label="readOnly ? 'Receipt Submitted' : 'Upload Receipt Image'"
+          :readonly="readOnly"
+          :disabled="readOnly"
+          class="q-mx-auto"
+          v-if="!newTrans.receiptURL"
+        />
+        <q-img
+          :src="newTrans.receiptURL"
+          fit="contain"
+          @click="open = !open"
+          :style="open ? 'height:100%' : 'height:200px'"
+          class="q-mx-auto"
+          v-if="newTrans.receipt && newTrans.receiptURL"
+        />
+      </q-item>
+      <q-item>
         <!-- <q-item-section> -->
         <!-- <q-popup-edit v-model="props.row.category"> -->
         <!-- <q-date v-model="newTrans.date" dense  /> -->
@@ -64,6 +101,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { getFirestore, setDoc, doc, getDoc } from 'firebase/firestore'
+import { defineAsyncComponent } from 'vue'
 
 export default {
   name: 'depositCash',
@@ -82,9 +120,16 @@ export default {
         reviewed: true,
       },
       error: '',
+      readOnly: false,
+      uploading: false,
+      open: false,
     }
   },
   async created() {
+    this.transRef = doc(
+      getFirestore(),
+      `/projects/${this.project.id}/transactions/pettyClose`
+    )
     let date = new Date()
     this.newTrans.date = `${date.getDate().toString().padStart(2, '0')}/${(
       date.getMonth() + 1
@@ -96,12 +141,7 @@ export default {
       //   console.log('1')
       this.newTrans = this.transactions.find((o) => o.id === 'pettyClose')
     } else {
-      let snap = await getDoc(
-        doc(
-          getFirestore(),
-          `/projects/${this.project.id}/transactions/pettyClose`
-        )
-      ).catch((err) => {
+      let snap = await getDoc(this.transRef).catch((err) => {
         console.error(err)
       })
       if (snap.exists()) {
@@ -110,6 +150,14 @@ export default {
     }
   },
   methods: {
+    onAdded(files) {
+      // console.log('file added', files)
+      // files[0].name = 'blah.jpeg'
+    },
+    onStart(event) {
+      // console.log('upload started', event)
+      this.uploading = true
+    },
     save() {
       this.error = ''
       this.newTrans.amount =
@@ -156,12 +204,43 @@ export default {
         category: 'Journal',
         reviewed: true,
       }
+      this.transRef = doc(
+        collection(getFirestore(), `/projects/${this.project.id}/transactions`)
+      )
+      this.readOnly = false
       let date = new Date()
       this.newTrans.date = `${date.getDate().toString().padStart(2, '0')}/${(
         date.getMonth() + 1
       )
         .toString()
         .padStart(2, '0')}/${date.getFullYear()}`
+    },
+    onUploaded(event) {
+      // console.log('file uploaded', event)
+      this.readOnly = true
+      this.$q.notify({
+        color: 'positive',
+        textColor: 'white',
+        icon: 'cloud_done',
+        message: 'Receipt Uploaded',
+      })
+      this.newTrans.receipt = true
+      this.uploading = false
+    },
+    onFailed(event) {
+      // console.log('file upload failed', event)
+      this.$q.notify({
+        color: 'negative',
+        textColor: 'white',
+        icon: 'cloud_done',
+        message: 'Upload Failed',
+      })
+      this.uploading = false
+    },
+    expiry(numDays) {
+      var date = new Date()
+      date.setDate(date.getDate() + 1)
+      return date
     },
   },
   computed: {
@@ -172,6 +251,11 @@ export default {
     remainingPettyCash() {
       return this.accounts.pettyCash.balance
     },
+  },
+  components: {
+    'q-firebase-uploader': defineAsyncComponent(() =>
+      import('./../../q-firebase-uploader.vue')
+    ),
   },
 }
 </script>

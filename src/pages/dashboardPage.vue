@@ -331,6 +331,7 @@ export default {
           message: '.zip Export Successful',
         })
       }
+      this.$q.loading.hide()
     },
     async onCSVExport(projectId) {
       this.exportCSVLoading = true

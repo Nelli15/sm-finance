@@ -1,7 +1,9 @@
 <template>
   <q-list>
+    <!-- {{ newTrans }}<br /> -->
     <q-item>
       <!-- <q-item-section> -->
+
       <q-firebase-uploader
         :metadata="{
           customMetadata: {
@@ -27,6 +29,15 @@
         :readonly="readOnly"
         :disabled="readOnly"
         class="q-mx-auto"
+        v-if="!newTrans.receiptURL && !existing"
+      />
+      <q-img
+        :src="newTrans.receiptURL"
+        fit="contain"
+        @click="open = !open"
+        :style="open ? 'height:100%' : 'height:200px'"
+        class="q-mx-auto"
+        v-if="newTrans.receipt && newTrans.receiptURL"
       />
       <!-- </q-item-section> -->
     </q-item>
@@ -107,7 +118,7 @@ export default {
         type: 'Bank Card',
         date: '',
         amount: '',
-        GST: '0',
+        GST: '',
         receipt: false,
         desc: 'petty cash out - fee',
         category: 'Expense',
@@ -117,11 +128,14 @@ export default {
       transRef: {},
       readOnly: false,
       uploading: false,
+      open: false,
+      existing: false,
     }
   },
   async created() {
     for (let trans in this.action.transactions) {
       if (this.action.transactions[trans].purpose === 'fee') {
+        this.existing = true
         this.transRef = doc(
           getFirestore(),
           `/projects/${this.project.id}/transactions/${trans}`
@@ -208,7 +222,7 @@ export default {
         type: 'Bank Card',
         date: '',
         amount: '',
-        GST: '0',
+        GST: '',
         receipt: false,
         desc: '‘petty cash out',
         category: 'Expense',
@@ -265,6 +279,7 @@ export default {
     async project() {
       for (let trans in this.action.transactions) {
         if (this.action.transactions[trans].purpose === 'fee') {
+          this.existing = true
           this.transRef = doc(
             getFirestore(),
             `/projects/${this.project.id}/transactions/${trans}`

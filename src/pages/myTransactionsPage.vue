@@ -11,12 +11,15 @@
       :filter="filter"
       :filter-method="filterMethod"
       rows-per-page-label="Transactions per page:"
-      :pagination.sync="pagination"
+      :pagination="pagination"
       @update:pagination="
-        $q.localStorage.set('transTableRows', $event.rowsPerPage)
+        ($event) => {
+          pagination = $event
+          $q.localStorage.set('transPagination', $event)
+        }
       "
       selection="multiple"
-      :selected.sync="rowSelected"
+      v-model:selected="rowSelected"
       dense
     >
       <template v-slot:top="props">
@@ -54,7 +57,7 @@
           <q-tooltip
             anchor="center right"
             self="center left"
-            content-class="bg-accent text-black"
+            class="bg-accent text-black"
           >
             Show Archived
           </q-tooltip>
@@ -178,7 +181,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 <q-icon name="edit" />
                 Edit
@@ -212,7 +215,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 <q-icon name="edit" />
                 Edit
@@ -316,7 +319,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 <q-icon name="edit" />
                 Edit
@@ -343,7 +346,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -379,7 +382,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -409,7 +412,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
               v-if="props.row.category !== 'Journal'"
             >
               <q-icon name="edit" />
@@ -437,7 +440,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -463,7 +466,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
             >
               <q-icon name="edit" />
               Edit
@@ -492,7 +495,7 @@
             <q-tooltip
               anchor="center right"
               self="center left"
-              content-class="bg-accent text-black"
+              class="bg-accent text-black"
               v-if="props.row.type === 'Cheque'"
             >
               <q-icon name="edit" />
@@ -529,7 +532,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 {{
                   !props.row.deleteRequested
@@ -573,7 +576,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 Checking for receipt
               </q-tooltip>
@@ -728,7 +731,7 @@
               <q-tooltip
                 anchor="center right"
                 self="center left"
-                content-class="bg-accent text-black"
+                class="bg-accent text-black"
               >
                 Looking for receipt
               </q-tooltip>
@@ -763,7 +766,7 @@
               dense
               class="q-mr-sm"
             >
-              <q-tooltip anchor="center right" self="center left" content-class="bg-accent text-black">
+              <q-tooltip anchor="center right" self="center left" class="bg-accent text-black">
                 Request Delete
               </q-tooltip>
             </q-btn> -->
@@ -777,9 +780,7 @@
       style="z-index: 100"
     >
       <q-btn fab icon="add" color="primary" :to="{ name: 'addTrans' }">
-        <q-tooltip content-class="bg-accent text-grey-10">
-          Add Transaction
-        </q-tooltip>
+        <q-tooltip class="bg-accent text-grey-10"> Add Transaction </q-tooltip>
       </q-btn>
     </q-page-sticky>
     <q-page-sticky
@@ -791,7 +792,7 @@
       <q-card class="bg-primary text-white">
         <q-card-section>
           Amount ({{ project.currency }}): ${{ calcSelected }}
-          <q-tooltip content-class="bg-accent text-grey-10">
+          <q-tooltip class="bg-accent text-grey-10">
             Sum of {{ rowSelected.length }} Selected
           </q-tooltip>
         </q-card-section>
@@ -917,17 +918,17 @@ export default {
     // store.dispatch('fetchBudgets', currentRoute.params.id)
     // store.dispatch('fetchBudgetCategories', currentRoute.params.id)
     // store.dispatch('fetchAccounts', currentRoute.params.id)
-    store.dispatch('fetchMyTransactions', {
+    store.dispatch('transactions/fetchMyTransactions', {
       projectId: currentRoute.params.id,
       uid: store.state.auth.user.uid,
     })
   },
   created() {
     // console.log(this.project.currency)
-    this.$store.dispatch('fetchMyTransactions', {
-      projectId: this.$route.params.id,
-      uid: this.user.uid,
-    })
+    // this.$store.dispatch('transactions/fetchMyTransactions', {
+    //   projectId: this.$route.params.id,
+    //   uid: this.user.uid,
+    // })
     if (this.project.currency) {
       for (var key in this.columns) {
         if (this.columns[key].label.search('(currency)') !== -1) {
@@ -940,7 +941,15 @@ export default {
     }
 
     this.updateTransaction = debounce(this.updateTransaction, 1000)
-    this.pagination.rowsPerPage = this.$q.localStorage.getItem('transTableRows')
+    this.pagination = this.$q.localStorage.has('transPagination')
+      ? this.$q.localStorage.getItem('transPagination')
+      : {
+          sortBy: 'date',
+          descending: true,
+          page: 1,
+          rowsPerPage: 10,
+          // rowsNumber: xx if getting data from a server
+        }
   },
   methods: {
     ...mapActions('transactions', ['updateMyTransactionByKey']),
@@ -1243,7 +1252,7 @@ export default {
       }
     },
     user() {
-      this.$store.dispatch('fetchMyTransactions', {
+      this.$store.dispatch('transactions/fetchMyTransactions', {
         projectId: this.$route.params.id,
         uid: this.user.uid,
       })

@@ -108,7 +108,7 @@
                   ? `| {user.budgets.length} budgets`
                   : `| {user.budgets.length} budget`
               }}
-              <q-tooltip content-class="bg-accent text-black">
+              <q-tooltip class="bg-accent text-black">
                 <q-chip
                   dense
                   :label="budgets[budget].label"
