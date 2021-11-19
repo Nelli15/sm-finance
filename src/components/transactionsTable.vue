@@ -745,15 +745,10 @@
               :id="props.row.id"
               :label="props.row.id"
               :url="props.row.receiptURL"
-              v-if="
-                props.row.category === 'Expense' &&
-                (props.row.receiptURL > ''
-                  ? props.row.receiptURL.startsWith('https://')
-                  : false)
-              "
+              v-if="props.row.category === 'Expense'"
               class="q-mr-sm"
             />
-            <q-icon
+            <!-- <q-icon
               name="img:../icons/no-receipt.png"
               style="height: 30px; width: 30px; padding: 3.99px"
               v-else-if="
@@ -780,7 +775,7 @@
               >
                 Looking for receipt
               </q-tooltip>
-            </q-spinner-gears>
+            </q-spinner-gears> -->
 
             <q-btn
               icon="check"

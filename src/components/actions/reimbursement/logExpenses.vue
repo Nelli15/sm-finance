@@ -26,7 +26,7 @@
         >
           <q-item>
             <!-- <q-item-section> -->
-            <q-firebase-uploader
+            <fileUploader
               :metadata="{
                 customMetadata: {
                   projectId: project.id,
@@ -507,8 +507,8 @@ export default {
     'transactions-table': defineAsyncComponent(() =>
       import('./../../transactionsTable.vue')
     ),
-    'q-firebase-uploader': defineAsyncComponent(() =>
-      import('./../../q-firebase-uploader.vue')
+    fileUploader: defineAsyncComponent(() =>
+      import('./../../fileUploader.vue')
     ),
   },
 }

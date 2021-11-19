@@ -1,22 +1,28 @@
 <script>
 import { createUploaderComponent } from 'quasar'
-import { getStorage, ref, uploadBytesResumable } from 'firebase/storage'
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytesResumable,
+} from 'firebase/storage'
 import { $firebase } from './../scripts/firebase.js'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { v4 as uid } from 'uuid'
+import { useStore } from 'vuex'
 
 export default createUploaderComponent({
   name: 'q-firebase-uploader',
   props: {
     metadata: Object,
   },
-  emits: ['start', 'uploading', 'uploaded', 'failed'],
+  emits: ['start', 'uploading', 'uploaded', 'failed', 'added'],
   injectPlugin({ props, emit, helpers }) {
     // console.log(helpers)
-
-    let uploading = ref(false)
+    const store = useStore()
+    const currentUser = computed(() => store.getters['auth/user'])
+    const uploading = ref(false)
     const isUploading = computed(() => {
-      return uploading.value
+      return uploading
     })
 
     // [REQUIRED]
@@ -36,18 +42,29 @@ export default createUploaderComponent({
       helpers.queuedFiles.value.forEach((file) => {
         // var meta = file.metadata
         // meta.customMetadata = metadata
+        console.log({
+          customMetadata: {
+            ...props.metadata.customMetadata,
+            uid: currentUser.value.uid,
+          },
+        })
         const uploadTask = uploadBytesResumable(
-          ref(
+          storageRef(
             getStorage($firebase, 'gs://sp-finance-uploads'),
             'uploads/' + uid()
           ),
           file,
-          props.metadata
+          {
+            customMetadata: {
+              ...props.metadata.customMetadata,
+              uid: currentUser.value.uid,
+            },
+          }
         )
-        emit('uploading', { file })
+        // emit('uploading', { file })
         uploadTask.on('state_changed', {
           next: (snap) => {
-            uploading = true
+            uploading.value = true
             // console.log(snap)
             // loading = true
             // uploadSize = snap.totalBytes
@@ -57,7 +74,7 @@ export default createUploaderComponent({
           },
           error: (err) => {
             // console.log(err)
-            uploading = false
+            uploading.value = false
             helpers.updateFileStatus(file, 'failed')
             emit('failed', { file, err })
           },
@@ -66,7 +83,7 @@ export default createUploaderComponent({
             // loading = false
             helpers.updateFileStatus(file, 'uploaded')
             emit('uploaded', { file })
-            uploading = false
+            uploading.value = false
           },
         })
       })

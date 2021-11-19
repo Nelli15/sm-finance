@@ -2,7 +2,7 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /uploads/{projectId}/transactions/{transId} {
-      allow write: if true;
+      allow write: if resource.metadata.uid == request.auth.uid;
     }
 
     match /{allPaths=**} {

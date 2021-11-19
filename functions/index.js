@@ -499,7 +499,7 @@ exports.receiptUploaded = functions.storage
   .onFinalize(async (object, context) => {
     const fileBucket = object.bucket // The Storage bucket that contains the file.
     const filePath = object.name // File path in the bucket.
-    const gsFilePath = `gs://${fileBucket}/${filePath}`
+    // const gsFilePath = `gs://${fileBucket}/${filePath}`
 
     if (filePath === 'uploads/undefined-undefined.jpg') return false
 
@@ -517,6 +517,18 @@ exports.receiptUploaded = functions.storage
           return
         }
       }
+      console.log(context)
+      let bucket = admin.storage().bucket(fileBucket)
+    //check the user has auth, if not delete file
+    let userAuth = await admin.firestore().doc(`/projects/${metadata.projectId}/contributors/${metadata.uid}`).get()
+    console.log(userAuth.data())
+      if(userAuth.get('permission') !== 'admin' && userAuth.get('permission') !== 'contributor') {
+        console.log('User Unauthorised:', metadata.uid)
+        // delete the file and return 
+        bucket.file(object.name).delete()
+        return false
+      } 
+
 
       // Exit if this is triggered on a file that is not an image.
       if (!contentType.startsWith('image/')) {
@@ -524,13 +536,12 @@ exports.receiptUploaded = functions.storage
       }
 
       // Download file from bucket.
-      const bucket = admin.storage().bucket(fileBucket)
-      const tempFilePath = path.join(os.tmpdir(), fileName)
+      // const tempFilePath = path.join(os.tmpdir(), fileName)
       const baseFileName = path.basename(filePath, path.extname(filePath))
-      const fileDir = path.dirname(filePath)
+      // const fileDir = path.dirname(filePath)
       const tempLocalFile = path.join(os.tmpdir(), baseFileName)
       // let doc = db.collection(`/projects/${metadata.projectId}/transactions/`).doc()
-      const JPEGFilePath = path.normalize(
+      let JPEGFilePath = path.normalize(
         path.format({
           dir: `processed`,
           name: `${metadata.projectId}-${metadata.transId}`,
@@ -568,6 +579,20 @@ exports.receiptUploaded = functions.storage
       }
 
       // -------------------------------- Uploading the JPEG image. -------------------------//
+      // if the transaction doc already exists move the transaction to the project
+      let transRef = await admin.firestore().doc(`/projects/${metadata.projectId}/transactions/${metadata.transId}`).get()
+      console.log('doc exists:', transRef.exists)
+      if(transRef.exists) {
+        await admin.firestore().doc(`/projects/${metadata.projectId}/transactions/${metadata.transId}`).update({ receipt: true})
+        bucket = admin.storage().bucket('sp-finance.appspot.com')
+        JPEGFilePath = path.normalize(
+        path.format({
+          dir: `projects/${metadata.projectId}/receipts/`,
+          name: `${metadata.projectId}-${metadata.transId}`,
+          ext: JPEG_EXTENSION
+        })
+      )
+      } 
       console.log('Upload Image')
       metadata.contentType = 'image/jpeg'
       metadata.processed = true

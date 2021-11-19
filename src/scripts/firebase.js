@@ -3,7 +3,7 @@ import { getAuth, initializeAuth, browserSessionPersistence, browserPopupRedirec
 import { getFirestore, initializeFirestore, CACHE_SIZE_UNLIMITED, enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
 import { getStorage, initializeStorage, connectStorageEmulator } from 'firebase/storage'
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
-
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 // import { Platform } from 'quasar'
 
@@ -22,6 +22,19 @@ const config = {
 let firebaseApp = initializeApp(config)
 
 const storageApp = getStorage(firebaseApp)
+
+if(location.hostname === 'localhost') {
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  initializeAppCheck(firebaseApp, { provider: new ReCaptchaV3Provider(location.hostname === 'localhost' ? 'DDA53510-942D-473A-8575-012F37921DE5' : '6LejSkAdAAAAAEfqCCBf4ZLbERkaRKIIRHQF2sH5') });
+} else {
+const appCheck = initializeAppCheck(firebaseApp, {
+  provider: new ReCaptchaV3Provider('6LejSkAdAAAAAEfqCCBf4ZLbERkaRKIIRHQF2sH5'),
+
+  // Optional argument. If true, the SDK automatically refreshes App Check
+  // tokens as needed.
+  isTokenAutoRefreshEnabled: true
+});
+}
 
 if (location.hostname === "localhost") {
   firestoreSettings.host = "localhost:8080";

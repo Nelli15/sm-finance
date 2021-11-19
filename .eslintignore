@@ -1,1 +1,4 @@
 /dist
+**.js
+**.vue
+**.d.ts

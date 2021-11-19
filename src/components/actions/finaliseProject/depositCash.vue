@@ -9,7 +9,7 @@
         along with the amount deposited below.
       </q-item>
       <q-item>
-        <q-firebase-uploader
+        <fileUploader
           :metadata="{
             customMetadata: {
               projectId: project.id,
@@ -115,7 +115,7 @@ export default {
         type: 'Cash',
         date: '',
         amount: '',
-        desc: '‘petty cash close',
+        desc: 'petty cash close',
         category: 'Journal',
         reviewed: true,
       },
@@ -200,7 +200,7 @@ export default {
         type: 'Cash',
         date: '',
         amount: '',
-        desc: '‘petty cash close',
+        desc: 'petty cash close',
         category: 'Journal',
         reviewed: true,
       }
@@ -253,8 +253,8 @@ export default {
     },
   },
   components: {
-    'q-firebase-uploader': defineAsyncComponent(() =>
-      import('./../../q-firebase-uploader.vue')
+    fileUploader: defineAsyncComponent(() =>
+      import('./../../fileUploader.vue')
     ),
   },
 }

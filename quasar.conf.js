@@ -3,6 +3,16 @@
 
 module.exports = function(ctx) {
   return {
+    // https://quasar.dev/quasar-cli/supporting-ts
+    supportTS: {
+      tsCheckerConfig: {
+        eslint: {
+          enabled: false,
+          files: './src/**/*.{ts,tsx}',
+          // files: './src/**/*.{ts,tsx,js,jsx,vue}',
+        },
+      }
+    },
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/cli-documentation/boot-files

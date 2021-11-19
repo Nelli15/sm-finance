@@ -37,7 +37,75 @@
           use-input
           @filter="budgetsFilterFn"
           input-debounce="0"
-        />
+        >
+          <template v-slot:option="scope">
+            <q-item v-bind="scope.itemProps">
+              <q-item-section>
+                <q-item-label>{{ scope.opt.label }}</q-item-label>
+                <q-item-label caption>
+                  Budget Remaining: ${{
+                    (
+                      parseFloat(scope.opt.budget) -
+                      parseFloat(scope.opt.expenses)
+                    ).toFixed(2)
+                  }}</q-item-label
+                >
+              </q-item-section>
+              <!-- <q-item-section
+                avatar
+                v-if="
+                  localAction.responsiblePerson &&
+                  (users[localAction.responsiblePerson].permission ===
+                    'admin' ||
+                    users[localAction.responsiblePerson].budgets.includes(
+                      scope.opt.id
+                    ))
+                "
+              >
+                <q-avatar class="q-pr-md" size="md">
+                  <q-img
+                    :src="
+                      users[localAction.responsiblePerson].photoURL
+                        ? users[localAction.responsiblePerson].photoURL
+                        : 'https://avatars.dicebear.com/api/bottts/' +
+                          localAction.responsiblePerson +
+                          '.svg'
+                    "
+                    alt="Profile Picture"
+                  >
+                    <template v-slot:error>
+                      <q-img
+                        :src="
+                          'https://avatars.dicebear.com/api/bottts/' +
+                          localAction.responsiblePerson +
+                          '.svg'
+                        "
+                        alt="Profile Picture"
+                      >
+                        <template v-slot:error>
+                          <div
+                            class="
+                              absolute-full
+                              flex flex-center
+                              bg-negative
+                              text-white
+                            "
+                          >
+                            Cannot load image
+                          </div>
+                        </template>
+                      </q-img>
+                    </template>
+                  </q-img>
+                </q-avatar>
+                <q-tooltip class="bg-cyan-2 text-black">
+                  {{ users[localAction.responsiblePerson].name }}
+                  has access to this budget</q-tooltip
+                >
+              </q-item-section> -->
+            </q-item>
+          </template>
+        </q-select>
       </q-item>
     </q-list>
   </div>

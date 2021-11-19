@@ -117,6 +117,9 @@ export default {
         ? users.value[action.value.responsiblePerson]
         : {}
     })
+    function fetchTransWithRef(val) {
+      return store.dispatch('transactions/fetchTransWithRef', val)
+    }
     // const idToken = computed(() => store.getters['auth/idToken'])
     // async function getReceipt(projectId, idToken, transId) {
     //   // return firebase.auth().onAuthStateChanged(async (user) => {
@@ -149,11 +152,11 @@ export default {
             component: defineAsyncComponent(() => import('./gatherInfo.vue')),
             props: { action: action.value },
             events: {
-              actionChanged: (val) => {
+              actionChanged: async (val) => {
                 if (action.value.budget !== val.budget) {
                   for (let trans in val.transactions) {
                     if (val.transactions[trans].purpose === 'expense') {
-                      updateDoc(
+                      await updateDoc(
                         doc(
                           getFirestore(),
                           `/projects/${route.params.id}/transactions/${trans}`
@@ -163,7 +166,7 @@ export default {
                     } else if (
                       val.transactions[trans].purpose === 'cash-in-hand'
                     ) {
-                      updateDoc(
+                      await updateDoc(
                         doc(
                           getFirestore(),
                           `/projects/${route.params.id}/transactions/${trans}`
@@ -173,7 +176,7 @@ export default {
                     } else if (
                       val.transactions[trans].purpose === 'cash-returned'
                     ) {
-                      updateDoc(
+                      await updateDoc(
                         doc(
                           getFirestore(),
                           `/projects/${route.params.id}/transactions/${trans}`
@@ -388,38 +391,38 @@ export default {
       ]
     })
 
-    function fetchTransactions() {
-      getDocs(
-        query(
-          collection(
-            getFirestore(),
-            `/projects/${route.params.id}/transactions`
-          ),
-          where('action', '==', action.value.id)
-        )
-      ).then(async (transactionsSnap) => {
-        let transArray = {}
-        let promises = transactionsSnap.docs.map(async (doc) => {
-          let transaction = doc.data()
-          transaction.id = doc.id
-          transaction.currency =
-            transaction.currency > '' ? transaction.currency : 'AUD'
-          transaction.deleted = transaction.deleted
-            ? transaction.deleted
-            : false
-          // if (transaction.receipt === true) {
-          // transaction.receiptURL = await getReceipt(
-          //   route.params.id,
-          //   idToken,
-          //   transaction.id
-          // )
-          // }
-          return (transArray[transaction.id] = transaction)
-        })
-        await Promise.all(promises)
-        transactions.value = transArray
-      })
-    }
+    // function fetchTransactions() {
+    //   getDocs(
+    //     query(
+    //       collection(
+    //         getFirestore(),
+    //         `/projects/${route.params.id}/transactions`
+    //       ),
+    //       where('action', '==', action.value.id)
+    //     )
+    //   ).then(async (transactionsSnap) => {
+    //     let transArray = {}
+    //     let promises = transactionsSnap.docs.map(async (doc) => {
+    //       let transaction = doc.data()
+    //       transaction.id = doc.id
+    //       transaction.currency =
+    //         transaction.currency > '' ? transaction.currency : 'AUD'
+    //       transaction.deleted = transaction.deleted
+    //         ? transaction.deleted
+    //         : false
+    //       // if (transaction.receipt === true) {
+    //       // transaction.receiptURL = await getReceipt(
+    //       //   route.params.id,
+    //       //   idToken,
+    //       //   transaction.id
+    //       // )
+    //       // }
+    //       return (transArray[transaction.id] = transaction)
+    //     })
+    //     await Promise.all(promises)
+    //     transactions.value = transArray
+    //   })
+    // }
 
     for (let step of steps.value) {
       if (step.done === false) {
@@ -431,7 +434,16 @@ export default {
       () => action.value.id,
       () => {
         if (action.value.id) {
-          fetchTransactions()
+          fetchTransWithRef({
+            projectId: route.params.id,
+            ref: query(
+              collection(
+                getFirestore(),
+                `/projects/${route.params.id}/transactions`
+              ),
+              where('action', '==', action.value.id)
+            ),
+          })
         }
       },
       {
@@ -442,7 +454,16 @@ export default {
       () => action.value.transactions,
       () => {
         if (action.value.id) {
-          fetchTransactions()
+          fetchTransWithRef({
+            projectId: route.params.id,
+            ref: query(
+              collection(
+                getFirestore(),
+                `/projects/${route.params.id}/transactions`
+              ),
+              where('action', '==', action.value.id)
+            ),
+          })
         }
       },
       {

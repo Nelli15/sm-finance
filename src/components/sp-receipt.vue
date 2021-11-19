@@ -1,6 +1,10 @@
 <template>
   <q-btn
-    icon="receipt"
+    :icon="
+      url > '' && url.startsWith('https://')
+        ? 'receipt'
+        : 'img:../icons/no-receipt.png'
+    "
     @click="showDialog = !showDialog"
     :loading="loading"
     dense
@@ -22,7 +26,7 @@
         <q-card-section class="no-scroll">
           <!-- {{src}} -->
           <!-- {{receiptUrl}} -->
-          <img
+          <!-- <img
             :src="url"
             alt="No Receipt"
             style="
@@ -30,6 +34,22 @@
               max-width: 100%;
               image-orientation: from-image;
             "
+          /> -->
+          <fileUploader
+            :metadata="{
+              customMetadata: {
+                projectId: project.id,
+                transId: id,
+                expiry: expiry(1),
+              },
+            }"
+            ref="transUpload"
+            @uploaded="onUploaded"
+            @failed="onFailed"
+            @added="onAdded"
+            @start="onStart"
+            :existingURL="url"
+            class="q-mx-auto"
           />
         </q-card-section>
       </q-card>
@@ -42,6 +62,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { defineAsyncComponent } from 'vue'
 // import { dom } from 'quasar'
 // const { height } = dom
 
@@ -57,12 +78,49 @@ export default {
       // src: '',
       showDialog: false,
       // disabled: false
+      uploading: false,
+      readOnly: false,
     }
   },
   created() {
     // this.getReceipt()
   },
   methods: {
+    expiry(numDays) {
+      var date = new Date()
+      date.setDate(date.getDate() + 1)
+      return date
+    },
+    onAdded(files) {
+      // console.log('file added', files)
+      // files[0].name = 'blah.jpeg'
+    },
+    onStart(event) {
+      // console.log('upload started', event)
+      this.uploading = true
+    },
+    onUploaded(event) {
+      // console.log('file uploaded', event)
+      this.readOnly = true
+      this.$q.notify({
+        color: 'positive',
+        textColor: 'white',
+        icon: 'cloud_done',
+        message: 'Receipt Uploaded',
+      })
+      this.newTrans.receipt = true
+      this.uploading = false
+    },
+    onFailed(event) {
+      // console.log('file upload failed', event)
+      this.$q.notify({
+        color: 'negative',
+        textColor: 'white',
+        icon: 'cloud_done',
+        message: 'Upload Failed',
+      })
+      this.uploading = false
+    },
     // async getReceipt () {
     //   // return firebase.auth().onAuthStateChanged(async (user) => {
     //   // console.log(this.idToken)
@@ -107,6 +165,8 @@ export default {
     //   return (height(window) * 0.8) / 9 * 16
     // }
   },
-  components: {},
+  components: {
+    fileUploader: defineAsyncComponent(() => import('./fileUploader.vue')),
+  },
 }
 </script>

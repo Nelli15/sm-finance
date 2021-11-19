@@ -193,7 +193,7 @@
       </q-item>
       <q-item v-if="newTrans.category === 'Expense'">
         <!-- <q-item-section> -->
-        <q-firebase-uploader
+        <fileUploader
           :metadata="{
             customMetadata: {
               projectId: project.id,
@@ -714,8 +714,8 @@ export default {
     },
   },
   components: {
-    'q-firebase-uploader': defineAsyncComponent(() =>
-      import('../components/q-firebase-uploader.vue')
+    fileUploader: defineAsyncComponent(() =>
+      import('../components/fileUploader.vue')
     ),
   },
 }

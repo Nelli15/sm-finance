@@ -21,3 +21,4 @@ debug.log
 *.ntvs*
 *.njsproj
 *.sln
+yarn.lock

@@ -3,8 +3,7 @@
     <!-- {{ newTrans }}<br /> -->
     <q-item>
       <!-- <q-item-section> -->
-
-      <q-firebase-uploader
+      <fileUploader
         :metadata="{
           customMetadata: {
             projectId: project.id,
@@ -12,33 +11,15 @@
             expiry: expiry(1),
           },
         }"
-        color="secondary"
-        flat
-        bordered
-        style="max-width: 500px"
         ref="transUpload"
         @uploaded="onUploaded"
         @failed="onFailed"
         @added="onAdded"
         @start="onStart"
-        auto-upload
-        hide-upload-btn
-        accept=".jpg, image/*"
-        dark
-        :label="readOnly ? 'Receipt Submitted' : 'Upload Receipt Image'"
-        :readonly="readOnly"
-        :disabled="readOnly"
+        :existingURL="newTrans.receiptURL"
         class="q-mx-auto"
-        v-if="!newTrans.receiptURL && !existing"
       />
-      <q-img
-        :src="newTrans.receiptURL"
-        fit="contain"
-        @click="open = !open"
-        :style="open ? 'height:100%' : 'height:200px'"
-        class="q-mx-auto"
-        v-if="newTrans.receipt && newTrans.receiptURL"
-      />
+
       <!-- </q-item-section> -->
     </q-item>
     <q-item>
@@ -129,13 +110,12 @@ export default {
       readOnly: false,
       uploading: false,
       open: false,
-      existing: false,
+      editing: false,
     }
   },
   async created() {
     for (let trans in this.action.transactions) {
       if (this.action.transactions[trans].purpose === 'fee') {
-        this.existing = true
         this.transRef = doc(
           getFirestore(),
           `/projects/${this.project.id}/transactions/${trans}`
@@ -144,6 +124,7 @@ export default {
           projectId: this.$route.params.id,
           id: trans,
         })
+        console.log(this.newTrans)
         return
       }
     }
@@ -279,7 +260,6 @@ export default {
     async project() {
       for (let trans in this.action.transactions) {
         if (this.action.transactions[trans].purpose === 'fee') {
-          this.existing = true
           this.transRef = doc(
             getFirestore(),
             `/projects/${this.project.id}/transactions/${trans}`
@@ -288,6 +268,7 @@ export default {
             projectId: this.$route.params.id,
             id: trans,
           })
+          console.log(this.newTrans)
           return
         }
       }
@@ -297,8 +278,8 @@ export default {
     },
   },
   components: {
-    'q-firebase-uploader': defineAsyncComponent(() =>
-      import('./../../q-firebase-uploader.vue')
+    fileUploader: defineAsyncComponent(() =>
+      import('./../../fileUploader.vue')
     ),
   },
 }

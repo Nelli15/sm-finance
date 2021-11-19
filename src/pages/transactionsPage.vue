@@ -143,6 +143,7 @@ export default {
   preFetch({ store, currentRoute }) {
     store.dispatch('actions/fetchActions', currentRoute.params.id)
     store.dispatch('transactions/fetchTransactions', currentRoute.params.id)
+    store.dispatch('auth/fetchContributors', currentRoute.params.id)
   },
   created() {},
   methods: {
