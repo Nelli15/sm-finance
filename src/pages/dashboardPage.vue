@@ -306,7 +306,7 @@ export default {
             this.$q.loading.show({
               message: `Zipping File: ${
                 metadata.currentFile
-              } - ${metadata.percent.toFixed(2)}% `,
+              } - ${metadata.percent}% `,
               delay: 0,
             })
           }

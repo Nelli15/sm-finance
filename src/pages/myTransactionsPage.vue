@@ -363,7 +363,7 @@
           >
             <!-- {{ getAmount(props.row.text) }} -->
             <!-- {{props.row}} -->
-            {{ parseFloat(props.row.amount).toFixed(2) }}
+            {{ (props.row.amount) }}
             <q-popup-edit v-model="props.row.amount">
               <q-input
                 :model-value="props.row.amount"
@@ -394,7 +394,7 @@
             :class="{ 'cursor-pointer': props.row.category !== 'Journal' }"
           >
             <!-- {{ getGST(props.row.text) }} -->
-            {{ parseFloat(props.row.GST ? props.row.GST : 0).toFixed(2) }}
+            {{ (props.row.GST ? props.row.GST : 0) }}
             <q-popup-edit
               v-model="props.row.GST"
               v-if="props.row.category !== 'Journal'"
@@ -514,6 +514,13 @@
           <!-- {{props.row.receiptURL.startsWith('https://')}} -->
           <!-- </q-td> -->
           <q-td key="actions" :props="props" auto-width>
+            <sp-receipt
+              :id="props.row.id"
+              :label="props.row.id"
+              :url="props.row.receiptURL"
+              v-if="props.row.category === 'Expense'"
+              class="q-mr-sm"
+            />
             <q-btn
               :model-value="
                 props.row.deleteRequested ? props.row.deleteRequested : false
@@ -541,19 +548,8 @@
                 }}
               </q-tooltip>
             </q-btn>
-            <sp-receipt
-              :id="props.row.id"
-              :label="props.row.id"
-              :url="props.row.receiptURL"
-              v-if="
-                props.row.category === 'Expense' &&
-                (props.row.receiptURL > ''
-                  ? props.row.receiptURL.startsWith('https://')
-                  : false)
-              "
-              class="q-mr-sm"
-            />
-            <q-icon
+            
+            <!-- <q-icon
               name="img:../icons/no-receipt.png"
               style="height: 30px; width: 30px; padding: 3.99px"
               v-if="
@@ -563,8 +559,8 @@
                   : true)
               "
               class="q-mr-sm"
-            />
-            <q-spinner-gears
+            /> -->
+            <!-- <q-spinner-gears
               size="30px"
               color="primary"
               v-if="
@@ -580,7 +576,7 @@
               >
                 Checking for receipt
               </q-tooltip>
-            </q-spinner-gears>
+            </q-spinner-gears> -->
           </q-td>
         </q-tr>
         <q-tr
@@ -694,11 +690,11 @@
               'text-blue-8': props.row.category === 'Journal',
             }"
           >
-            {{ parseFloat(props.row.amount).toFixed(2) }}
+            {{ (props.row.amount) }}
           </q-td>
           <q-td key="GST" :props="props">
             <!-- {{ getGST(props.row.text) }} -->
-            {{ parseFloat(props.row.GST ? props.row.GST : 0).toFixed(2) }}
+            {{ (props.row.GST ? props.row.GST : 0) }}
           </q-td>
           <q-td
             key="payTo"
@@ -719,7 +715,15 @@
             {{ props.row.cheque }}
           </q-td>
           <q-td key="actions" :props="props" auto-width>
-            <q-spinner-gears
+            <sp-receipt
+              :id="props.row.id"
+              :label="props.row.id"
+              :url="props.row.receiptURL"
+              v-if="props.row.category === 'Expense'"
+              class="q-mr-sm"
+              preventEdit
+            />
+            <!-- <q-spinner-gears
               size="30px"
               color="primary"
               v-if="
@@ -735,20 +739,10 @@
               >
                 Looking for receipt
               </q-tooltip>
-            </q-spinner-gears>
-            <sp-receipt
-              :id="props.row.id"
-              :label="props.row.id"
-              :url="props.row.receiptURL"
-              v-if="
-                props.row.category === 'Expense' &&
-                (props.row.receiptURL > ''
-                  ? props.row.receiptURL.startsWith('https://')
-                  : false)
-              "
-              class="q-mr-sm"
-            />
-            <q-icon
+            </q-spinner-gears> -->
+            
+            
+            <!-- <q-icon
               name="img:../icons/no-receipt.png"
               style="height: 30px; width: 30px; padding: 3.99px"
               v-if="
@@ -758,7 +752,7 @@
                   : true)
               "
               class="q-mr-sm"
-            />
+            /> -->
             <!--             <q-btn
               :model-value="props.row.deleteRequested ? props.row.deleteRequested : false"
               @click="updateTransaction(props.row.id, 'deleteRequested', !props.row.deleteRequested)"
@@ -804,7 +798,7 @@
 
 <script>
 import { debounce } from 'quasar'
-import { updateTransactionByKey } from './../scripts/transactions.js'
+import { updateTransactionByKey } from '../scripts/transactions.js'
 
 import { defineAsyncComponent } from 'vue'
 import { mapGetters, mapActions } from 'vuex'
@@ -994,7 +988,7 @@ export default {
             // console.log(textArray[key] + textArray[(parseInt(key) + 1)] + textArray[(parseInt(key) + 2)])
           }
           if (totalFound && textArray[key].indexOf('$') !== -1) {
-            return parseFloat(textArray[key].split('$').join(''))
+            return (textArray[key].split('$').join(''))
           }
         }
       }
@@ -1014,18 +1008,18 @@ export default {
       //     // }
       //     // if ((totalFound || !totalFound) && textArray[key].indexOf('$') !== -1) {
       //       // console.log(key, textArray[key].toLowerCase())
-      //       // return parseFloat(textArray[key].split('$').join(''))
+      //       // return (textArray[key].split('$').join(''))
       //     // }
       //   }
       // }
     },
     updateTransaction(trans, key, val) {
       // console.log(trans, key, val)
-      // console.log(parseFloat(this.myTransactions[this.myTransactions.findIndex(x => x.id === trans)].amount) * 0.1, parseFloat(val), (parseFloat(val) <= (parseFloat(this.myTransactions[this.myTransactions.findIndex(x => x.id === trans)].amount) * 0.1)))
+      // console.log((this.myTransactions[this.myTransactions.findIndex(x => x.id === trans)].amount) * 0.1, (val), ((val) <= ((this.myTransactions[this.myTransactions.findIndex(x => x.id === trans)].amount) * 0.1)))
       if (
         key === 'GST' &&
-        parseFloat(val) >
-          parseFloat(
+        (val) >
+          (
             this.myTransactions[
               this.myTransactions.findIndex((x) => x.id === trans)
             ].amount
@@ -1079,14 +1073,14 @@ export default {
       var mod = (x - Math.floor(x)) * 100
       if (mod % 5 > 0) {
         mod % 5 <= 2 ? (mod = mod - (mod % 5)) : (mod = mod + (5 - (mod % 5)))
-        return parseFloat(Math.floor(x) + mod / 100)
+        return (Math.floor(x) + mod / 100)
       } else {
-        return parseFloat(x)
+        return (x)
       }
     },
   },
   computed: {
-    ...mapGetters('projects', ['project']),
+    ...mapGetters('projects', ['isContributor','project']),
     ...mapGetters('budgets', [
       'accounts',
       'budgets',
@@ -1094,7 +1088,7 @@ export default {
       'budgetCategories',
       'budgetCategoryOptions',
     ]),
-    ...mapGetters('auth', ['isContributor', 'idToken', 'user']),
+    ...mapGetters('auth', [ 'idToken', 'user']),
     ...mapGetters('transactions', ['myTransactions']),
     typeOptions() {
       let options =
@@ -1221,10 +1215,10 @@ export default {
     calcSelected() {
       let total = 0
       for (var key in this.rowSelected) {
-        // console.log(parseFloat(this.rowSelected[key].amount))
-        total += parseFloat(this.rowSelected[key].amount)
+        // console.log((this.rowSelected[key].amount))
+        total += (this.rowSelected[key].amount)
       }
-      return total.toFixed(2)
+      return total
     },
     pageLabel() {
       let category = this.$route.params.budgetCategory
@@ -1259,9 +1253,8 @@ export default {
     },
   },
   components: {
-    // 'sp-trans-form': () => import('../components/sp-trans-form.vue'),
-    'sp-receipt': () =>
-      defineAsyncComponent(import('../components/sp-receipt.vue')),
+    // 'transForm': () => import('../components/transForm.vue'),
+    'sp-receipt': defineAsyncComponent(() => import('../components/sp-receipt.vue')),
     // 'sp-delete-btn': () => import('../components/sp-delete-btn.vue')
   },
 }

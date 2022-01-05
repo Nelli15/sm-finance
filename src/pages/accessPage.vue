@@ -196,6 +196,7 @@
               label="Budgets"
               style="min-width: 100px; max-width: 150px"
               v-model="newInvitation.budgets"
+              :display-value="`${budgetOptions && newInvitation.budget && budgetOptions.find(val => val.id === newInvitation.budget).label || ''}`"
               emit-value
               map-options
               multiple
@@ -258,12 +259,15 @@
       :columns="invitesColumns"
       :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
       row-key="name"
-      :key="'invites' + tableKey"
+      :key="'invites'"
       :filter="invitesFilter"
       rows-per-page-label="Users per page:"
-      :pagination.sync="invitesPagination"
+      :pagination="invitesPagination"
       dense
-      @update:pagination="$q.localStorage.set('invitesTablePagination', $event)"
+      @update:pagination="($event) => {
+          invitesPagination = $event
+          $q.localStorage.set('invitesPagination', $event)
+        }"
     >
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
@@ -385,7 +389,25 @@
               use-input
               @filter="budgetsFilterFn"
               input-debounce="0"
-            />
+            >
+        <template v-slot:selected>
+          <q-chip
+            v-for="budget in props.row.budgets"
+            :key="budget"
+            dense
+            square
+            text-color="white"
+            color="primary"
+            class="q-my-none q-ml-xs q-mr-none"
+            removable
+              @remove="
+                removeInviteBudget(props.row.budgets, budget, props.row.email)
+              "
+          >
+            {{`${budgetOptions && budget && budgetOptions.find(val => val.id === budget).label || ''}`}}
+          </q-chip>
+        </template>
+      </q-select>
             <!-- <q-chip
               color="primary"
               text-color="white"
@@ -415,7 +437,7 @@
               color="negative"
               @click="removeInvite(props.row.email)"
             />
-            <!--  ${{ props.row.expenses.toFixed(2) }}
+            <!--  ${{ props.row.expenses }}
             <q-tooltip class="bg-accent text-black">
               Auto Calculated
             </q-tooltip> -->
@@ -430,12 +452,15 @@
       :columns="adminsColumns"
       :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
       row-key="name"
-      :key="'admins' + tableKey"
+      :key="'admins'"
       :filter="adminsFilter"
       rows-per-page-label="Users per page:"
-      :pagination.sync="adminsPagination"
+      :pagination="adminsPagination"
       dense
-      @update:pagination="$q.localStorage.set('adminsTablePagination', $event)"
+      @update:pagination="($event) => {
+          adminsPagination = $event
+          $q.localStorage.set('adminsPagination', $event)
+        }"
     >
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
@@ -547,13 +572,15 @@
       :columns="contributorsColumns"
       :rows-per-page-options="[5, 6, 7, 8, 9, 10, 15, 20, 50, 100]"
       row-key="name"
-      :key="'contributors' + tableKey"
+      :key="'contributors'"
       :filter="contributorsFilter"
       rows-per-page-label="Users per page:"
-      :pagination.sync="contributorsPagination"
+      :pagination="contributorsPagination"
       dense
-      @update:pagination="
-        $q.localStorage.set('contributorsTablePagination', $event)
+      @update:pagination="($event) => {
+          contributorsPagination = $event
+          $q.localStorage.set('contributorsPagination', $event)
+        }
       "
     >
       <template v-slot:top="props">
@@ -721,7 +748,7 @@
               color="negative"
               @click="removeUser(props.row.uid)"
             />
-            <!--  ${{ props.row.expenses.toFixed(2) }}
+            <!--  ${{ props.row.expenses }}
             <q-tooltip class="bg-accent text-black">
               Auto Calculated
             </q-tooltip> -->
@@ -729,11 +756,14 @@
         </q-tr>
       </template>
     </q-table>
+    <actionsStickyFAB />
+    <div style="min-height: 60px" />
   </q-page>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import { defineAsyncComponent} from 'vue'
 import {
   addContributorBudget,
   removeContributorBudget,
@@ -846,6 +876,8 @@ export default {
         // rowsNumber: xx if getting data from a server
       },
       budgetOptionsFiltered: [],
+      fabPos: [18, 18],
+      draggingFab: false
     }
   },
   preFetch({ store, currentRoute }) {
@@ -865,8 +897,8 @@ export default {
     // console.log(this.$route.name)
     this.newInvitation.fromName = this.user.displayName
     this.newInvitation.projectName = this.project.name
-    this.adminsPagination = this.$q.localStorage.has('adminsTablePagination')
-      ? this.$q.localStorage.getItem('adminsTablePagination')
+    this.adminsPagination = this.$q.localStorage.has('adminsPagination')
+      ? this.$q.localStorage.getItem('adminsPagination')
       : {
           sortBy: 'name',
           descending: false,
@@ -875,9 +907,9 @@ export default {
           // rowsNumber: xx if getting data from a server
         }
     this.contributorsPagination = this.$q.localStorage.has(
-      'contributorsTablePagination'
+      'contributorsPagination'
     )
-      ? this.$q.localStorage.getItem('contributorsTablePagination')
+      ? this.$q.localStorage.getItem('contributorsPagination')
       : {
           sortBy: 'name',
           descending: false,
@@ -885,8 +917,8 @@ export default {
           rowsPerPage: 10,
           // rowsNumber: xx if getting data from a server
         }
-    this.invitesPagination = this.$q.localStorage.has('invitesTablePagnation')
-      ? this.$q.localStorage.getItem('invitesTablePagnation')
+    this.invitesPagination = this.$q.localStorage.has('invitesPagination')
+      ? this.$q.localStorage.getItem('invitesPagination')
       : {
           sortBy: 'name',
           descending: false,
@@ -902,7 +934,6 @@ export default {
       'budgets',
       'budgetCategories',
       'budgetOptions',
-      'tableKey',
     ]),
     ...mapGetters('auth', [
       'admins',
@@ -1164,6 +1195,11 @@ export default {
     //     }
     //   }
   },
+  components: {
+    actionsStickyFAB: defineAsyncComponent(() =>
+      import('./../components/actionsStickyFAB.vue')
+    ),
+    }
 }
 </script>
 

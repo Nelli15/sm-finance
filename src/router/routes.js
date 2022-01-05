@@ -1,4 +1,3 @@
-import auth from './../store/modules/auth.js'
 import { onAuthStateChanged, getAuth } from 'firebase/auth'
 import { getFirestore, getDoc, doc } from 'firebase/firestore'
 
@@ -68,7 +67,7 @@ const routes = [
       {
         path: 'addTransaction',
         name: 'addTrans',
-        component: () => import('components/sp-trans-form.vue'),
+        component: () => import('src/components/transForm.vue'),
         beforeEnter: (to, from) => isProjectContributor(to, from)
       },
       {
@@ -125,15 +124,14 @@ async function isAdmin (to, from) {
   // }
   const user = await AuthUser();
 if (!user) return { name: 'login'}
-  console.log(`/projects/${to.params.id}/contributors/${user.uid}`)
+  // console.log(`/projects/${to.params.id}/contributors/${user.uid}`)
   
     let res = await getDoc(doc(getFirestore(), `/projects/${to.params.id}/contributors/${user.uid}`))
       .catch(err => {
         console.log(err)
         return { name: 'login'}
       })
-    // console.log(res)
-    if (!res || !res.exists()) return { name: 'dashboard'}
+    if (!res) return { name: 'dashboard'}
     if (res) {
       if(
         res.get('permission') !== 'admin'
@@ -150,8 +148,8 @@ async function isProjectContributor (to, from) {
         console.log(err)
         return { name: 'login'}
       })
-    // console.log(res)
-    if (!res || !res.exists()) return { name: 'dashboard'}
+    console.log(res)
+    if (!res) return { name: 'dashboard'}
     if (res) {
       if(
         res.get('permission') !== 'admin' &&

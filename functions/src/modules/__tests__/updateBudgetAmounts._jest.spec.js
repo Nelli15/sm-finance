@@ -6345,6 +6345,115 @@ describe('updateBudgetAmount', () => {
         expect(result.expenses).toEqual(0)
       })
     })
+    describe('other', () => {
+      it('should update to and from budgets on only journal amount changed', async () => {
+        // generate some test budgets/accounts
+        await projectDoc
+          .collection('accounts')
+          .doc('debitCard')
+          .set({
+            label: 'Debit Card',
+            type: 'account',
+            transAwaitingReview: 1,
+            balance: -50,
+            expenses: 0,
+            income: 0
+          })
+        await projectDoc
+          .collection('accounts')
+          .doc('pettyCash')
+          .set({
+            label: 'Petty Cash',
+            type: 'account',
+            transAwaitingReview: 1,
+            balance: 50,
+            expenses: 0,
+            income: 0
+          })
+
+        let before = {
+          date: '18/11/2020',
+          submittedBy: {},
+          amount: 50,
+          GST: 0,
+          type: 'Cash',
+          cheque: '',
+          reviewed: false,
+          from: 'debitCard',
+          receipt: false,
+          to: 'pettyCash',
+          payTo: 'ehath b',
+          category: 'Journal',
+          budget: 'debitCard',
+          desc: 'sdn',
+          id: 'SefjNJshDVrvcGbfYiBw',
+          currency: 'AUD',
+          deleted: false
+        }
+
+        let after = {
+          date: '18/11/2020',
+          submittedBy: {},
+          amount: 100,
+          GST: 0,
+          type: 'Cash',
+          cheque: '',
+          reviewed: false,
+          from: 'debitCard',
+          receipt: false,
+          to: 'pettyCash',
+          payTo: 'ehath b',
+          category: 'Journal',
+          budget: 'debitCard',
+          desc: 'sdn',
+          id: 'SefjNJshDVrvcGbfYiBw',
+          currency: 'AUD',
+          deleted: false
+        }
+
+        const change = {
+          before: {
+            exists: true
+          },
+          after: {
+           exists: true
+          }
+        }
+
+        change.before.data = () => {
+          return before
+        }
+
+        change.after.data = () => {
+          return after
+        }
+        // run the function
+        await func(change, funcContext)
+
+        // get the data to be changed from the database
+        const budget = await projectCol
+          .doc(funcContext.params.projectId)
+          .collection('accounts')
+          .doc('debitCard')
+          .get()
+
+        const result = budget.data()
+        expect(result.transAwaitingReview).toEqual(1)
+        expect(result.balance).toEqual(-100)
+        expect(result.expenses).toEqual(0)
+
+        const budget2 = await projectCol
+          .doc(funcContext.params.projectId)
+          .collection('accounts')
+          .doc('pettyCash')
+          .get()
+
+        const result2 = budget2.data()
+        expect(result2.transAwaitingReview).toEqual(1)
+        expect(result2.balance).toEqual(100)
+        expect(result2.expenses).toEqual(0)
+      })
+    })
   })
 
   afterAll(async () => {

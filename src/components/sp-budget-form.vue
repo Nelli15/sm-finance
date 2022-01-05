@@ -1,9 +1,8 @@
 <template>
   <q-card ref="root">
     <q-form @reset="reset" @submit="submit">
-      <q-list style="min-width: 100px; min-height: 360px">
-        <q-item>
-          <q-btn-toggle
+    <q-card-section class="row items-center q-pb-none">
+      <q-btn-toggle
             v-model="newBudget.type"
             toggle-color="primary"
             :options="[
@@ -16,7 +15,10 @@
             dense
             class="q-mx-auto"
           />
-        </q-item>
+      <q-space />
+      <q-btn icon="close" flat round dense v-close-popup />
+    </q-card-section>
+      <q-list style="min-width: 100px; min-height: 360px">
         <q-item
           class="text-h6 justify-center"
           v-if="newBudget.type !== 'transaction'"
@@ -159,9 +161,10 @@
           </q-icon>
         </q-item>
         <q-item v-if="newBudget.type === 'transaction'">
-          <sp-trans-form
+          <transForm
             :projectId="project.id"
             @onSubmit="$emit('onSubmit', $event)"
+            
           />
         </q-item>
         <q-item v-if="newBudget.type !== 'transaction'">
@@ -244,11 +247,11 @@ export default {
   props: ['projectId', 'show'],
   emits: ['onSubmit'],
   setup(props) {
-    const $q = useQuasar()
+    const q = useQuasar()
     const store = useStore()
     const newBudget = reactive({
       category: '', // ID
-      type: props.show ? props.show : 'budget', // ['budget', 'category', 'account']
+      type: props.show ? props.show : 'transaction', // ['budget', 'category', 'account']
       label: '', // name of budget or category
       budget: '', // the amount budgeted
     })
@@ -278,7 +281,7 @@ export default {
 
     function submit() {
       if (newBudget.type === 'budget' && newBudget.category <= '') {
-        $q.notify({
+        q.notify({
           color: 'negative',
           textColor: 'white',
           icon: 'error',
@@ -295,7 +298,7 @@ export default {
         newBudget
       )
         .then((res) => {
-          $q.notify({
+          q.notify({
             color: 'positive',
             textColor: 'white',
             icon: 'cloud_done',
@@ -305,7 +308,7 @@ export default {
         })
         .catch((err) => {
           console.error(err)
-          $q.notify({
+          q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
@@ -331,8 +334,8 @@ export default {
     }
   },
   components: {
-    'sp-trans-form': defineAsyncComponent(() =>
-      import('../components/sp-trans-form.vue')
+    'transForm': defineAsyncComponent(() =>
+      import('./transForm.vue')
     ),
   },
 }

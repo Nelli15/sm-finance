@@ -1,3 +1,4 @@
+const  currency = require( 'currency.js')
 module.exports = ({ admin, environment }) => async (change, context) => {
   //
   var db = admin.firestore()
@@ -30,43 +31,31 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         if (oldDoc && oldDoc.category === newDoc.category) {
           // console.log('updated')
           // console.log(
-          //   data.expenses ? parseFloat(data.expenses) : 0,
-          //   newDoc.expenses ? parseFloat(newDoc.expenses) : 0,
-          //   oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0
+          //   data.expenses ? (data.expenses) : 0,
+          //   newDoc.expenses ? (newDoc.expenses) : 0,
+          //   oldDoc.expenses ? (oldDoc.expenses) : 0
           // )
           // category hasn't changed. modify the totals by the amount to changed by
-          newData.expenses = parseFloat((
-            (data.expenses ? parseFloat(data.expenses) : 0) +
-            (newDoc.expenses ? parseFloat(newDoc.expenses) : 0) -
-            (oldDoc.expenses ? parseFloat(oldDoc.expenses) : 0)).toFixed(2))
+          newData.expenses = 
+            currency(data.expenses ? (data.expenses) : 0).add(newDoc.expenses ? (newDoc.expenses) : 0).subtract(oldDoc.expenses ? (oldDoc.expenses) : 0).value
           // newData.income =
-          //   (data.income ? parseFloat(data.income) : 0) +
-          //   (newDoc.income ? parseFloat(newDoc.income) : 0) -
-          //   (oldDoc.income ? parseFloat(oldDoc.income) : 0)
+          //   (data.income ? (data.income) : 0) +
+          //   (newDoc.income ? (newDoc.income) : 0) -
+          //   (oldDoc.income ? (oldDoc.income) : 0)
           newData.budget =
-            (data.budget ? parseFloat(data.budget) : 0) +
-            (newDoc.budget ? parseFloat(newDoc.budget) : 0) -
-            (oldDoc.budget ? parseFloat(oldDoc.budget) : 0)
+            currency(data.budget ? (data.budget) : 0).add(newDoc.budget ? (newDoc.budget) : 0).subtract(oldDoc.budget ? (oldDoc.budget) : 0).value
           newData.balance =
-            parseFloat(((data.balance ? parseFloat(data.balance) : 0) +
-            (newDoc.balance ? parseFloat(newDoc.balance) : 0) -
-            (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)).toFixed(2))
+            currency(data.balance ? (data.balance) : 0).add(newDoc.balance ? (newDoc.balance) : 0).subtract(oldDoc.balance ? (oldDoc.balance) : 0).value
         } else {
           // console.log('new')
 
           // category has changed. add the new amounts to the category
-          newData.expenses = parseFloat((
-            (data.expenses ? parseFloat(data.expenses) : 0) +
-            (newDoc.expenses ? parseFloat(newDoc.expenses) : 0)).toFixed(2))
+          newData.expenses = currency(data.expenses ? (data.expenses) : 0).add(newDoc.expenses ? (newDoc.expenses) : 0).value
           // newData.income =
-          //   (data.income ? parseFloat(data.income) : 0) +
-          //   (newDoc.income ? parseFloat(newDoc.income) : 0)
-          newData.budget =
-            (data.budget ? parseFloat(data.budget) : 0) +
-            (newDoc.budget ? parseFloat(newDoc.budget) : 0)
-          newData.balance =
-            parseFloat(((data.balance ? parseFloat(data.balance) : 0) +
-            (newDoc.balance ? parseFloat(newDoc.balance) : 0)).toFixed(2))
+          //   (data.income ? (data.income) : 0) +
+          //   (newDoc.income ? (newDoc.income) : 0)
+          newData.budget = currency(data.budget ? (data.budget) : 0).add(newDoc.budget ? (newDoc.budget) : 0).value
+          newData.balance = currency(data.balance ? (data.balance) : 0).add(newDoc.balance ? (newDoc.balance) : 0).value
         }
         // console.log(newData)
         t.update(ref, newData)
@@ -86,18 +75,12 @@ module.exports = ({ admin, environment }) => async (change, context) => {
             balance: 0,
             budget: 0
           }
-          newData.expenses =
-            parseFloat(((parseFloat(data.expenses) ? parseFloat(data.expenses) : 0) -
-            (parseFloat(oldDoc.expenses) ? parseFloat(oldDoc.expenses) : 0)).toFixed(2))
+          newData.expenses = currency(data.expenses ? (data.expenses) : 0).subtract(oldDoc.expenses ? (oldDoc.expenses) : 0).value
           // newData.income =
-          //   (data.income ? parseFloat(data.income) : 0) -
+          //   (data.income ? (data.income) : 0) -
           //   (oldDoc.income ? Doc.income : 0)
-          newData.budget =
-            (data.budget ? parseFloat(data.budget) : 0) -
-            (oldDoc.budget ? parseFloat(oldDoc.budget) : 0)
-          newData.balance =
-            parseFloat(((data.balance ? parseFloat(data.balance) : 0) -
-            (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)).toFixed(2))
+          newData.budget = currency(data.budget ? (data.budget) : 0).subract(oldDoc.budget ? (oldDoc.budget) : 0)
+          newData.balance = currency(data.balance ? (data.balance) : 0).subtract(oldDoc.balance ? (oldDoc.balance) : 0)
 
           // console.log(newData)
           t.update(ref, newData)
@@ -117,19 +100,13 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         balance: 0,
         budget: 0
       }
-      newData.expenses =
-        parseFloat(((parseFloat(data.expenses) ? parseFloat(data.expenses) : 0) -
-        (parseFloat(oldDoc.expenses) ? parseFloat(oldDoc.expenses) : 0)).toFixed(2))
+      newData.expenses = currency(data.expenses ? (data.expenses) : 0).subtract((oldDoc.expenses) ? (oldDoc.expenses) : 0).value
       // newData.income =
-      //   (data.income ? parseFloat(data.income) : 0) -
-      //   (oldDoc.income ? parseFloat(oldDoc.income) : 0)
+      //   (data.income ? (data.income) : 0) -
+      //   (oldDoc.income ? (oldDoc.income) : 0)
 
-      newData.budget =
-        (data.budget ? parseFloat(data.budget) : 0) -
-        (oldDoc.budget ? parseFloat(oldDoc.budget) : 0)
-      newData.balance =
-        parseFloat(((data.balance ? parseFloat(data.balance) : 0) -
-        (oldDoc.balance ? parseFloat(oldDoc.balance) : 0)).toFixed(2))
+      newData.budget = currency(data.budget ? (data.budget) : 0).subtract(oldDoc.budget ? (oldDoc.budget) : 0).value
+      newData.balance = currency(data.balance ? (data.balance) : 0).subtract(oldDoc.balance ? (oldDoc.balance) : 0).value
 
       // console.log(newData)
       t.update(ref, newData)

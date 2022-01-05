@@ -1,14 +1,14 @@
 <template>
   <q-card>
     <q-list>
-      <q-item class="text-bold"> Actions - What would you like to do? </q-item>
+      <q-item class="text-bold"> <q-item-section label> Actions - What would you like to do? </q-item-section></q-item>
       <q-item
         v-for="(action, index) in actions"
         :key="index"
         clickable
         @click="openDialog(`action-${action.type}-dialog`)"
       >
-        <q-item-section avatar v-if="action.icon">
+        <q-item-section avatar v-if="action.icon" side>
           <q-icon :name="action.icon" />
         </q-item-section>
         <q-item-section>
@@ -40,6 +40,7 @@ export default {
     const refs = reactive({})
     const actions = shallowRef([
       {
+        icon: 'settings',
         label: 'Setup Project',
         type: 'setupProject',
         component: {
@@ -51,6 +52,7 @@ export default {
         },
       },
       {
+         icon: 'mdi-cash-register',
         label: 'Withdraw Petty Cash',
         type: 'withdrawPettyCash',
         component: {
@@ -62,6 +64,7 @@ export default {
         },
       },
       {
+         icon: 'mdi-cash',
         label: 'Cash in hand for future Expense',
         type: 'cashInHand',
         component: {
@@ -73,6 +76,7 @@ export default {
         },
       },
       {
+         icon: 'mdi-cash-refund',
         label: 'Reimburse Expense',
         type: 'reimburseExpense',
         component: {
@@ -84,6 +88,7 @@ export default {
         },
       },
       {
+         icon: 'task_alt',
         label: 'Finalise Project',
         type: 'finaliseProject',
         component: {
@@ -95,13 +100,14 @@ export default {
         },
       },
       {
+        icon: 'mdi-dots-vertical',
         label: 'Other',
         type: 'manualTransaction',
         component: {
           component: defineAsyncComponent(() => import('./sp-budget-form.vue')),
           props: {
             projectId: route.params.id,
-            show: 'category',
+            show: 'transaction',
           },
           models: {
             onSubmit: () => {

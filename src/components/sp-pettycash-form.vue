@@ -45,7 +45,7 @@
       </q-list>
     </q-form>
     <q-inner-loading :showing="loading">
-      <q-spinner size="50px" color="primary" />
+      <q-spinner-gears size="50px" color="primary" />
     </q-inner-loading>
   </q-menu>
 </template>

@@ -3,14 +3,12 @@ import {getFirestore, collection, onSnapshot } from 'firebase/firestore'
 
 const state = {
   user: {
-    // notChecked: true
   },
   users: [],
   contributors: [],
   invites: [],
   idToken: '',
   userLoadStatus: false,
-  listeners: []
 }
 
 export const getters = {
@@ -47,13 +45,11 @@ export const getters = {
 export const mutations = {
   setUser(state, payload) {
     state.user = payload
-    // state.logInCheck = true
   },
   setContributors(state, payload) {
     state.contributors = payload
   },
   setIdToken(state, payload) {
-    // console.log(payload)
     state.idToken = payload
   },
   setInvites(state, payload) {
@@ -62,50 +58,30 @@ export const mutations = {
   setUserLoadStatus(state, payload) {
     state.userLoadStatus = payload
   },
-  addListeners(state, unsub) {
-    state.listeners.push(unsub)
-  },
-  clearListeners(state, {}) {
-    
-    /*for(let unsub of state.listeners){
-      unsub()
-    }
-    state.listeners = []*/
-  }
 }
 
 export const actions = {
   fetchContributors({ commit }, payload) {
-    // console.log('fetching contributors', payload)
     if(state.contributors.length <= 0)
-      commit('clearListeners', false)
-      let unsub = onSnapshot(collection(getFirestore(),`/projects/${payload}/contributors`), async adminsSnap => {
+      onSnapshot(collection(getFirestore(),`/projects/${payload}/contributors`), async adminsSnap => {
         let contributors = []
         let promises = adminsSnap.docs.map(doc => {
-          // console.log('contributor ', doc.data())
           contributors.push(doc.data())
         })
         await Promise.all(promises)
-        // console.log(members)
         commit('setContributors', contributors)
       })
-      commit('addListeners', unsub)
   },
   fetchInvites({ commit }, payload) {
-    // console.log('fetching admin', payload)
     if(state.invites.length <= 0)
-      commit('clearListeners', false)
-      let unsub = onSnapshot(collection(getFirestore(), `/projects/${payload}/invites`), async adminsSnap => {
+      onSnapshot(collection(getFirestore(), `/projects/${payload}/invites`), async adminsSnap => {
         let invites = []
         let promises = adminsSnap.docs.map(doc => {
-          // console.log('contributor ', doc.data())
           invites.push(doc.data())
         })
         await Promise.all(promises)
-        // console.log(members)
         commit('setInvites', invites)
       })
-      commit('addListeners', unsub)
   }
 }
 

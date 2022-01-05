@@ -109,7 +109,7 @@
           <q-card-section class="q-gutter-md">
             <q-input
               prefix="$100 x"
-              :suffix="'$' + (dollars['hundreds'] * 100).toFixed(2)"
+              :suffix="currency(dollars['hundreds'] * 100).format()"
               color="secondary"
               outlined
               :model-value="dollars['hundreds']"
@@ -124,7 +124,7 @@
 
             <q-input
               prefix="$50 x"
-              :suffix="'$' + (dollars['fifties'] * 50).toFixed(2)"
+              :suffix="currency(dollars['fifties'] * 50).format()"
               color="secondary"
               outlined
               :model-value="dollars['fifties']"
@@ -136,7 +136,7 @@
             </q-input>
             <q-input
               prefix="$20 x"
-              :suffix="'$' + (dollars['twenties'] * 20).toFixed(2)"
+              :suffix="currency(dollars['twenties'] * 20).format()"
               color="secondary"
               outlined
               :model-value="dollars['twenties']"
@@ -150,7 +150,7 @@
             </q-input>
             <q-input
               prefix="$10 x"
-              :suffix="'$' + (dollars['tens'] * 10).toFixed(2)"
+              :suffix="currency(dollars['tens'] * 10).format()"
               color="secondary"
               outlined
               :model-value="dollars['tens']"
@@ -162,7 +162,7 @@
             </q-input>
             <q-input
               prefix="$5 x"
-              :suffix="'$' + (dollars['fives'] * 5).toFixed(2)"
+              :suffix="currency(dollars['fives'] * 5).format()"
               color="secondary"
               outlined
               :model-value="dollars['fives']"
@@ -180,7 +180,7 @@
           <q-card-section class="q-gutter-md">
             <q-input
               prefix="$2 x"
-              :suffix="'$' + (dollars['twos'] * 2).toFixed(2)"
+              :suffix="currency(dollars['twos'] * 2).format()"
               color="secondary"
               outlined
               :model-value="dollars['twos']"
@@ -192,7 +192,7 @@
             </q-input>
             <q-input
               prefix="$1 x"
-              :suffix="'$' + (dollars['ones'] * 1).toFixed(2)"
+              :suffix="currency(dollars['ones'] * 1).format()"
               color="secondary"
               outlined
               :model-value="dollars['ones']"
@@ -204,7 +204,7 @@
             </q-input>
             <q-input
               prefix="50c x"
-              :suffix="'$' + (cents['fifties'] * 0.5).toFixed(2)"
+              :suffix="currency(cents['fifties'] * 0.5).format()"
               color="secondary"
               outlined
               :model-value="cents['fifties']"
@@ -216,7 +216,7 @@
             </q-input>
             <q-input
               prefix="20c x"
-              :suffix="'$' + (cents['twenties'] * 0.2).toFixed(2)"
+              :suffix="currency(cents['twenties'] * 0.2).format()"
               color="secondary"
               outlined
               :model-value="cents['twenties']"
@@ -228,7 +228,7 @@
             </q-input>
             <q-input
               prefix="10c x"
-              :suffix="'$' + (cents['tens'] * 0.1).toFixed(2)"
+              :suffix="currency(cents['tens'] * 0.1).format()"
               color="secondary"
               outlined
               :model-value="cents['tens']"
@@ -240,7 +240,7 @@
             </q-input>
             <q-input
               prefix="5c x"
-              :suffix="'$' + (cents['fives'] * 0.05).toFixed(2)"
+              :suffix="currency(cents['fives'] * 0.05).format()"
               color="secondary"
               outlined
               :model-value="cents['fives']"
@@ -261,8 +261,8 @@
               <q-separator />
               <q-item>
                 <q-item-section class="text-bold q-pl-sm">
-                  Total in Petty Cash: ${{ parseFloat(total).toFixed(2) }}
-                  <!-- <q-input outlined prefix="Total:" :model-value="'$' + total" dense> -->
+                  Total in Petty Cash: {{ (total.format()) }}
+                  <!-- <q-input outlined prefix="Total:" :model-value="total" dense> -->
                   <!-- </q-input> -->
                 </q-item-section>
               </q-item>
@@ -277,7 +277,7 @@
                     text-white
                   "
                   v-if="
-                    Number(expected.toFixed(2).replace(/[^0-9.-]+/g, '')) <=
+                    Number(expected) <=
                     -0.05
                   "
                 >
@@ -287,13 +287,13 @@
                   class="text-bold q-pl-sm rounded-borders"
                   :class="{
                     'bg-negative text-white':
-                      Number(expected.toFixed(2).replace(/[^0-9.-]+/g, '')) <=
+                      Number(expected) <=
                       -0.05,
                   }"
                 >
-                  Expected: ${{ expected.toFixed(2) }}<br />
+                  Expected: {{ expected }}<br />
                   {{
-                    Number(expected.toFixed(2).replace(/[^0-9.-]+/g, '')) <=
+                    Number(expected) <=
                     -0.05
                       ? "(Petty Cash can't be negative)"
                       : ''
@@ -301,7 +301,7 @@
                   <!-- <q-input
                     outlined
                     prefix="Expected:"
-                    :model-value="'$' + expected.toFixed(2)"
+                    :model-value="expected"
                     dense
                   >
                   </q-input> -->
@@ -319,10 +319,10 @@
                   "
                   v-if="
                     Number(
-                      (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                      total.subtract(expected)
                     ) <= -0.05 ||
                     Number(
-                      (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                      total.subtract(expected)
                     ) >= 0.05
                   "
                 >
@@ -333,30 +333,30 @@
                   :class="{
                     'bg-positive':
                       Number(
-                        (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                        (total.subtract(expected))
                       ) > -0.05 &&
                       Number(
-                        (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                        (total.subtract(expected))
                       ) < 0.05,
                     'bg-negative text-white':
                       Number(
-                        (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                        (total.subtract(expected))
                       ) <= -0.05 ||
                       Number(
-                        (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                        (total.subtract(expected))
                       ) >= 0.05,
                   }"
                 >
-                  Difference: ${{ (total - expected).toFixed(2) }}<br />
+                  Difference: {{ (total.subtract(expected)) }}<br />
                   {{
                     Number(
-                      (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                      (total.subtract(expected))
                     ) <= -0.05
                       ? '(Money is missing from Petty Cash)'
                       : ''
                   }}{{
                     Number(
-                      (total - expected).toFixed(2).replace(/[^0-9.-]+/g, '')
+                      (total.subtract(expected))
                     ) >= 0.05
                       ? '(Petty Cash has more money than expected)'
                       : ''
@@ -425,13 +425,17 @@
         </q-menu>
       </q-btn>
     </q-page-sticky> -->
+    <actionsStickyFAB />
+    <div style="min-height: 60px" />
   </q-page>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import { defineAsyncComponent} from 'vue'
 import { debounce } from 'quasar'
 import { updatePettyByKey } from './../scripts/project.js'
+import currency from 'currency.js'
 
 export default {
   data() {
@@ -452,9 +456,12 @@ export default {
       //   fives: 0
       // },
       tab: 'calculator',
+      fabPos: [18, 18],
+      draggingFab: false
     }
   },
   created() {
+    this.currency = currency
     // this.$store.dispatch('fetchPetty', this.$route.params.id)
     this.updatePetty = debounce(this.updatePetty, 500)
   },
@@ -471,6 +478,7 @@ export default {
     },
     total() {
       return (
+        currency(
         this.dollars['hundreds'] * 100 +
         this.dollars['fifties'] * 50 +
         this.dollars['twenties'] * 20 +
@@ -481,14 +489,14 @@ export default {
         this.cents['fifties'] * 0.5 +
         this.cents['twenties'] * 0.2 +
         this.cents['tens'] * 0.1 +
-        this.cents['fives'] * 0.05
-      ).toFixed(2)
+        this.cents['fives'] * 0.05)
+      )
     },
   },
   methods: {
     ...mapActions('petty', ['updatePettyByKey']),
     updatePetty(key, val) {
-      console.log(key, val)
+      // console.log(key, val)
       if (val < 0) return
       // console.log('updatePetty', `/projects/`, this.project.id)
       this.updatePettyByKey({ key, val })
@@ -513,6 +521,11 @@ export default {
         })
     },
   },
+  components: {
+    actionsStickyFAB: defineAsyncComponent(() =>
+      import('./../components/actionsStickyFAB.vue')
+    ),
+    }
 }
 </script>
 

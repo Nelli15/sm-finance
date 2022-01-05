@@ -1,3 +1,4 @@
+const  currency = require( 'currency.js')
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 
@@ -12,6 +13,7 @@ const context = {
 const updateCatAmounts = require('./src/modules/updateCatAmounts.js')
 const updateBudgetAmounts = require('./src/modules/updateBudgetAmounts.js')
 const getTransReceipt = require('./src/modules/getTransReceipt.js')
+const recalcProjectAccounts = require('./src/modules/recalcAllAccounts.js')
 
 // const validator = require('validator');
 const nodemailer = require('nodemailer')
@@ -504,7 +506,7 @@ exports.receiptUploaded = functions.storage
     if (filePath === 'uploads/undefined-undefined.jpg') return false
 
     if (filePath.substring(0, filePath.lastIndexOf('/')) === 'uploads') {
-      console.log('file name: ', filePath, object.metadata)
+      // console.log('file name: ', filePath, object.metadata)
       const fileName = filePath.replace(/^.*[\\\/]/, '')
       const contentType = object.contentType // File content type.
       const metageneration = object.metageneration // Number of times metadata has been generated. New objects have a value of 1.
@@ -517,15 +519,15 @@ exports.receiptUploaded = functions.storage
           return
         }
       }
-      console.log(context)
+      // console.log(context)
       let bucket = admin.storage().bucket(fileBucket)
     //check the user has auth, if not delete file
     let userAuth = await admin.firestore().doc(`/projects/${metadata.projectId}/contributors/${metadata.uid}`).get()
     console.log(userAuth.data())
       if(userAuth.get('permission') !== 'admin' && userAuth.get('permission') !== 'contributor') {
-        console.log('User Unauthorised:', metadata.uid)
+        console.log('User Unauthorised:', metadata.uid, userAuth.get('permission'))
         // delete the file and return 
-        bucket.file(object.name).delete()
+        // bucket.file(object.name).delete()
         return false
       } 
 
@@ -596,7 +598,7 @@ exports.receiptUploaded = functions.storage
       console.log('Upload Image')
       metadata.contentType = 'image/jpeg'
       metadata.processed = true
-      console.log(metadata, { destination: JPEGFilePath, metadata: metadata })
+      // console.log(metadata, { destination: JPEGFilePath, metadata: metadata })
       await bucket
         .upload(tempLocalJPEGFile, {
           destination: JPEGFilePath,
@@ -1062,7 +1064,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           project.get('number') + transaction.id,
           0,
           transData.from === 'pettyCash'
-            ? -1 * parseFloat(transData.amount)
+            ? -1 * (transData.amount)
             : transData.amount,
           transData.GST,
           '',
@@ -1150,3 +1152,7 @@ If you are a student you will be provided with a form that will allow you to upl
 </h6></td></tr></tbody></table><!--[if mso]></td><![endif]--><!--[if mso]></tr></table><![endif]--></td></tr></tbody></table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnDividerBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;table-layout: fixed !important;"><tbody class="mcnDividerBlockOuter"><tr><td class="mcnDividerBlockInner" style="min-width: 100%;padding: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><table class="mcnDividerContent" border="0" cellpadding="0" cellspacing="0" width="100%" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><span></span></td></tr></tbody></table><!--<td class="mcnDividerBlockInner" style="padding: 18px;"><hr class="mcnDividerContent" style="border-bottom-color:none; border-left-color:none; border-right-color:none; border-bottom-width:0; border-left-width:0; border-right-width:0; margin-top:0; margin-right:0; margin-bottom:0; margin-left:0;" />--></td></tr></tbody></table></td></tr></tbody></table><!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]--></td></tr><tr><td align="center" valign="top" id="templateFooter" data-template-container="" style="background:#333333 none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #333333;background-image: 'https://firebasestorage.googleapis.com/v0/b/sp-finance.appspot.com/o/assets%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&amp;token=34eac538-a272-4039-be17-c77a05c27da7';background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0px;padding-bottom: 0px;"><!--[if (gte mso 9)|(IE)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;"><tr><td align="center" valign="top" width="600" style="width:600px;"><![endif]--><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;max-width: 600px !important;"><tbody><tr><td valign="top" class="footerContainer" style="background:transparent none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: transparent;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0;padding-bottom: 0;"></td></tr></tbody></table><!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]--></td></tr></tbody></table><!-- // END TEMPLATE --></td></tr></tbody></table></center></body></html>` // email content in HTML
 }
+
+exports.recalcProjectAccounts = functions.firestore
+  .document('/recalc/{id}')
+  .onCreate(recalcProjectAccounts(context))

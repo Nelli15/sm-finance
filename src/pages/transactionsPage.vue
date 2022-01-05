@@ -1,5 +1,5 @@
 <template>
-  <q-page padding>
+  <q-page>
     <q-banner
       class="bg-info text-center q-mb-md"
       rounded
@@ -14,11 +14,11 @@
       </span>
       <span class="q-mr-lg">
         <b>Budgeted: </b>
-        <q-badge class="bg-black" :label="'$' + budget.budget.toFixed(2)" />
+        <q-badge class="bg-black" :label="'$' + budget.budget" />
       </span>
       <span class="q-mr-lg">
         <b>Spent: </b>
-        <q-badge class="bg-red-8" :label="'$' + budget.expenses.toFixed(2)" />
+        <q-badge class="bg-red-8" :label="'$' + budget.expenses" />
       </span>
       <span class="q-mr-lg">
         <b>Cash in Hand: </b>
@@ -30,7 +30,7 @@
               (budget.balance < 0.01 && budget.balance > -0.01) ||
               !budget.balance,
           }"
-          :label="'$' + (budget.balance ? budget.balance : 0).toFixed(2)"
+          :label="'$' + (budget.balance ? budget.balance : 0)"
         />
       </span>
     </q-banner>
@@ -50,7 +50,7 @@
               (budget.balance < 0.01 && budget.balance > -0.01) ||
               !budget.balance,
           }"
-          :label="'$' + (budget.balance ? budget.balance : 0).toFixed(2)"
+          :label="'$' + (budget.balance ? budget.balance : 0)"
         />
       </span>
     </q-banner>
@@ -62,11 +62,11 @@
       <span class="q-mr-lg"> <b>Category: </b> {{ budget.label }} </span>
       <span class="q-mr-lg">
         <b>Budgeted: </b>
-        <q-badge class="bg-black" :label="'$' + budget.budget.toFixed(2)" />
+        <q-badge class="bg-black" :label="'$' + budget.budget" />
       </span>
       <span class="q-mr-lg">
         <b>Spent: </b>
-        <q-badge class="bg-red-8" :label="'$' + budget.expenses.toFixed(2)" />
+        <q-badge class="bg-red-8" :label="'$' + budget.expenses" />
       </span>
       <span class="q-mr-lg">
         <b>Cash in Hand: </b>
@@ -78,49 +78,16 @@
               (budget.balance < 0.01 && budget.balance > -0.01) ||
               !budget.balance,
           }"
-          :label="'$' + (budget.balance ? budget.balance : 0).toFixed(2)"
+          :label="'$' + (budget.balance ? budget.balance : 0)"
         />
       </span>
     </q-banner>
     <transactions-table
       :transactions="transactions"
       @onTransUpdate="updateTrans"
+      :showReviewed="$route.params.budgetCategory ? true : false"
     />
-    <q-page-sticky position="bottom-left" :offset="fabPos" style="z-index: 100">
-      <q-btn
-        fab
-        icon="add_task"
-        color="primary"
-        direction="up"
-        :disable="draggingFab"
-        v-touch-pan.prevent.mouse="moveFab"
-      >
-        <q-tooltip class="bg-accent text-black"> Add Actions </q-tooltip>
-        <q-menu persistent>
-          <actionsMenu />
-        </q-menu>
-      </q-btn>
-    </q-page-sticky>
-    <!-- <q-page-sticky position="bottom-left" :offset="fabPos" style="z-index: 100">
-      <q-btn
-        fab
-        icon="add"
-        color="primary"
-        :disable="draggingFab"
-        v-touch-pan.prevent.mouse="moveFab"
-      >
-        <q-tooltip class="bg-accent text-grey-10">
-          Add Transaction
-        </q-tooltip>
-        <q-menu ref="addTransMenu" persistent>
-          <sp-budget-form
-            :projectId="project.id"
-            @onSubmit="$refs.addTransMenu.hide()"
-            show="transaction"
-          />
-        </q-menu>
-      </q-btn>
-    </q-page-sticky> -->
+    <actionsStickyFAB/>
     <div style="min-height: 60px" />
   </q-page>
 </template>
@@ -136,8 +103,6 @@ export default {
   data() {
     return {
       ccOptions: [],
-      fabPos: [18, 18],
-      draggingFab: false,
     }
   },
   preFetch({ store, currentRoute }) {
@@ -149,20 +114,14 @@ export default {
   methods: {
     ...mapActions('transactions', ['updateTransactionByKey']),
     ...mapMutations(['clearListeners']),
-    moveFab(ev) {
-      this.draggingFab = ev.isFirst !== true && ev.isFinal !== true
-
-      this.fabPos = [this.fabPos[0] + ev.delta.x, this.fabPos[1] - ev.delta.y]
-    },
     updateTrans({ trans, key, val }) {
       if (
         key === 'GST' &&
-        parseFloat(val) >
-          parseFloat(
-            this.transactions[
+        val >
+          this.transactions[
               this.transactions.findIndex((x) => x.id === trans)
             ].amount
-          ) *
+           *
             0.1
       ) {
         this.$q.notify({
@@ -174,7 +133,7 @@ export default {
         return
       }
 
-      this.updateTransactionByKey({ trans, key, val })
+      this.updateTransactionByKey({ transId: trans, key, val })
       updateTransactionByKey(this.project.id, trans, key, val)
         .then(() => {
           this.$q.notify({
@@ -229,8 +188,8 @@ export default {
     'transactions-table': defineAsyncComponent(() =>
       import('../components/transactionsTable.vue')
     ),
-    actionsMenu: defineAsyncComponent(() =>
-      import('./../components/actionsMenu.vue')
+    actionsStickyFAB: defineAsyncComponent(() =>
+      import('./../components/actionsStickyFAB.vue')
     ),
   },
 }

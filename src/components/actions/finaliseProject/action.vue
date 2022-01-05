@@ -1,7 +1,7 @@
 <template>
   <q-card style="width: 800px; max-width: 80vw" ref="parentRef">
     <q-card-section class="row items-center q-pb-none">
-      <div class="text-h6"></div>
+      <div class="text-h6">Finalise Project</div>
       <q-space />
       <q-btn icon="close" flat round dense v-close-popup />
     </q-card-section>
@@ -30,6 +30,7 @@
           :is="step.body.component"
           v-bind="step.body.props"
           :ref="(el) => generateRefs(el, `step-${step.name}`)"
+          v-on="step.body.events && step.body.events"
         />
 
         <q-stepper-navigation>
@@ -79,6 +80,7 @@ export default {
     const currentStep = ref('verifyInfo')
     const error = ref('')
     const action = reactive({
+      id: 'close',
       type: 'close',
       date: '',
       transactions: {},
@@ -211,18 +213,9 @@ export default {
         done: action.done[3],
         body: {
           component: defineAsyncComponent(() => import('./depositCash.vue')),
-        },
-        actions: [
-          {
-            label: 'Save & Continue',
-            click: async () => {
-              error.value = ''
-              //save the transaction
-              let res = await refs[`step-depositCash`].save()
-
-              // console.log(id)
-              if (res.error) return (error.value = res.error)
-              else action.transactions[res] = { res, purpose: 'deposit' }
+          events: {
+            onSubmit: (res) => {
+              action.transactions[res.id] = { id: res.id, purpose: 'deposit' }
               // mark step as done
               action.done[3] = true
               //update the action
@@ -231,6 +224,19 @@ export default {
                 transactions: action.transactions,
               })
               currentStep.value = 'returnFinances'
+            },
+            onError: (error) => {
+              error.value = error
+            },
+          },
+        },
+        actions: [
+          {
+            label: 'Save & Continue',
+            click: async () => {
+              error.value = ''
+              //save the transaction
+              await refs[`step-depositCash`].save(action.id)
             },
             color: 'secondary',
           },
@@ -244,18 +250,9 @@ export default {
         done: action.done[3],
         body: {
           component: defineAsyncComponent(() => import('./returnFinances.vue')),
-        },
-        actions: [
-          {
-            label: 'Save & Continue',
-            click: async () => {
-              error.value = ''
-              //save the transaction
-              let res = await refs[`step-returnFinances`].save()
-
-              // console.log(id)
-              if (res.error) return (error.value = res.error)
-              else action.transactions[res] = { res, purpose: 'returnToNSP' }
+          events: {
+            onSubmit: (res) => {
+              action.transactions[res.id] = { id: res.id, purpose: 'returnToNSP' }
               // mark step as done
               action.done[3] = true
               //update the action
@@ -264,6 +261,19 @@ export default {
                 transactions: action.transactions,
               })
               currentStep.value = 'downloadBankStatement'
+            },
+            onError: (error) => {
+              error.value = error
+            },
+          },
+        },
+        actions: [
+          {
+            label: 'Save & Continue',
+            click: async () => {
+              error.value = ''
+              //save the transaction
+              await refs[`step-returnFinances`].save(action.id)
             },
             color: 'secondary',
           },

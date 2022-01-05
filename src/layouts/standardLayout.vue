@@ -167,19 +167,19 @@
         >
           <q-tab
             v-for="account in headerAccounts"
-            :key="account.label + '-' + tableKey"
+            :key="account.label"
             :ripple="false"
             style="cursor: default"
           >
             {{ account.label }}:
             <q-badge
               :class="{
-                'bg-green-8': (account.balance ? account.balance : 0) > 0,
-                'bg-red-8': (account.balance ? account.balance : 0) < 0,
-                'bg-black': (account.balance ? account.balance : 0) == 0,
+                'bg-green-8': (account.balance ? account.balance : currency(0)).value > 0,
+                'bg-red-8': (account.balance ? account.balance : currency(0)).value < 0,
+                'bg-black': (account.balance ? account.balance : currency(0)).value == 0,
               }"
               icon="account_balance"
-              :label="'$' + (account.balance ? account.balance : 0).toFixed(2)"
+              :label="(account.balance ? account.balance : currency(0)).format()"
             />
           </q-tab>
         </q-tabs>
@@ -203,6 +203,7 @@ export default {
     store.dispatch('budgets/fetchBudgets', currentRoute.params.id)
     store.dispatch('budgets/fetchBudgetCategories', currentRoute.params.id)
     store.dispatch('budgets/fetchAccounts', currentRoute.params.id)
+    store.dispatch('transactions/fetchTransactions', currentRoute.params.id)
   },
   created() {
     this.$store.dispatch('projects/fetchProject', {
@@ -212,7 +213,7 @@ export default {
   },
   computed: {
     ...mapGetters('projects', ['isAdmin', 'isContributor', 'project']),
-    ...mapGetters('budgets', ['headerAccounts', 'tableKey']),
+    ...mapGetters('budgets', ['headerAccounts']),
     ...mapGetters('auth', ['user']),
   },
 }

@@ -1,135 +1,9 @@
 <template>
   <div>
     <q-item class="justify-center">
-      At this point you no longer want contributors to submit new data. Revoke
-      access to unrequired contributors.
+      Why do everything yourself when you can share the workload? Give others access to submit receipts as a Contributor or the entire Project as an Admin. In order to keep your Project secure allow as much access as is helpful while minimising access as much as possible.
     </q-item>
-    <q-item>
-      <q-item-section>
-        <q-item-label class="text-h6"> Current Contributors </q-item-label>
-      </q-item-section>
-    </q-item>
-    <q-item>
-      <q-item-section>Email</q-item-section>
-      <q-item-section>Status</q-item-section>
-      <q-item-section side>Actions</q-item-section>
-    </q-item>
-    <q-scroll-area
-      :style="`height: ${
-        56 * Object.keys(allUsers).length
-      }px; max-height: 50vh;`"
-    >
-      <q-list>
-        <q-item
-          v-for="user in allUsers"
-          :key="user.uid"
-          :class="user.invite && 'text-grey-6'"
-          class="text-bold"
-        >
-          <q-item-section avatar v-if="user.invite">
-            <q-avatar class="q-pr-md" size="md">
-              <q-icon name="send" />
-              <q-tooltip>Invite Sent</q-tooltip>
-            </q-avatar>
-          </q-item-section>
-          <q-item-section avatar v-else>
-            <q-avatar class="q-pr-md" size="md">
-              <q-img
-                :src="
-                  user.photoURL
-                    ? user.photoURL
-                    : 'https://avatars.dicebear.com/api/bottts/' +
-                      user.uid +
-                      '.svg'
-                "
-                alt="Profile Picture"
-              >
-                <template v-slot:error>
-                  <q-img
-                    :src="
-                      'https://avatars.dicebear.com/api/bottts/' +
-                      user.uid +
-                      '.svg'
-                    "
-                    alt="Profile Picture"
-                  >
-                    <template v-slot:error>
-                      <div
-                        class="
-                          absolute-full
-                          flex flex-center
-                          bg-negative
-                          text-white
-                        "
-                      >
-                        Cannot load image
-                      </div>
-                    </template>
-                  </q-img>
-                </template>
-              </q-img>
-            </q-avatar>
-          </q-item-section>
-          {{ user.email }}
-          <span class="q-mx-auto" style="width: 150px">
-            {{ (user.permission === 'admin' && 'Admin') || '' }}
-            <span v-if="user.permission === 'contributor'">
-              <q-select
-                label="Contributor Budget"
-                :options="budgetOptionsFiltered"
-                :model-value="user.budgets"
-                @update:model-value="addBudget(event, user.uid)"
-                multiple
-                map-options
-                emit-value
-                options-value="id"
-                borderless
-                hide-dropdown-icon
-                class="full-width"
-              >
-                <template v-slot:selected>
-                  <q-chip
-                    v-for="budget in user.budgets"
-                    :key="budget"
-                    dense
-                    square
-                    color="primary"
-                    text-color="white"
-                    class="q-my-none q-ml-xs q-mr-none"
-                    removable
-                    @remove="removeBudget(user, budget)"
-                  >
-                    {{ budgets[budget] && budgets[budget].label }}
-                  </q-chip>
-                </template>
-              </q-select>
-              <!-- {{
-                user.budgets.length > 1
-                  ? `| {user.budgets.length} budgets`
-                  : `| {user.budgets.length} budget`
-              }}
-              <q-tooltip class="bg-accent text-black">
-                <q-chip
-                  dense
-                  :label="budgets[budget].label"
-                  v-for="budget in user.budgets"
-                  :key="budget"
-                />
-              </q-tooltip> -->
-            </span>
-          </span>
-          <span class="text-negative q-ml-auto">
-            <q-btn
-              :disabled="user.uid === currentUser.uid"
-              dense
-              icon="delete"
-              color="negative"
-              @click="deleteUser(user.uid)"
-            />
-          </span>
-        </q-item>
-      </q-list>
-    </q-scroll-area>
+    <usersTable flat/>
     <div v-if="add">
       <div class="text-subtitle2">
         Invite People
@@ -222,7 +96,7 @@
             title="Send Invitation"
             icon="send"
             color="positive"
-            @click="localAddUser"
+            @click="l_addUser"
           />
         </template>
       </q-input>
@@ -235,12 +109,7 @@ import { useStore } from 'vuex'
 import { useQuasar } from 'quasar'
 import {
   addUser,
-  removeContributorBudget,
-  updateInviteBudget,
-  addContributorBudget,
-  removeUser,
 } from '../../../scripts/access.js'
-import { arrayRemove } from 'firebase/firestore'
 import { defineAsyncComponent, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -266,95 +135,16 @@ export default {
     const contributors = computed(() => store.getters['auth/contributors'])
     const invites = computed(() => store.getters['auth/invites'])
     const budgets = computed(() => store.getters['budgets/budgets'])
-    const currentUser = computed(() => store.getters['auth/user'])
     const budgetOptions = computed(() => {
       return store.getters['budgets/budgetOptions'].filter(
         (val) => val.id !== 'debitCard' && val.id !== 'pettyCash'
       )
     })
-    const allUsers = computed(() => {
-      let users = [...admins.value, ...contributors.value]
-      for (let invite of invites.value) {
-        users.push({ invite: true, ...invite })
-      }
-      return users
-    })
 
     store.dispatch('auth/fetchContributors', route.params.id)
 
     store.dispatch('auth/fetchInvites', route.params.id)
-    function addBudget(tempBudgets, uid) {
-      tempBudgets = tempBudgets.map((a) => a.id)
-      // console.log(newInvitation.budgets.indexOf(event.id) !== -1)
-      // let tempBudgets = JSON.parse(JSON.stringify(budgets))
-      // if (tempBudgets.indexOf(newBudget) === -1) {
-      //   tempBudgets.push(newBudget)
-      addContributorBudget(route.params.id, tempBudgets, uid)
-        .then(() => {
-          // console.log('updated')
-          q.notify({
-            color: 'positive',
-            textColor: 'white',
-            icon: 'cloud_done',
-            message: 'Contributor Added Successfully',
-          })
-        })
-        .catch((err) => {
-          console.log(err)
-          q.notify({
-            color: 'negative',
-            textColor: 'white',
-            icon: 'error',
-            message: 'Oops, Something went wrong!',
-          })
-        })
-      // }
-    }
-    function removeBudget(user, budget) {
-      if (user.uid) {
-        removeContributorBudget(route.params.id, arrayRemove(budget), user.uid)
-          .then(() => {
-            // console.log('updated')
-            q.notify({
-              color: 'positive',
-              textColor: 'white',
-              icon: 'cloud_done',
-              message: 'Budget Removed Successfully',
-            })
-          })
-          .catch((err) => {
-            console.log(err)
-            q.notify({
-              color: 'negative',
-              textColor: 'white',
-              icon: 'error',
-              message: 'Oops, Something went wrong!',
-            })
-          })
-      } else {
-        updateInviteBudget(route.params.id, arrayRemove(budget), user.email)
-          .then(() => {
-            // console.log('updated')
-            q.notify({
-              color: 'positive',
-              textColor: 'white',
-              icon: 'cloud_done',
-              message: 'Budget Removed Successfully',
-            })
-          })
-          .catch((err) => {
-            console.log(err)
-            q.notify({
-              color: 'negative',
-              textColor: 'white',
-              icon: 'error',
-              message: 'Oops, Something went wrong!',
-            })
-          })
-      }
-    }
-    function localAddUser(uid) {
-      // console.log(`/projects/{route.params.id}/invites/{newInvitation.email}`)
+    function l_addUser() {
       for (var key in invites.value) {
         if (
           newInvitation.value.email.toLowerCase() ===
@@ -383,9 +173,22 @@ export default {
           return
         }
       }
+      for (key in admins.value) {
+        if (
+          newInvitation.value.email.toLowerCase() ===
+          admins.value[key].email.toLowerCase()
+        ) {
+          q.notify({
+            color: 'negative',
+            textColor: 'white',
+            icon: 'error',
+            message: 'User already has access',
+          })
+          return
+        }
+      }
       addUser(route.params.id, newInvitation.value)
         .then(() => {
-          // console.log('updated')
           q.notify({
             color: 'positive',
             textColor: 'white',
@@ -404,28 +207,6 @@ export default {
         })
     }
 
-    function deleteUser(uid) {
-      // console.log(`/projects/${route.params.id}/contributors/${event}`)
-      removeUser(route.params.id, uid)
-        .then(() => {
-          // console.log('updated')
-          q.notify({
-            color: 'positive',
-            textColor: 'white',
-            icon: 'cloud_done',
-            message: 'User Removed Successfully',
-          })
-        })
-        .catch((err) => {
-          console.log(err)
-          q.notify({
-            color: 'negative',
-            textColor: 'white',
-            icon: 'error',
-            message: 'Oops, Something went wrong!',
-          })
-        })
-    }
     function budgetsFilterFn(val, update) {
       if (val === '') {
         update(() => {
@@ -442,22 +223,18 @@ export default {
       })
     }
     return {
-      allUsers,
       add,
       budgets,
+      budgetOptions,
       budgetOptionsFiltered,
       budgetsFilterFn,
-      localAddUser,
-      removeBudget,
-      addBudget,
-      deleteUser,
-      currentUser,
+      l_addUser,
       newInvitation,
     }
   },
   components: {
-    'sp-delete-btn': defineAsyncComponent(() =>
-      import('../../sp-delete-btn.vue')
+    'usersTable': defineAsyncComponent(() =>
+      import('../../usersTable.vue')
     ),
   },
 }

@@ -1,3 +1,4 @@
+const  currency = require( 'currency.js')
 module.exports = ({ admin, environment }) => async (change, context) => {
   const db = admin.firestore()
   // Get an object with the current document value.
@@ -79,9 +80,9 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     status.from.old = oldDoc.from
     status.from.new = newDoc.from
 
-    status.amount.status = oldDoc.amount === newDoc.amount ? 'same' : 'changed'
-    status.amount.old = oldDoc.amount
-    status.amount.new = newDoc.amount
+    status.amount.status = currency(oldDoc.amount) === currency(currency(newDoc.amount)) ? 'same' : 'changed'
+    status.amount.old = currency(oldDoc.amount)
+    status.amount.new = currency(newDoc.amount)
   } else if (oldDoc === null) {
     // created
     status.change = 'create'
@@ -103,8 +104,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     status.from.new = newDoc.from
 
     status.amount.status = 'changed'
-    status.amount.old = 0
-    status.amount.new = newDoc.amount
+    status.amount.old = currency(0)
+    status.amount.new = currency(newDoc.amount)
   } else if (newDoc === null) {
     // deleted
     status.change = 'delete'
@@ -126,8 +127,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     status.from.new = oldDoc.from
 
     status.amount.status = 'changed'
-    status.amount.old = oldDoc.amount
-    status.amount.new = 0
+    status.amount.old = currency(oldDoc.amount)
+    status.amount.new = currency(0)
   }
   // console.log('filled in status', status)
 
@@ -141,7 +142,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       status.reviewed ? 0 : 1,
-      -status.amount.new,
+      status.amount.new.multiply(-1),
       status.amount.new
     )
   } else if (status.change === 'create' && status.category === 'Income') {
@@ -153,25 +154,25 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.new),
       status.reviewed ? 0 : 1,
       status.amount.new,
-      0
+      currency(0)
     )
   } else if (status.change === 'create' && status.category === 'Journal') {
     // journal transaction created
     // add review notification
-    // add expense to the buget total
+    // add expense to the budget total
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.from.new),
       status.reviewed ? 0 : 1,
-      -status.amount.new,
-      0
+      status.amount.new.multiply(-1),
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.to.new),
       status.reviewed ? 0 : 1,
       status.amount.new,
-      0
+      currency(0)
     )
   } else if (
     status.change === 'delete' &&
@@ -186,7 +187,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.new),
       0,
       status.amount.old,
-      -status.amount.old
+      status.amount.old.multiply(-1)
     )
   } else if (
     status.change === 'delete' &&
@@ -202,7 +203,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.new),
       -1,
       status.amount.old,
-      -status.amount.old
+      status.amount.old.multiply(-1)
     )
   } else if (
     status.change === 'delete' &&
@@ -216,8 +217,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       0,
-      -status.amount.old,
-      0
+      status.amount.old.multiply(-1),
+      currency(0)
     )
   } else if (
     status.change === 'delete' &&
@@ -232,8 +233,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       -1,
-      -status.amount.old,
-      0
+      status.amount.old.multiply(-1),
+      currency(0)
     )
   } else if (
     status.change === 'delete' &&
@@ -249,14 +250,14 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.from.new),
       0,
       status.amount.old,
-      0
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.to.new),
       0,
-      -status.amount.old,
-      0
+      status.amount.old.multiply(-1),
+      currency(0)
     )
   } else if (
     status.change === 'delete' &&
@@ -272,14 +273,14 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.from.new),
       -1,
       status.amount.old,
-      0
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.to.new),
       -1,
-      -status.amount.old,
-      0
+      status.amount.old.multiply(-1),
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -296,13 +297,13 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.old),
       -1,
       status.amount.old,
-      -status.amount.old
+      status.amount.old.multiply(-1)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       1,
-      -status.amount.new,
+      status.amount.new.multiply(-1),
       status.amount.new
     )
   } else if (
@@ -320,13 +321,13 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.old),
       0,
       status.amount.old,
-      -status.amount.old
+      status.amount.old.multiply(-1)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       0,
-      -status.amount.new,
+      status.amount.new.multiply(-1),
       status.amount.new
     )
   } else if (
@@ -343,15 +344,15 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.old),
       -1,
-      -status.amount.old,
-      0
+      status.amount.old.multiply(-1),
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       1,
       status.amount.new,
-      0
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -367,22 +368,21 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.old),
       0,
-      -status.amount.old,
-      0
+      status.amount.old.multiply(-1),
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       0,
       status.amount.new,
-      0
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
     status.category === 'Journal' &&
     status.deleted === false &&
-    status.reviewed === false &&
-    status.budget.status === 'changed'
+    status.reviewed === false
   ) {
     // journal transaction budget updated
     // remove journal to the budget total
@@ -393,14 +393,14 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         projectRef.collection('accounts').doc(status.from.old),
         -1,
         status.amount.old,
-        0
+        currency(0)
       )
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.from.new),
         1,
-        -status.amount.new,
-        0
+        status.amount.new.multiply(-1),
+        currency(0)
       )
     }
     if (status.to.status === 'changed') {
@@ -408,15 +408,32 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         db,
         projectRef.collection('accounts').doc(status.to.old),
         -1,
-        -status.amount.old,
-        0
+        status.amount.old.multiply(-1),
+        currency(0)
       )
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.to.new),
         1,
         status.amount.new,
-        0
+        currency(0)
+      )
+    }
+    if (status.from.status !== 'changed' && status.to.status !== 'changed') {
+      // update the amount in the budgets 
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.to.new),
+        0,
+        status.amount.new.subtract(status.amount.old),
+        currency(0)
+      )
+      await updateBudget(
+        db,
+        projectRef.collection('accounts').doc(status.from.new),
+        0,
+        -status.amount.new.subtract(status.amount.old),
+        currency(0)
       )
     }
   } else if (
@@ -424,7 +441,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
     status.category === 'Journal' &&
     status.deleted === false &&
     status.reviewed === true &&
-    status.budget.status === 'changed'
+    (status.from.status === 'changed' || status.to.status === 'changed')
   ) {
     // journal transaction budget updated
     // remove journal to the budget total
@@ -435,14 +452,14 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         projectRef.collection('accounts').doc(status.from.old),
         0,
         status.amount.old,
-        0
+        currency(0)
       )
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.from.new),
         0,
-        -status.amount.new,
-        0
+        status.amount.new.multiply(-1),
+        currency(0)
       )
     }
     if (status.to.status === 'changed') {
@@ -450,17 +467,33 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         db,
         projectRef.collection('accounts').doc(status.to.old),
         0,
-        -status.amount.old,
-        0
+        status.amount.old.multiply(-1),
+        currency(0)
       )
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.to.new),
         0,
         status.amount.new,
-        0
+        currency(0)
       )
     }
+    // if(status.from.status !== 'changed' && status.to.status !== 'changed'){
+    //   await updateBudget(
+    //     db,
+    //     projectRef.collection('accounts').doc(status.to.new),
+    //     0,
+    //     status.amount.new.subtract(status.amount.old),
+    //     currency(0)
+    //   )
+    //   await updateBudget(
+    //     db,
+    //     projectRef.collection('accounts').doc(status.from.new),
+    //     0,
+    //     status.amount.old.subtract(status.amount.new),
+    //     currency(0)
+    //   )
+    // }
   } else if (
     status.change === 'update' &&
     status.category === 'Expense' &&
@@ -473,7 +506,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       0,
-      -status.amount.new,
+      status.amount.new.multiply(-1),
       status.amount.new
     )
   } else if (
@@ -489,7 +522,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       1,
-      -status.amount.new,
+      status.amount.new.multiply(-1),
       status.amount.new
     )
   } else if (
@@ -505,7 +538,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.new),
       0,
       status.amount.new,
-      -status.amount.new
+      status.amount.new.multiply(-1)
     )
   } else if (
     status.change === 'update' &&
@@ -521,7 +554,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.new),
       0,
       status.amount.new,
-      -status.amount.new
+      status.amount.new.multiply(-1)
     )
   } else if (
     status.change === 'update' &&
@@ -537,7 +570,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.new),
       0,
       status.amount.new,
-      0
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -553,7 +586,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.new),
       1,
       status.amount.new,
-      0
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -568,8 +601,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       0,
-      -status.amount.new,
-      0
+      status.amount.new.multiply(-1),
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -584,8 +617,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       -1,
-      -status.amount.new,
-      0
+      status.amount.new.multiply(-1),
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -595,20 +628,20 @@ module.exports = ({ admin, environment }) => async (change, context) => {
   ) {
     // journal transaction undeleted
     // add review notification
-    // add expense to the buget total
+    // add expense to the budget total
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.from.new),
       0,
-      -status.amount.new,
-      0
+      status.amount.new.multiply(-1),
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.to.new),
       0,
       status.amount.new,
-      0
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -618,20 +651,20 @@ module.exports = ({ admin, environment }) => async (change, context) => {
   ) {
     // journal transaction undeleted
     // add review notification
-    // add expense to the buget total
+    // add expense to the budget total
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.from.new),
       1,
-      -status.amount.new,
-      0
+      status.amount.new.multiply(-1),
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.to.new),
       1,
       status.amount.new,
-      0
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -641,20 +674,20 @@ module.exports = ({ admin, environment }) => async (change, context) => {
   ) {
     // journal transaction undeleted
     // add review notification
-    // add expense to the buget total
+    // add expense to the budget total
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.from.new),
       0,
       status.amount.new,
-      0
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.to.new),
       0,
-      -status.amount.new,
-      0
+      status.amount.new.multiply(-1),
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -664,20 +697,20 @@ module.exports = ({ admin, environment }) => async (change, context) => {
   ) {
     // journal transaction undeleted
     // add review notification
-    // add expense to the buget total
+    // add expense to the budget total
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.from.new),
       -1,
       status.amount.new,
-      0
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.to.new),
       -1,
-      -status.amount.new,
-      0
+      status.amount.new.multiply(-1),
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -691,8 +724,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       -1,
-      0,
-      0
+      currency(0),
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -707,7 +740,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.new),
       1,
       0,
-      0
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -721,8 +754,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.budget.new),
       -1,
-      0,
-      0
+      currency(0),
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -737,7 +770,7 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.budget.new),
       1,
       0,
-      0
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -751,15 +784,15 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       db,
       projectRef.collection('accounts').doc(status.from.new),
       -1,
-      0,
-      0
+      currency(0),
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.to.new),
       -1,
-      0,
-      0
+      currency(0),
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -774,14 +807,14 @@ module.exports = ({ admin, environment }) => async (change, context) => {
       projectRef.collection('accounts').doc(status.from.new),
       1,
       0,
-      0
+      currency(0)
     )
     await updateBudget(
       db,
       projectRef.collection('accounts').doc(status.to.new),
       1,
       0,
-      0
+      currency(0)
     )
   } else if (
     status.change === 'update' &&
@@ -797,13 +830,13 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         projectRef.collection('accounts').doc(status.budget.old),
         0,
         status.amount.old,
-        -status.amount.old
+        status.amount.old.multiply(-1)
       )
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.budget.new),
         0,
-        -status.amount.new,
+        status.amount.new.multiply(-1),
         status.amount.new
       )
     } else {
@@ -811,8 +844,8 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         db,
         projectRef.collection('accounts').doc(status.budget.new),
         0,
-        status.amount.old - status.amount.new,
-        -status.amount.old + status.amount.new
+        status.amount.old.subtract(status.amount.new),
+        status.amount.old.multiply(-1).add(status.amount.new)
       )
     }
   } else if (
@@ -828,23 +861,23 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         db,
         projectRef.collection('accounts').doc(status.budget.old),
         0,
-        -status.amount.old,
-        0
+        status.amount.old.multiply(-1),
+        currency(0)
       )
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.budget.new),
         0,
         status.amount.new,
-        0
+        currency(0)
       )
     } else {
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.budget.new),
         0,
-        status.amount.new - status.amount.old,
-        0
+        status.amount.new.subtract(status.amount.old),
+        currency(0)
       )
     }
   } else if (
@@ -860,23 +893,23 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         db,
         projectRef.collection('accounts').doc(status.to.old),
         0,
-        -status.amount.old,
-        0
+        status.amount.old.multiply(-1),
+        currency(0)
       )
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.to.new),
         0,
         status.amount.new,
-        0
+        currency(0)
       )
     } else {
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.to.new),
         0,
-        status.amount.new - status.amount.old,
-        0
+        status.amount.new.subtract(status.amount.old),
+        currency(0)
       )
     }
     if (status.from.status === 'changed') {
@@ -885,34 +918,32 @@ module.exports = ({ admin, environment }) => async (change, context) => {
         projectRef.collection('accounts').doc(status.from.old),
         0,
         status.amount.old,
-        0
+        currency(0)
       )
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.from.new),
         0,
-        -status.amount.new,
-        0
+        status.amount.new.multiply(-1),
+        currency(0)
       )
     } else {
       await updateBudget(
         db,
         projectRef.collection('accounts').doc(status.from.new),
         0,
-        -status.amount.new + status.amount.old,
-        0
+        status.amount.old.subtract(status.amount.new),
+        currency(0)
       )
     }
   }
 }
 
 function updateBudget(db, budgetRef, awaitReviewAdj, balanceAdj, expenseAdj) {
-  console.log(balanceAdj, typeof balanceAdj, expenseAdj, typeof expenseAdj)
-  // console.log(budgetRef.path)
+  // console.log(balanceAdj, typeof balanceAdj, expenseAdj, typeof expenseAdj)
   return db
     .runTransaction(async t => {
       const doc = await t.get(budgetRef)
-      // console.log(doc)
       if (!doc.exists) return
       const data = doc.data()
       let newData = {}
@@ -921,15 +952,13 @@ function updateBudget(db, budgetRef, awaitReviewAdj, balanceAdj, expenseAdj) {
         ? parseInt(data.transAwaitingReview) + parseInt(awaitReviewAdj)
         : 0 + parseInt(awaitReviewAdj)
 
-        console.log(data.expenses, expenseAdj, parseFloat((0 + parseFloat(expenseAdj)).toFixed(2)))
-      newData.expenses = parseFloat((data.expenses
-        ? (parseFloat(data.expenses) + parseFloat(expenseAdj))
-        : (0 + parseFloat(expenseAdj))).toFixed(2))
-      newData.balance = parseFloat((data.balance
-        ? (parseFloat(data.balance) + parseFloat(balanceAdj))
-        : (0 + parseFloat(balanceAdj))).toFixed(2))
-
-      // console.log(newData)
+      newData.expenses = (currency(data.expenses)
+        ? currency(data.expenses).add(expenseAdj)
+        : currency(0).add(expenseAdj)).value
+      newData.balance = (currency(data.balance)
+        ? currency(data.balance).add(balanceAdj)
+        : currency(0).add(balanceAdj)).value
+        // console.log(newData)
       t.update(budgetRef, newData)
     })
     .catch(err => {

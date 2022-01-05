@@ -1,6 +1,6 @@
 import { createStore } from 'vuex'
-import auth from './modules/auth.js'
-import actions from './modules/actions.js'
+import auth from './modules/auth'
+import actions from './modules/actions'
 import petty from './modules/petty'
 import projects from './modules/projects'
 import transactions from './modules/transactions'

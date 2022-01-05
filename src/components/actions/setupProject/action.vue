@@ -1,7 +1,7 @@
 <template>
   <q-card style="width: 800px; max-width: 80vw" ref="parentRef">
     <q-card-section class="row items-center q-pb-none">
-      <div class="text-h6"></div>
+      <div class="text-h6">Setup Project</div>
       <q-space />
       <q-btn icon="close" flat round dense v-close-popup />
     </q-card-section>
@@ -30,6 +30,7 @@
           :is="step.body.component"
           v-bind="step.body.props"
           :ref="(el) => generateRefs(el, `step-${step.name}`)"
+           v-on="step.body.events && step.body.events"
         />
 
         <q-stepper-navigation>
@@ -75,6 +76,7 @@ export default {
     const parentRef = ref({})
     const currentStep = ref('gatherInfo')
     const action = ref({
+      id: 'setup',
       type: 'setup',
       date: '',
       transactions: {},
@@ -89,6 +91,9 @@ export default {
       },
     })
     const error = ref('')
+    const accounts = computed(() => store.getters['budgets/accounts'] )
+    const budgetCategories = computed(() => store.getters['budgets/budgetCategories'] )
+    const budgets = computed(() => store.getters['budgets/budgets'] )
     // sync the action with firebase
     getDoc(
       doc(getFirestore(), `/projects/${route.params.id}/actions/setup`)
@@ -157,7 +162,7 @@ export default {
             icon: 'add',
             label: 'Add Account',
             click: () => {
-              refs[`step-accounts`].add = !refs[`step-accounts`].add
+              refs[`step-accounts`].l_add = !refs[`step-accounts`].l_add
             },
             color: 'positive',
           },
@@ -165,7 +170,7 @@ export default {
             label: 'Continue',
             click: () => {
               // console.log(refs[`step-accounts`].accounts)
-              if (Object.values(refs[`step-accounts`].accounts).length > 0)
+              if (Object.values(accounts).length > 0)
                 action.value.done[2] = true
               else action.value.done[2] = false
               updateAction(route.params.id, 'setup', {
@@ -190,7 +195,7 @@ export default {
             icon: 'add',
             label: 'Add Category',
             click: () => {
-              refs[`step-categories`].add = !refs[`step-categories`].add
+              refs[`step-categories`].l_add = !refs[`step-categories`].l_add
             },
             color: 'positive',
           },
@@ -198,7 +203,7 @@ export default {
             label: 'Continue',
             click: () => {
               if (
-                Object.values(refs[`step-categories`].budgetCategories).length >
+                Object.values(budgetCategories).length >
                 0
               )
                 action.value.done[3] = true
@@ -225,14 +230,14 @@ export default {
             icon: 'add',
             label: 'Add Budgets',
             click: () => {
-              refs[`step-budgets`].add = !refs[`step-budgets`].add
+              refs[`step-budgets`].l_add = !refs[`step-budgets`].l_add
             },
             color: 'positive',
           },
           {
             label: 'Continue',
             click: () => {
-              if (Object.values(refs[`step-budgets`].budgets).length > 0)
+              if (Object.values(budgets).length > 0)
                 action.value.done[4] = true
               else action.value.done[4] = false
               updateAction(route.params.id, 'setup', {
@@ -281,6 +286,24 @@ export default {
         done: action.value.done[6],
         body: {
           component: defineAsyncComponent(() => import('./firstTrans.vue')),
+          events: {
+            onSubmit: (res) => {
+              console.log('onSubmit')
+                error.value = ''
+                action.value.done[6] = true
+                updateAction(route.params.id, 'setup', {
+                  done: action.value.done,
+                })
+                currentStep.value = 'pettyCash'
+            },
+            onError: (error) => {
+              error.value = error
+              action.value.done[6] = false
+                updateAction(route.params.id, 'setup', {
+                  done: action.value.done,
+                })
+            },
+          },
         },
         actions: [
           // {
@@ -293,22 +316,8 @@ export default {
           // },
           {
             label: 'Save & Continue',
-            click: () => {
-              let res = refs[`step-firstTrans`].onSubmit()
-              if (res) {
-                error.value = ''
-                action.value.done[6] = true
-                updateAction(route.params.id, 'setup', {
-                  done: action.value.done,
-                })
-                currentStep.value = 'pettyCash'
-              } else {
-                error.value = 'Missing information, please complete all fields'
-                action.value.done[6] = false
-                updateAction(route.params.id, 'setup', {
-                  done: action.value.done,
-                })
-              }
+            click: async () => {
+              await refs[`step-firstTrans`].save(action.value.id)
             },
             color: 'secondary',
           },

@@ -1,8 +1,6 @@
 <template>
   <div>
-    A Cash in Hand action is used when you want to provide an individual with
-    cash so they can purchase something, you should expect the receipt and
-    remaining money returned.<br />
+    {{header}}<br />
     <br />
     First we need some details from you.
     <q-list>
@@ -15,7 +13,7 @@
       </q-item>
       <q-item>
         <q-select
-          v-model="localAction.responsiblePerson"
+          v-model="action.responsiblePerson"
           label="Resonsible Person - Who are you giving the Cash to?"
           class="full-width"
           :options="usersFiltered"
@@ -25,14 +23,14 @@
           emit-value
           use-input
           @filter="usersFilterFn"
-          :stack-label="!!localAction.responsiblePerson"
+          :stack-label="!!action.responsiblePerson"
         >
           <template v-slot:selected>
             {{
-              localAction.responsiblePerson &&
-              users[localAction.responsiblePerson]
-                ? `${users[localAction.responsiblePerson].name} (${
-                    users[localAction.responsiblePerson].email
+              action.responsiblePerson &&
+              users[action.responsiblePerson]
+                ? `${users[action.responsiblePerson].name ? users[action.responsiblePerson].name:''} (${
+                    users[action.responsiblePerson].email
                   })`
                 : ''
             }}
@@ -87,7 +85,7 @@
       </q-item>
       <q-item>
         <q-select
-          v-model="localAction.budget"
+          v-model="action.budget"
           label="Expense Budget"
           class="full-width"
           :options="budgetOptionsFiltered"
@@ -98,6 +96,7 @@
           use-input
           @filter="budgetsFilterFn"
           input-debounce="0"
+          :display-value="`${budgetOptions && action.budget && budgetOptions.find(val => val.id === action.budget).label || ''}`"
         >
           <template v-slot:option="scope">
             <q-item v-bind="scope.itemProps">
@@ -105,20 +104,17 @@
                 <q-item-label>{{ scope.opt.label }}</q-item-label>
                 <q-item-label caption>
                   Budget Remaining: ${{
-                    (
-                      parseFloat(scope.opt.budget) -
-                      parseFloat(scope.opt.expenses)
-                    ).toFixed(2)
+                      scope.opt.budget.subtract(scope.opt.expenses)
                   }}</q-item-label
                 >
               </q-item-section>
               <q-item-section
                 avatar
                 v-if="
-                  localAction.responsiblePerson &&
-                  (users[localAction.responsiblePerson].permission ===
+                  action.responsiblePerson &&
+                  (users[action.responsiblePerson].permission ===
                     'admin' ||
-                    users[localAction.responsiblePerson].budgets.includes(
+                    users[action.responsiblePerson].budgets.includes(
                       scope.opt.id
                     ))
                 "
@@ -126,10 +122,10 @@
                 <q-avatar class="q-pr-md" size="md">
                   <q-img
                     :src="
-                      users[localAction.responsiblePerson].photoURL
-                        ? users[localAction.responsiblePerson].photoURL
+                      users[action.responsiblePerson].photoURL
+                        ? users[action.responsiblePerson].photoURL
                         : 'https://avatars.dicebear.com/api/bottts/' +
-                          localAction.responsiblePerson +
+                          action.responsiblePerson +
                           '.svg'
                     "
                     alt="Profile Picture"
@@ -138,7 +134,7 @@
                       <q-img
                         :src="
                           'https://avatars.dicebear.com/api/bottts/' +
-                          localAction.responsiblePerson +
+                          action.responsiblePerson +
                           '.svg'
                         "
                         alt="Profile Picture"
@@ -160,7 +156,7 @@
                   </q-img>
                 </q-avatar>
                 <q-tooltip class="bg-cyan-2 text-black">
-                  {{ users[localAction.responsiblePerson].name }}
+                  {{ users[action.responsiblePerson].name }}
                   has access to this budget</q-tooltip
                 >
               </q-item-section>
@@ -174,19 +170,19 @@
 
 <script>
 import { useStore } from 'vuex'
-import { createAction, updateAction } from './../../../scripts/actions.js'
+import { createAction, updateAction } from './../../scripts/actions.js'
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 export default {
   name: 'gatherInfo',
-  props: ['action'],
+  props: ['action', 'header', 'prependDesc'],
   emits: ['actionChanged'],
   setup(props, { emit }) {
     const store = useStore()
     const route = useRoute()
     // variables
     const state = ref(false)
-    const localAction = ref({
+    const action = ref({
       responsiblePerson: '',
       budget: '',
       type: 'cashInHand',
@@ -207,14 +203,14 @@ export default {
 
     //on created
     if (props.action) {
-      localAction.value = JSON.parse(JSON.stringify(props.action))
-      let arr = localAction.value.desc.split('for ')
+      action.value = JSON.parse(JSON.stringify(props.action))
+      let arr = action.value.desc.split('for ')
       arr.shift()
       desc.value = arr.join('for ')
     }
-    if (!localAction.value.id) {
+    if (!action.value.id) {
       let date = new Date()
-      localAction.value.date = `${date
+      action.value.date = `${date
         .getDate()
         .toString()
         .padStart(2, '0')}/${(date.getMonth() + 1)
@@ -224,29 +220,29 @@ export default {
     async function save() {
       if (
         desc.value > '' &&
-        localAction.value.responsiblePerson > '' &&
-        localAction.value.budget > ''
+        action.value.responsiblePerson > '' &&
+        action.value.budget > ''
       )
-        localAction.value.done[1] = true
-      else localAction.value.done[1] = false
+        action.value.done[1] = true
+      else action.value.done[1] = false
 
-      if (localAction.value.id) {
-        updateAction(route.params.id, localAction.value.id, localAction.value)
-        return emit('actionChanged', localAction.value)
+      if (action.value.id) {
+        updateAction(route.params.id, action.value.id, action.value)
+        return emit('actionChanged', action.value)
       } else {
-        localAction.value.id = await createAction(
+        action.value.id = await createAction(
           route.params.id,
-          localAction.value
+          action.value
         )
-        return emit('actionChanged', localAction.value)
+        return emit('actionChanged', action.value)
       }
     }
 
     const project = computed(() => store.getters['projects/project'])
     const budgetOptions = computed(() => {
-      // if (localAction.value.responsiblePerson) {
+      // if (action.value.responsiblePerson) {
       //   let contBudgets = contributors.value.find(
-      //     (val) => (val.uid = localAction.value.responsiblePerson)
+      //     (val) => (val.uid = action.value.responsiblePerson)
       //   ).budgets
       //   return store.getters['budgets/budgetOptions'].filter(
       //     (val) => val.type !== 'account' && contBudgets.includes(val.id)
@@ -257,10 +253,8 @@ export default {
       )
       // }
     })
-    const admins = computed(() => store.getters['auth/admins'])
-    const contributors = computed(() => store.getters['auth/contributors'])
     const users = computed(() => {
-      let arr = [...admins.value, ...contributors.value]
+      let arr = [...store.getters['auth/admins'], ...store.getters['auth/contributors']]
       return arr.reduce(
         (obj, item) => ({
           ...obj,
@@ -270,11 +264,11 @@ export default {
       )
     })
     function updateDesc() {
-      localAction.value.desc = `Cash in Hand to ${
-        users.value[localAction.value.responsiblePerson]
-          ? users.value[localAction.value.responsiblePerson].name
+      action.value.desc = `${props.prependDesc} to ${
+        users.value[action.value.responsiblePerson]
+          ? users.value[action.value.responsiblePerson].name ? users.value[action.value.responsiblePerson].name : users.value[action.value.responsiblePerson].email
           : '?'
-      } for ${desc.value}`
+      } for ${desc.value > '' ? desc.value : '?'}`
     }
 
     function budgetsFilterFn(val, update) {
@@ -295,34 +289,34 @@ export default {
     function usersFilterFn(val, update) {
       if (val === '') {
         update(() => {
-          usersFiltered.value = [...admins.value, ...contributors.value]
+          usersFiltered.value = Object.values(users.value)
         })
         return
       }
 
       update(() => {
         const needle = val.toLowerCase()
-        usersFiltered.value = [...admins.value, ...contributors.value].filter(
-          (v) => v.label.toLowerCase().indexOf(needle) > -1
+        usersFiltered.value = Object.values(users.value).filter(
+          (v) => v.name.toLowerCase().indexOf(needle) > -1
         )
       })
     }
     watch(desc, () => updateDesc())
-    watch(localAction, () => updateDesc(), { deep: true })
+    watch(action, () => updateDesc(), { deep: true })
 
     return {
       project,
+      budgetOptions,
       budgetOptionsFiltered,
       budgetsFilterFn,
       usersFiltered,
       usersFilterFn,
-      admins,
-      contributors,
       users,
       save,
       state,
-      localAction,
+      action,
       desc,
+      header: props.header
     }
   },
 }

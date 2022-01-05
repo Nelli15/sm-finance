@@ -1,7 +1,7 @@
 <template>
   <q-card style="width: 800px; max-width: 80vw" ref="parentRef">
     <q-card-section class="row items-center q-pb-none">
-      <div class="text-h6"></div>
+      <div class="text-h6">{{ action.desc }}</div>
       <q-space />
       <q-btn icon="close" flat round dense v-close-popup />
     </q-card-section>
@@ -61,31 +61,33 @@
 <script>
 import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'
-import { updateAction } from './../../../scripts/actions.js'
+import { updateAction, createAction } from './../../../scripts/actions.js'
+import { updateTransactionByKey } from '../../../scripts/transactions.js'
 import { defineAsyncComponent, ref, computed, watch } from 'vue'
-import {
-  getFirestore,
-  getDocs,
-  updateDoc,
-  doc,
-  query,
-  where,
-  collection,
-} from 'firebase/firestore'
+import { useQuasar } from 'quasar'
+import { getFirestore, updateDoc, doc } from 'firebase/firestore'
+import currency from 'currency.js'
+
 export default {
   name: 'reimbursement',
-  props: ['actionProp'],
+  props: ['action', 'transaction'],
   setup(props) {
     const store = useStore()
     const route = useRoute()
+    const q = useQuasar()
     const refs = ref({})
     const parentRef = ref({})
     const currentStep = ref('gatherInfo')
     const error = ref('')
+    let date = new Date()
     const action = ref({
       type: 'reimbursement',
       desc: 'Reimbursement for ',
-      date: '',
+      date: `${date.getDate().toString().padStart(2, '0')}/${(
+        date.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, '0')}/${date.getFullYear()}`,
       transactions: {},
       complete: false,
       done: {
@@ -93,54 +95,103 @@ export default {
         2: false,
         3: false,
       },
+      responsiblePerson: '',
     })
 
-    if (props.actionProp) {
-      action.value = JSON.parse(JSON.stringify(props.actionProp))
+    if (props.action) {
+      action.value = JSON.parse(JSON.stringify(props.action))
     }
-    const transactions = computed(
-      () => store.getters['transactions/transactions']
+    if (props.transaction) {
+      console.log(props.transaction)
+      action.value.budget = props.transaction.budget
+      action.value.responsiblePerson = props.transaction.submittedBy.uid
+      action.value.desc = `Reimbursement for ${props.transaction.desc}`
+      action.value.transactions = {
+        [props.transaction.id]: {
+          id: props.transaction.id,
+          purpose: 'expense',
+        },
+      }
+      let date = new Date()
+      action.value.date = `${date.getDate().toString().padStart(2, '0')}/${(
+        date.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, '0')}/${date.getFullYear()}`
+
+      async function save() {
+        if (action.value.id) {
+          updateAction(route.params.id, action.value.id, action.value)
+        } else {
+          action.value.id = await createAction(route.params.id, action.value)
+        }
+
+        if (action.value.desc > '' && action.value.budget > '')
+          action.value.done[1] = true
+        else action.value.done[1] = false
+        // updateTransactionByKey({ transId: props.transaction.id, key: 'action', val: action.value.id })
+        updateTransactionByKey(
+          route.params.id,
+          props.transaction.id,
+          'action',
+          action.value.id
+        )
+          .then(() => {
+            q.notify({
+              color: 'positive',
+              textColor: 'white',
+              icon: 'cloud_done',
+              message: 'Transaction: Updated Successfully',
+            })
+          })
+          .catch((err) => {
+            console.log(err)
+            q.notify({
+              color: 'negative',
+              textColor: 'white',
+              icon: 'error',
+              message: 'Oops, Something went wrong!',
+            })
+          })
+      }
+      save()
+    }
+
+    const transactions = computed(() =>
+      store.getters['transactions/transFromList'](action.value.transactions)
     )
-    const admins = computed(() => store.getters['auth/admins'])
-    const contributors = computed(() => store.getters['auth/contributors'])
+    const users = computed(() => {
+      let arr = [
+        ...store.getters['auth/admins'],
+        ...store.getters['auth/contributors'],
+      ]
+      return arr.reduce(
+        (obj, item) => ({
+          ...obj,
+          [item['uid']]: item,
+        }),
+        {}
+      )
+    })
     const responsiblePerson = computed(() => {
-      return admins.value.length > 0 &&
-        admins.value.find((x) => x.uid === action.value.responsiblePerson)
-        ? admins.value.find((x) => x.uid === action.value.responsiblePerson)
-        : contributors.value.length > 0 &&
-          contributors.value.find(
-            (x) => x.uid === action.value.responsiblePerson
-          )
-        ? contributors.value.find(
-            (x) => x.uid === action.value.responsiblePerson
-          )
+      return users.value[action.value.responsiblePerson]
+        ? users.value[action.value.responsiblePerson]
         : {}
     })
-    const project = computed(() => store.getters['projects/project'])
-    function fetchTransWithRef(val) {
-      return store.dispatch('transactions/fetchTransWithRef', val)
-    }
-    // const idToken = computed(() => store.getters['auth/idToken'])
-    // async function getReceipt(projectId, idToken, transId) {
-    //   // return firebase.auth().onAuthStateChanged(async (user) => {
-    //   // console.log(idToken, transId, projectId)
-    //   if (idToken > '' && transId > '' && projectId > '') {
-    //     const src = `/receipt?projectId=${projectId}&id=${transId}`
-    //     const options = {
-    //       headers: {
-    //         Authorization: `Bearer ${idToken}`,
-    //       },
-    //     }
 
-    //     let res = await fetch(src, options)
-    //     // console.log(transId, res)
-    //     let url = await res.text()
-    //     // console.log(url)
-    //     return url
-    //   }
+    const remainingBalance = computed(() => {
+      let total = currency(0)
+      for (let trans in action.value.transactions) {
+        let transaction = store.state.transactions.transactions[trans]
+        if (action.value.transactions[trans].purpose === 'reimbursement') {
+          total = total.subtract(transaction ? transaction.amount.value : 0)
+        } else if (action.value.transactions[trans].purpose === 'expense') {
+          total = total.add(transaction ? transaction.amount.value : 0)
+        }
+      }
+      return total
+    })
 
-    //   // })
-    // }
     const steps = computed(() => {
       return [
         {
@@ -149,14 +200,23 @@ export default {
           icon: 'mdi-bank-transfer',
           done: action.value.done[1],
           body: {
-            component: defineAsyncComponent(() => import('./gatherInfo.vue')),
-            props: { action: action.value },
+            component: defineAsyncComponent(() =>
+              import('./../gatherInfo.vue')
+            ),
+            props: {
+              action: action.value,
+              header: `A Reimbursement Action is used when you receive a receipt for an approved expense that has been paid from an individuals pocket.`,
+              prependDesc: `Reimbursement`,
+            },
             events: {
-              actionChanged: (val) => {
+              onError: (error) => {
+                error.value = error
+              },
+              actionChanged: async (val) => {
                 if (action.value.budget !== val.budget) {
                   for (let trans in val.transactions) {
                     if (val.transactions[trans].purpose === 'expense') {
-                      updateDoc(
+                      await updateDoc(
                         doc(
                           getFirestore(),
                           `/projects/${route.params.id}/transactions/${trans}`
@@ -166,7 +226,7 @@ export default {
                     } else if (
                       val.transactions[trans].purpose === 'reimbursement'
                     ) {
-                      updateDoc(
+                      await updateDoc(
                         doc(
                           getFirestore(),
                           `/projects/${route.params.id}/transactions/${trans}`
@@ -198,32 +258,25 @@ export default {
           icon: 'mdi-cash-register',
           done: action.value.done[2],
           body: {
-            component: defineAsyncComponent(() => import('./logExpenses.vue')),
-            props: { action: action.value, transactions: transactions.value },
+            component: defineAsyncComponent(() =>
+              import('./../logExpenses.vue')
+            ),
+            props: { action: action.value },
             events: {
-              onSubmit: async (transaction) => {
-                action.value.transactions[transaction.id] = {
-                  id: transaction.id,
-                  purpose: 'expense',
-                }
+              onSubmit: (res) => {
+                console.log('onSubmitted', res)
+                if (!action.value.transactions[res.id])
+                  action.value.transactions[res.id] = {
+                    id: res.id,
+                    purpose: 'expense',
+                  }
                 //update the action
                 updateAction(route.params.id, action.value.id, {
-                  // done: action.value.done,
                   transactions: action.value.transactions,
                 })
-                transaction.currency =
-                  transaction.currency > '' ? transaction.currency : 'AUD'
-                transaction.deleted = transaction.deleted
-                  ? transaction.deleted
-                  : false
-                // if (transaction.receipt === true) {
-                // transaction.receiptURL = await getReceipt(
-                //   route.params.id,
-                //   idToken,
-                //   transaction.id
-                // )
-                // }
-                transactions.value[transaction.id] = transaction
+              },
+              onError: (error) => {
+                error.value = error
               },
               onTransUpdate: async ({ trans, key, val }) => {
                 transactions.value[trans][key] = val
@@ -271,12 +324,28 @@ export default {
         },
         {
           name: 'giveCash',
-          title: 'Give Cash to the Responsible Person',
+          title: `Give cash to ${
+            responsiblePerson.value.uid
+              ? responsiblePerson.value.name
+                ? responsiblePerson.value.name
+                : responsiblePerson.value.email
+              : 'the Responsible Person'
+          }`,
           icon: 'mdi-bank-transfer',
           done: action.value.done[3],
           body: {
-            component: defineAsyncComponent(() => import('./giveCash.vue')),
-            props: { action: action.value, transactions: transactions.value },
+            component: defineAsyncComponent(() => import('./../giveCash.vue')),
+            props: {
+              action: action.value,
+              transactions: transactions.value,
+              header: `Give <b>&nbsp;${remainingBalance.value.format()}&nbsp;</b>  cash to ${
+                responsiblePerson.value.uid
+                  ? responsiblePerson.value.name
+                    ? responsiblePerson.value.name
+                    : responsiblePerson.value.email
+                  : 'the person who paid for the expense'
+              } and record the details below.`,
+            },
           },
           actions: [
             {
@@ -307,11 +376,9 @@ export default {
                   currentStep.value = 'getReceipts'
                   return (error.value = `You must log at least one expense transaction to complete this action`)
                 }
-                if (refs.value[`step-giveCash`].remainingBalance >= 0.05) {
+                if (remainingBalance.value.value >= 0.05) {
                   currentStep.value = 'giveCash'
-                  return (error.value = `You need to return $${
-                    refs.value[`step-giveCash`].remainingBalance
-                  } in cash, please make sure the balance is $0 before marking as complete`)
+                  return (error.value = `You need to return ${remainingBalance.value.format()} in cash, please make sure the balance is $0 before marking as complete`)
                 }
                 action.value.complete = true
                 updateAction(route.params.id, action.value.id, {
@@ -324,155 +391,29 @@ export default {
             },
           ],
         },
-        // {
-        //   name: 'returnCash',
-        //   title: 'Receive remaining Cash',
-        //   icon: 'mdi-cash-register',
-        //   done: action.value.complete,
-        //   body: {
-        //     component: defineAsyncComponent(() => import('./receiveCash.vue')),
-        //     props: { action: action.value, transactions: transactions.value },
-        //   },
-        //   actions: [
-        //     {
-        //       label: 'Save',
-        //       click: async () => {
-        //         let id = await refs.value[`step-returnCash`].save()
-        //         action.value.transactions[id] = { id, purpose: 'cash-returned' }
-        //         //update the action
-        //         updateAction(route.params.id, action.value.id, {
-        //           done: action.value.done,
-        //           transactions: action.value.transactions,
-        //         })
-        //       },
-        //       color: 'secondary',
-        //     },
-        //     {
-        //       label: 'Mark Complete',
-        //       click: () => {
-        //         if (!action.value.done[1]) {
-        //           currentStep.value = 'gatherInfo'
-        //           return (error.value =
-        //             'Missing information, please complete all fields')
-        //         }
-        //         if (!action.value.done[2]) {
-        //           currentStep.value = 'giveCash'
-        //           return (error.value = `Please log the amount of cash you have given to the ${responsiblePerson.value.name}`)
-        //         }
-        //         if (
-        //           Object.values(transactions.value).filter((val) => {
-        //             return val.category === 'Expense'
-        //           }).length < 1
-        //         ) {
-        //           currentStep.value = 'getReceipts'
-        //           return (error.value = `You must log at least one expense transaction to complete this action`)
-        //         }
-        //         if (refs.value[`step-returnCash`].remainingBalance >= 0.05) {
-        //           currentStep.value = 'getReceipts'
-        //           return (error.value = `Missing receipts or ${
-        //             responsiblePerson.value.name
-        //           } need to return $${
-        //             refs.value[`step-returnCash`].remainingBalance
-        //           } in cash, please make sure the balance is $0 before marking as complete`)
-        //         }
-        //         if (refs.value[`step-returnCash`].remainingBalance >= 0.05) {
-        //           return (error.value = `${responsiblePerson.value.name} has returned too many receipts or too much cash. Either pay them some of the cash back or if the expense was greater than expected you can give the ${responsiblePerson.name} the additional amount and increase the cash given in step 2.`)
-        //         }
-        //         action.value.complete = true
-        //         updateAction(route.params.id, action.value.id, {
-        //           complete: action.value.complete,
-        //         })
-
-        //         parentRef.value.$parent.$parent.$parent.$parent.hide()
-        //       },
-        //       color: 'positive',
-        //     },
-        //   ],
-        // },
       ]
     })
 
-    // function fetchTransactions() {
-    //   getDocs(
-    //     query(
-    //       collection(
-    //         getFirestore(),
-    //         `/projects/${route.params.id}/transactions`
-    //       ),
-    //       where('action', '==', action.value.id)
-    //     )
-    //   ).then(async (transactionsSnap) => {
-    //     let transArray = {}
-    //     let promises = transactionsSnap.docs.map(async (doc) => {
-    //       let transaction = doc.data()
-    //       transaction.id = doc.id
-    //       transaction.currency =
-    //         transaction.currency > '' ? transaction.currency : 'AUD'
-    //       transaction.deleted = transaction.deleted
-    //         ? transaction.deleted
-    //         : false
-    //       // if (transaction.receipt === true) {
-    //       // transaction.receiptURL = await getReceipt(
-    //       //   route.params.id,
-    //       //   idToken,
-    //       //   transaction.id
-    //       // )
-    //       // }
-    //       return (transArray[transaction.id] = transaction)
-    //     })
-    //     await Promise.all(promises)
-    //     transactions.value = transArray
-    //   })
-    // }
-
+    watch(action, () => {
+      console.log(action.value)
+    })
     for (let step of steps.value) {
       if (step.done === false) {
         currentStep.value = step.name
         break
       }
     }
-    watch(
-      () => action.value.id,
-      () => {
-        if (action.value.id) {
-          fetchTransWithRef({
-            projectId: route.params.id,
-            ref: query(
-              collection(
-                getFirestore(),
-                `/projects/${route.params.id}/transactions`
-              ),
-              where('action', '==', action.value.id)
-            ),
-          })
-        }
-      },
-      {
-        immediate: true,
-      }
-    )
-    watch(
-      () => action.value.transactions,
-      () => {
-        if (action.value.id) {
-          fetchTransWithRef({
-            projectId: route.params.id,
-            ref: query(
-              collection(
-                getFirestore(),
-                `/projects/${route.params.id}/transactions`
-              ),
-              where('action', '==', action.value.id)
-            ),
-          })
-        }
-      },
-      {
-        deep: true,
-        immediate: true,
-      }
-    )
-    return { currentStep, error, steps, refs, parentRef, action }
+
+    return {
+      currentStep,
+      error,
+      steps,
+      refs,
+      parentRef,
+      action,
+      responsiblePerson,
+      users,
+    }
   },
 }
 </script>

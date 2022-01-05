@@ -85,14 +85,14 @@ function updateBudget(db, projectId, budgetId, income, expense) {
         const data = doc.data();
         let newData = { income: 0, expenses: 0 };
         newData.income = data.income
-            ? parseFloat(data.income)
+            ? (data.income)
             : 0 + income
-                ? parseFloat(income)
+                ? (income)
                 : 0;
         newData.expenses = data.expenses
-            ? parseFloat(data.expenses)
+            ? (data.expenses)
             : 0 + expense
-                ? parseFloat(expense)
+                ? (expense)
                 : 0;
         t.update(ref, newData);
     });

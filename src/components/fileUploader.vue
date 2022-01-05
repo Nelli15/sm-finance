@@ -1,14 +1,17 @@
 <template>
   <div>
-    <!-- {{ existingURL }}<br />
-    {{ editing }} -->
-    <q-btn
-      v-if="existingURL"
-      icon="cloud_upload"
-      @click="editing = !editing"
-      class="q-mx-auto"
-      ><q-tooltip>Replace receipt image</q-tooltip></q-btn
-    >
+    <!-- {{existingURL}} -->
+      <q-btn
+      v-if="existingURL && !preventEdit"
+        icon="cloud_upload"
+        @click="editing = !editing"
+        class="absolute-top-right"
+        style="z-index: 10000"
+        >
+          <q-tooltip>Upload or Replace receipt image</q-tooltip>
+        </q-btn
+      >
+    <!-- {{metadata}} -->
     <q-firebase-uploader
       :metadata="metadata"
       color="secondary"
@@ -33,7 +36,8 @@
       :readonly="readOnly"
       :disabled="readOnly"
       class="q-mx-auto"
-      v-if="editing || !existingURL"
+      v-if="(editing || !existingURL) && metadata.customMetadata && metadata.customMetadata.projectId && metadata.customMetadata.transId && !preventEdit"
+      ref="receiptUpload"
     />
     <q-img
       :src="existingURL"
@@ -41,9 +45,13 @@
       @click="open = !open"
       :style="open ? 'height:100%' : 'height:200px'"
       class="q-mx-auto"
-      v-if="existingURL && !editing"
-      spinner-color="secordary"
-    />
+      v-else-if="existingURL && !editing"
+    >
+    <template v-slot:loading>
+          <q-spinner-gears color="secordary" />
+        </template>
+    </q-img>
+    <div v-else> No Receipt</div>
   </div>
 </template>
 <script>
@@ -54,17 +62,25 @@ export default {
   props: {
     metadata: Object,
     existingURL: String,
+    preventEdit: Boolean
   },
   emits: ['start', 'uploaded', 'failed', 'added'],
   setup(props) {
     const editing = ref(false)
     const readOnly = ref(false)
-
+    const receiptUpload = ref({})
+    const open = ref(false)
+    function reset() {
+      receiptUpload.value.reset()
+    }
     return {
       metadata: props.metadata,
       existingURL: props.existingURL,
       editing,
       readOnly,
+      receiptUpload,
+      reset,
+      open
     }
   },
   components: {

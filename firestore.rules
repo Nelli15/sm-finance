@@ -52,7 +52,7 @@ service cloud.firestore {
           // allow create: if userIsContributor(projectId) && userIsBudgetContributor(projectId, request.resource.data.to) && userIsBudgetContributor(projectId, request.resource.data.from);
           allow read, write: if userIsAdmin(projectId);
           allow read: if userIsContributor(projectId) && resource.data.submittedBy.uid == request.auth.uid;
-          allow update: if (userIsAdmin(projectId) || userIsContributor(projectId)) && !resource.data.reviewed && ((!("deleted" in resource.data) && !("deleted" in request.resource.data)) || ("deleted" in resource.data && "deleted" in request.resource.data && checkUnchanged('deleted'))) && checkUnchanged('category') && checkUnchanged('type') && checkAuthor();
+          allow update: if ((userIsAdmin(projectId) || userIsContributor(projectId)) && !resource.data.reviewed && ((!("deleted" in resource.data) && !("deleted" in request.resource.data)) || ("deleted" in resource.data && "deleted" in request.resource.data && checkUnchanged('deleted'))) && checkUnchanged('category') && checkUnchanged('type') && checkAuthor());
           // && parseFloat(request.resource.data.amount) > 0
           // && parseFloat(request.resource.data.GST) <= (parseFloat(request.resource.data.amount)*0.1);
           function checkUnchanged(key) {

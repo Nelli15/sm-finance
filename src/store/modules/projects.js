@@ -14,13 +14,6 @@ function waitForUid (payload, rootState, dispatch) {
 const state = {
   project: {},
   projects: {},
-  projectsTableKey: 1,
-  listeners: []
-  // listeners: {
-  //   project: [],
-  //   projects: [],
-
-  // }
 }
 
 export const getters = {
@@ -75,7 +68,6 @@ export const getters = {
     }
     return []
   },
-  projectsTableKey: state => state.projectsTableKey
 }
 
 export const mutations = {
@@ -108,16 +100,6 @@ export const mutations = {
     if (state.projects[payload.projectId]) {
       state.projects[payload.projectId], payload.key, payload.val
     }
-  },
-  addListeners(state, { type, unsub}) {
-    state.listeners.push(unsub)
-  },
-  clearListeners(state, type) {
-    
-    // for(let unsub of state.listeners[type]){
-    //   unsub()
-    // }
-    // state.listeners.type = []
   }
 }
 
@@ -125,7 +107,6 @@ export const actions = {
   fetchProject ({ dispatch, commit, rootState }, payload) {
     // console.log('fetching project')
     let project = {}
-      commit('clearListeners', false)
       let unsub = onSnapshot(doc(getFirestore(),`/projects/${payload.projectId}`), async projectSnap => {
         project = projectSnap.data()
         project.id = projectSnap.id
@@ -133,11 +114,8 @@ export const actions = {
         commit('petty/setPetty', project.petty, { root: true })
         waitForUid(payload, rootState, dispatch)
       })
-      commit('addListeners', unsub)
   },
   async fetchProjects ({ commit }, payload) {
-    // console.log('fetching projects', payload)
-      commit('clearListeners', false)
       let unsub = onSnapshot(query(collectionGroup(getFirestore(), 'contributors'), where('uid', '==', payload)), async projectsSnap => {
         // console.log('some error', projectsSnap)
         let projects = [],
@@ -166,15 +144,11 @@ export const actions = {
         })
       
       })
-      commit('addListeners', {type: 'permission', unsub})
   },
   fetchPermissions ({ commit }, payload) {
-    // console.log(payload)
-    commit('clearListeners', 'permissions')
       let unsub = onSnapshot(doc(getFirestore(), `/projects/${payload.projectId}/contributors/${payload.uid}`), async contributorSnap => {
         commit('setPermissions', contributorSnap.data())
       })
-      commit('addListeners', {type: 'permission', unsub})
   },
   updateProjectByKey ({ commit }, payload) {
     commit('setProjectKey', payload)

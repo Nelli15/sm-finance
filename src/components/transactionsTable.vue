@@ -20,7 +20,6 @@
       selection="multiple"
       v-model:selected="rowSelected"
       dense
-      :loading="loading"
     >
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
@@ -250,6 +249,8 @@
           :props="props"
           class="text-bold"
           :class="{
+            'bg-green-2': props.row.reviewed && !props.row.deleteRequested &&
+              !props.row.deleted,
             'bg-red-2': props.row.deleted,
             'bg-orange-2':
               props.row.deleteRequested &&
@@ -552,21 +553,38 @@
           >
             <!-- {{ getAmount(props.row.text) }} -->
             <!-- {{props.row}} -->
-            {{ parseFloat(props.row.amount).toFixed(2) }}
-            <q-popup-edit v-model="props.row.amount">
+            {{ props.row.amount.format() }}
+            <q-popup-edit v-model="props.row.amount.value">
               <q-input
-                :model-value="props.row.amount"
+                :model-value="props.row.amount.value"
                 @update:model-value="
                   updateTransaction(
                     props.row.id,
                     'amount',
-                    props.row.type === 'Cash' ? round5($event) : $event
+                    props.row.type === 'Cash' ? currency(round5($event)).value : currency($event).value
                   )
                 "
                 dense
                 autofocus
                 :label="'Amount (' + project.currency + ')'"
               />
+              <!-- <q-field
+                :model-value="props.row.amount.value"
+                @update:model-value="updateTransaction(
+                  props.row.id,
+                  'amount',
+                  props.row.type === 'Cash' ? currency(round5($event)).value : currency($event).value
+                )"
+                :label="'Amount (' + project.currency + ')'"
+                hint="$#,###.00"
+                dense
+                :rules="[(v) => !!v || 'Required value']"
+                autofocus
+              >
+                <template v-slot:control="{ id, floatingLabel, value, emitValue }">
+                  <input :id="id" class="q-field__input text-right" :model-value="value" @change="e => emitValue(e.target.value)" v-money="moneyFormatForDirective" v-show="floatingLabel">
+                </template>
+              </q-field> -->
             </q-popup-edit>
             <q-tooltip
               anchor="center right"
@@ -583,15 +601,15 @@
             :class="{ 'cursor-pointer': props.row.category !== 'Journal' }"
           >
             <!-- {{ getGST(props.row.text) }} -->
-            {{ parseFloat(props.row.GST ? props.row.GST : 0).toFixed(2) }}
+            {{ (props.row.GST ? props.row.GST : currency(0)).format() }}
             <q-popup-edit
-              v-model="props.row.GST"
+              v-model="props.row.GST.value"
               v-if="props.row.category !== 'Journal'"
             >
               <q-input
-                :model-value="props.row.GST"
+                :model-value="props.row.GST.value"
                 @update:model-value="
-                  updateTransaction(props.row.id, 'GST', $event)
+                  updateTransaction(props.row.id, 'GST', currency($event).value)
                 "
                 dense
                 autofocus
@@ -645,7 +663,7 @@
             style="white-space: normal; min-width: 300px"
           >
             {{ props.row.desc }}
-            <q-popup-edit v-model="props.row.desc">
+            <q-popup-edit v-model="props.row.desc" v-if="props.row.desc !== 'petty cash out' && props.row.id !== 'pettyClose'">
               <q-input
                 :model-value="props.row.desc"
                 @update:model-value="
@@ -741,13 +759,29 @@
             </div>
           </q-td>
           <q-td key="actions" :props="props" auto-width>
+            <q-btn
+              @click="openDialog(`action-${props.row.id}`)"
+              icon="mdi-cash-refund"
+              dense
+              class="q-mr-sm"
+              v-if="props.row.category === 'Expense' && !props.row.action > ''"
+            >
+              <q-tooltip
+                anchor="center right"
+                self="center left"
+                class="bg-accent text-black"
+              >
+                Reimburse
+              </q-tooltip>
+            </q-btn>
             <sp-receipt
               :id="props.row.id"
               :label="props.row.id"
               :url="props.row.receiptURL"
-              v-if="props.row.category === 'Expense'"
+              v-if="props.row.category === 'Expense' || props.row.desc === 'petty cash out' || props.row.id === 'pettyClose'"
               class="q-mr-sm"
             />
+            
             <!-- <q-icon
               name="img:../icons/no-receipt.png"
               style="height: 30px; width: 30px; padding: 3.99px"
@@ -796,6 +830,7 @@
                 {{ props.row.reviewed ? 'Reviewed!' : 'Mark Reviewed' }}
               </q-tooltip>
             </q-btn>
+            
             <q-btn
               :model-value="props.row.deleted ? props.row.deleted : false"
               @click="
@@ -820,19 +855,27 @@
               @deleted="$emit('deleted', $event)"
             />
           </q-td>
+          <q-dialog
+            :ref="`action-${props.row.id}`"
+            maximised
+          >
+            <reimbursement
+              :transaction="props.row"
+            />
+          </q-dialog>
         </q-tr>
       </template>
     </q-table>
     <q-page-sticky
       position="bottom-right"
-      :offset="sumFabPos"
+      :offset="fabPos"
       style="z-index: 100"
       v-if="rowSelected.length > 0"
     >
       <q-card
         class="bg-primary text-white"
-        :disable="draggingSumFab"
-        v-touch-pan.prevent.mouse="moveSumFab"
+        :disable="draggingFab"
+        v-touch-pan.prevent.mouse="moveFab"
       >
         <q-card-section>
           Sum ({{ project.currency }}): ${{ calcSelected.total }}<br />
@@ -853,11 +896,17 @@ import { debounce } from 'quasar'
 import { mapGetters } from 'vuex'
 import { defineAsyncComponent } from 'vue'
 import { doc, getFirestore, updateDoc, deleteField } from '@firebase/firestore'
+import currency from 'currency.js'
+import {VMoney} from 'v-money'
+
 
 var cc = require('currency-codes')
 
 export default {
-  props: ['columnsProp', 'transactions'],
+  props: {
+    'columnsProp': Array,
+    'transactions': {},
+    'showReviewed':Boolean},
   data() {
     return {
       columns: [
@@ -988,12 +1037,11 @@ export default {
       typeOptions: ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card'],
       fabPos: [18, 18],
       draggingFab: false,
-      sumFabPos: [18, 18],
-      draggingSumFab: false,
       reviewedVisible: false,
     }
   },
   created() {
+    this.currency = currency
     if (this.columnsProp) {
       this.visibleColumns = this.columnsProp
     }
@@ -1018,22 +1066,20 @@ export default {
           rowsPerPage: 10,
           // rowsNumber: xx if getting data from a server
         }
-    if (this.$route.params.budgetCategory) {
+    if (this.showReviewed) {
       this.reviewedVisible = true
     }
   },
   methods: {
+    openDialog(id) {
+      return this.$refs[id].show()
+    },
     moveFab(ev) {
       this.draggingFab = ev.isFirst !== true && ev.isFinal !== true
 
-      this.fabPos = [this.fabPos[0] + ev.delta.x, this.fabPos[1] - ev.delta.y]
-    },
-    moveSumFab(ev) {
-      this.draggingSumFab = ev.isFirst !== true && ev.isFinal !== true
-
-      this.sumFabPos = [
-        this.sumFabPos[0] - ev.delta.x,
-        this.sumFabPos[1] - ev.delta.y,
+      this.fabPos = [
+        this.fabPos[0] - ev.delta.x,
+        this.fabPos[1] - ev.delta.y,
       ]
     },
     filterFn(val, update) {
@@ -1073,12 +1119,13 @@ export default {
             totalFound = true
           }
           if (totalFound && textArray[key].indexOf('$') !== -1) {
-            return parseFloat(textArray[key].split('$').join(''))
+            return currency(textArray[key].split('$').join(''))
           }
         }
       }
     },
     async updateAction(transId, oldAction, newAction) {
+      // console.log(transId, oldAction, newAction)
       if (oldAction > '')
         await updateDoc(
           doc(
@@ -1166,20 +1213,27 @@ export default {
       var mod = (x - Math.floor(x)) * 100
       if (mod % 5 > 0) {
         mod % 5 <= 2 ? (mod = mod - (mod % 5)) : (mod = mod + (5 - (mod % 5)))
-        return parseFloat(Math.floor(x) + mod / 100)
+        return currency(Math.floor(x) + mod / 100)
       } else {
-        return parseFloat(x)
+        return currency(x)
       }
     },
   },
   computed: {
+    moneyFormatForDirective() { return {
+      decimal: '.',
+      thousands: ',',
+      prefix: '$ ',
+      suffix: '',
+      precision: 2,
+      masked: false /* doesn't work with directive */
+    }},
     ...mapGetters('projects', ['project']),
     ...mapGetters('budgets', [
       'accounts',
       'budgets',
       'budgetCategories',
       'budgetOptions',
-      'loading',
     ]),
     ...mapGetters('auth', ['idToken']),
     ...mapGetters('actions', ['actions', 'actionOptions']),
@@ -1301,20 +1355,20 @@ export default {
 
       for (var key in this.rowSelected) {
         if (this.rowSelected[key].category === 'Expense') {
-          expenses += parseFloat(this.rowSelected[key].amount)
-          total -= parseFloat(this.rowSelected[key].amount)
+          expenses += this.rowSelected[key].amount.value
+          total -= this.rowSelected[key].amount.value
         } else if (this.rowSelected[key].category === 'Income') {
-          income += parseFloat(this.rowSelected[key].amount)
-          total += parseFloat(this.rowSelected[key].amount)
+          income += this.rowSelected[key].amount.value
+          total += this.rowSelected[key].amount.value
         } else if (this.rowSelected[key].category === 'Journal') {
-          journal += parseFloat(this.rowSelected[key].amount)
+          journal += this.rowSelected[key].amount.value
         }
       }
       return {
-        total: total.toFixed(2),
-        expenses: expenses.toFixed(2),
-        income: income.toFixed(2),
-        journal: journal.toFixed(2),
+        total: total,
+        expenses: expenses,
+        income: income,
+        journal: journal,
       }
     },
     pageLabel() {
@@ -1364,7 +1418,11 @@ export default {
     ),
     'sp-receipt': defineAsyncComponent(() => import('./sp-receipt.vue')),
     'sp-delete-btn': defineAsyncComponent(() => import('./sp-delete-btn.vue')),
+    reimbursement: defineAsyncComponent(() =>
+      import('./../components/actions/reimbursement/action.vue')
+    ),
   },
+  directives: {money: VMoney}
 }
 </script>
 

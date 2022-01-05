@@ -8,125 +8,35 @@
       recorded as a transaction within its relevant budget. Import a CSV to
       create multiple Budgets at once, or add them manually below.
     </q-item>
-
-    <q-item v-if="Object.keys(budgets).length > 0">
-      <q-item-section>
-        <q-item-label class="text-h6"> Current Budgets </q-item-label>
-      </q-item-section>
-    </q-item>
-    <q-item v-if="Object.keys(budgets).length > 0">
-      <q-item-section avatar>Budget</q-item-section>
-      <q-item-section>Label</q-item-section>
-      <q-item-section side>Actions</q-item-section>
-    </q-item>
-    <q-scroll-area
-      :style="`height: ${
-        56 * Object.keys(budgets).length
-      }px; max-height: 50vh;`"
-    >
-      <q-list>
-        <q-item
-          v-for="account in Object.values(budgets).sort((a, b) =>
-            a.label > b.label ? 1 : -1
-          )"
-          :key="account.id"
-        >
-          <q-item-section avatar>
-            <q-badge
-              :class="{
-                'bg-green-8': (account.budget ? account.budget : 0) > 0,
-                'bg-red-8': (account.budget ? account.budget : 0) < 0,
-                'bg-black': (account.budget ? account.budget : 0) == 0,
-              }"
-              :label="'$' + (account.budget ? account.budget : 0).toFixed(2)"
-            />
-          </q-item-section>
-          <q-item-section key="label" class="cursor-pointer text-bold">
-            {{ account.label }}
-            <q-popup-edit v-model="account.label">
-              <q-input
-                :model-value="account.label > '' ? account.label : ''"
-                @update:model-value="updateBudget(account.id, 'label', $event)"
-                dense
-                autofocus
-                label="Budget Label"
-              />
-            </q-popup-edit>
-            <q-tooltip
-              anchor="center right"
-              self="center left"
-              class="bg-accent text-black"
-            >
-              <q-icon name="edit" />Edit
-            </q-tooltip>
-            <q-badge
-              v-if="account.transAwaitingReview > 0"
-              class="bg-red-8"
-              :label="
-                account.transAwaitingReview ? account.transAwaitingReview : ''
-              "
-              floating
-            />
-          </q-item-section>
-
-          <!-- <q-item-section key="awaitingReviews" >
-            {{
-              account.transAwaitingReview ? account.transAwaitingReview : ''
-            }}
-          </q-item-section> -->
-          <span class="q-ml-auto">
-            <q-btn :to="'transactions/' + account.id" dense class="q-mr-sm"
-              >Transactions</q-btn
-            >
-            <q-btn v-if="account.inUse" dense color="negative">
-              <q-icon name="delete_forever" />
-              <q-tooltip class="bg-accent text-black"
-                >Cannot Delete Budget while in use</q-tooltip
-              >
-            </q-btn>
-            <sp-delete-btn
-              dense
-              v-if="!account.inUse"
-              :docRef="`/projects/${project.id}/accounts/${account.id}`"
-            />
-          </span>
-        </q-item>
-      </q-list>
-    </q-scroll-area>
-    <div v-if="add">
+    <budgetsTable flat/>
+    <div v-if="l_add">
       <q-item>
         <q-input
           label="Budget Label"
           stack-label
-          v-model="newBudget.label"
+          v-model="l_newBudget.label"
           style="width: 100%"
         />
       </q-item>
       <q-item>
         <q-select
-          :model-value="
-            newBudget.category > ''
-              ? budgets[newBudget.category]
-                ? budgets[newBudget.category].label
-                : budgetCategories[newBudget.category].label
-              : ''
-          "
+          :model-value="budgetCategories[l_newBudget.category] ? budgetCategories[l_newBudget.category].label : ''"
           dense
           label="Category"
           stack-label
-          :options="budgetCategoryOptionsFiltered"
+          :options="l_budgetCategoriesFiltered"
           option-label="label"
           :option-value="(item) => (item === null ? null : item.id)"
-          @update:model-value="newBudget.category = $event.id"
+          @update:model-value="l_newBudget.category = $event.id"
           style="width: 100%"
           use-input
-          @filter="budgetCategoriesFilterFn"
+          @filter="l_filterFn"
           input-debounce="0"
         />
       </q-item>
       <q-item>
         <q-input
-          v-model="newBudget.budget"
+          v-model="l_newBudget.budget"
           dense
           :label="'Budget Amount (' + project.currency + ')'"
           stack-label
@@ -138,7 +48,7 @@
       </q-item>
       <q-item>
         <q-btn
-          @click="createAccount"
+          @click="l_createAccount"
           icon="send"
           label="Create"
           dense
@@ -147,23 +57,29 @@
         />
       </q-item>
     </div>
-    <div class="or" v-if="add">OR</div>
-    <div v-if="add" class="full-width">
+    <div class="or" v-if="l_add">OR</div>
+    <div v-if="l_add" class="full-width">
       <div><sp-budget-import /></div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
-import { createAccount, updateBudgetByKey } from '../../../scripts/accounts.js'
-import { defineAsyncComponent } from 'vue'
+import { createAccount } from '../../../scripts/accounts.js'
+import { defineAsyncComponent, ref, computed } from 'vue'
+import { useQuasar } from 'quasar'
+import {useStore} from 'vuex'
+import {useRoute} from 'vue-router'
 
 export default {
   name: 'createBudget',
-  data() {
-    return {
-      newBudget: {
+  setup(){
+    const q = useQuasar()
+    const store = useStore()
+    const route = useRoute()
+    const l_accountLabel = ref('')
+    const l_add = ref(false)
+    const l_newBudget = ref({
         category: '', // ID
         type: 'budget',
         label: '', // name of budget or category
@@ -171,26 +87,32 @@ export default {
         balance: 0,
         expenses: 0,
         transAwaitingReview: 0,
-      },
-      add: false,
-      budgetCategoryOptionsFiltered: [],
+      })
+    const l_budgetCategoriesFiltered = ref([])
+    const project = computed(() => store.getters['projects/project'])
+    const budgetCategories = computed(() => store.getters['budgets/budgetCategories'])
+    const budgetCategoryOptions = computed(() => store.getters['budgets/budgetCategoryOptions'])
+    
+    function l_filterFn(val, update) {
+      if (val === '') {
+        update(() => {
+          l_budgetCategoriesFiltered.value = budgetCategoryOptions.value
+        })
+        return
+      }
+
+      update(() => {
+        const needle = val.toLowerCase()
+        l_budgetCategoriesFiltered.value = budgetCategoryOptions.value.filter(
+          (v) => v.label.toLowerCase().indexOf(needle) > -1
+        )
+      })
     }
-  },
-  computed: {
-    ...mapGetters('projects', ['project']),
-    ...mapGetters('budgets', [
-      'budgets',
-      'budgetCategories',
-      'budgetCategoryOptions',
-    ]),
-  },
-  methods: {
-    ...mapActions('budgets', ['updateBudgetByKey']),
-    createAccount() {
-      createAccount(this.$route.params.id, this.newBudget)
+    function l_createAccount() {
+      createAccount(route.params.id, l_newBudget.value)
         .then(() => {
-          this.add = false
-          this.newBudget = {
+          l_add.value = false
+          l_newBudget.value = {
             category: '', // ID
             type: 'budget',
             label: '', // name of budget or category
@@ -202,60 +124,21 @@ export default {
         })
         .catch((err) => {
           console.error(err)
-          this.$q.notify({
+          q.notify({
             color: 'negative',
             textColor: 'white',
             icon: 'error',
             message: 'Error creating account',
           })
         })
-    },
-    updateBudget(budgetId, key, val) {
-      // console.log(budgetId, key, val)
-      this.updateBudgetByKey({ budgetId, key, val })
-      updateBudgetByKey(this.$route.params.id, budgetId, key, val)
-        .then(() => {
-          // console.log('updated')
-          this.$q.notify({
-            color: 'positive',
-            textColor: 'white',
-            icon: 'cloud_done',
-            message: 'Account: Updated Successfully',
-          })
-        })
-        .catch((err) => {
-          console.log(err)
-          this.$q.notify({
-            color: 'negative',
-            textColor: 'white',
-            icon: 'error',
-            message: 'Oops, Something went wrong!',
-          })
-        })
-    },
-    budgetCategoriesFilterFn(val, update) {
-      if (val === '') {
-        update(() => {
-          this.budgetCategoryOptionsFiltered = this.budgetCategoryOptions
-        })
-        return
-      }
-
-      update(() => {
-        const needle = val.toLowerCase()
-        this.budgetCategoryOptionsFiltered = this.budgetCategoryOptions.filter(
-          (v) => v.label.toLowerCase().indexOf(needle) > -1
-        )
-      })
-    },
+    }
+    return {l_add, l_accountLabel, l_newBudget, l_budgetCategoriesFiltered, budgetCategories, l_filterFn, l_createAccount, project}
   },
   components: {
-    'sp-delete-btn': defineAsyncComponent(() =>
-      import('../../sp-delete-btn.vue')
+    budgetsTable: defineAsyncComponent(() =>
+      import('../../budgetsTable.vue')
     ),
-    'sp-budget-import': defineAsyncComponent(() =>
-      import('../../sp-budget-import.vue')
-    ),
+    'sp-budget-import': defineAsyncComponent(()=> import('../../sp-budget-import.vue'))
   },
 }
 </script>

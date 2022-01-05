@@ -838,7 +838,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
                     transaction.id,
                     0,
                     transData.from === 'pettyCash'
-                        ? -1 * parseFloat(transData.amount)
+                        ? -1 * (transData.amount)
                         : transData.amount,
                     transData.GST,
                     '',

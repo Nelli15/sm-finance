@@ -1,7 +1,7 @@
 <template>
-  <q-card style="width: 800px; max-width: 80vw">
+  <q-card style="width: 800px; max-width: 80vw" ref="parentRef">
     <q-card-section class="row items-center q-pb-none">
-      <div class="text-h6"></div>
+      <div class="text-h6">Petty Cash Withdrawal</div>
       <q-space />
       <q-btn icon="close" flat round dense v-close-popup />
     </q-card-section>
@@ -30,7 +30,8 @@
           v-if="step.body.component"
           :is="step.body.component"
           v-bind="step.body.props"
-          :ref="`step-${step.name}`"
+          :ref="(el) => generateRefs(el, `step-${step.name}`)"
+          v-on="step.body.events && step.body.events"
         />
 
         <q-stepper-navigation>
@@ -54,80 +55,62 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { useRoute } from 'vue-router'
+import { useStore } from 'vuex'
+import { defineAsyncComponent, ref, computed, reactive } from 'vue'
 import { updateAction, createAction } from './../../../scripts/actions.js'
-import { defineAsyncComponent, readonly } from 'vue'
 export default {
   name: 'withdrawPettyCash',
-  props: ['actionProp'],
-  data() {
-    return {
-      currentStep: 'gatherInfo',
-      actionRef: {},
-      action: {
-        type: 'petty',
-        desc: 'Withdrawing Petty Cash from the Cash Card',
-        date: '',
-        transactions: {},
-        complete: false,
-        done: {
-          1: false,
-          2: false,
-          3: false,
-        },
+  props: ['action'],
+  setup(props, { emit }) {
+    const refs = reactive({})
+    const parentRef = ref({})
+    const route = useRoute()
+    const store = useStore()
+    const currentStep = ref('gatherInfo')
+    const action = ref({
+      type: 'petty',
+      desc: 'Withdrawing Petty Cash from the Cash Card',
+      date: '',
+      transactions: {},
+      complete: false,
+      done: {
+        1: false,
+        2: false,
+        3: false,
       },
-      error: '',
-    }
-  },
-  created() {
-    if (this['actionProp']) {
-      this.action = JSON.parse(JSON.stringify(this['actionProp']))
+    })
+    const ready = ref(false) // to mark complete
+    const error = ref('')
+    if (props.action) {
+      action.value = JSON.parse(JSON.stringify(props.action))
     } else {
       let date = new Date()
-      this.action.date = `${date.getDate().toString().padStart(2, '0')}/${(
+      action.value.date = `${date.getDate().toString().padStart(2, '0')}/${(
         date.getMonth() + 1
       )
         .toString()
         .padStart(2, '0')}/${date.getFullYear()}`
     }
-    for (let step of this.steps) {
-      if (step.done === false) {
-        this.currentStep = step.name
-        break
-      }
-    }
-  },
-  computed: {
-    ...mapGetters('projects', ['project']),
-    steps() {
+
+    const steps = computed(() => {
       return [
         {
           name: 'getCash',
           title: 'Get Cash from the Bank',
           icon: 'mdi-bank-transfer',
-          done: this.action.done[1],
+          done: action.value.done[1],
           body: {
             component: defineAsyncComponent(() => import('./getCash.vue')),
-            props: { action: this.action },
+            props: { action: action.value },
           },
           actions: [
             {
               label: 'Continue',
               click: () => {
-                this.error = ''
-                this.action.done[1] = true
-                // if (!this.action.id) {
-                //   createAction(this.$route.params.id, this.action).then(
-                //     (id) => {
-                //       return (this.action.id = id)
-                //     }
-                //   )
-                // } else {
-                //   updateAction(this.$route.params.id, this.action.id, {
-                //     done: this.action.done,
-                //   })
-                // }
-                this.currentStep = 'pettyCash'
+                error.value = ''
+                action.value.done[1] = true
+                currentStep.value = 'pettyCash'
               },
               color: 'secondary',
             },
@@ -137,68 +120,71 @@ export default {
           name: 'pettyCash',
           title: 'Log the Withdrawal',
           icon: 'mdi-cash-register',
-          done: this.action.done[2],
+          done: action.value.done[2],
           body: {
             component: defineAsyncComponent(() => import('./logTrans.vue')),
-            props: { action: this.action },
+            props: { action: action.value },
+             events: {
+            onSubmit: (res) => {
+              if (!action.value.transactions[res.id])
+                action.value.transactions[res.id] = {
+                  id: res.id,
+                  purpose: 'withdrawal',
+                }
+              // mark step as done
+              action.value.done[2] = true
+              //update the action
+              updateAction(route.params.id, action.value.id, {
+                done: action.value.done,
+                transactions: action.value.transactions,
+                complete: ready.value,
+              })
+              if (ready.value === true) {
+                // close dialog
+                parentRef.value.$parent.$parent.$parent.$parent.hide()
+              } else {
+                // go to next step
+                currentStep.value = 'pettyCashFee'
+              }
+            },
+            onError: (error) => {
+              error.value = error
+            },
           },
+          },
+         
           actions: [
             {
               label: 'Mark Complete without fee',
               click: async () => {
-                this.error = ''
-                if (!this.action.id) {
-                  createAction(this.$route.params.id, this.action).then(
+                error.value = ''
+                if (!action.value.id) {
+                  await createAction(route.params.id, action.value).then(
                     (id) => {
-                      return (this.action.id = id)
+                      return (action.value.id = id)
                     }
                   )
                 }
                 //save the transaction
-                let res = await this.$refs[`step-pettyCash`].save()
-
-                // console.log(id)
-                if (res.error) return (this.error = res.error)
-                else
-                  this.action.transactions[res] = { res, purpose: 'withdrawal' }
-                // mark step as done
-                this.action.done[2] = true
-                //update the action
-                updateAction(this.$route.params.id, this.action.id, {
-                  done: this.action.done,
-                  transactions: this.action.transactions,
-                  complete: true,
-                })
-                // close dialog
-                this.$parent.$parent.$parent.hide()
+                ready.value = true
+                await refs[`step-pettyCash`].save(action.value.id)
               },
               color: 'secondary',
             },
             {
               label: 'Log fee',
               click: async () => {
-                this.error = ''
-                if (!this.action.id) {
-                  createAction(this.$route.params.id, this.action).then(
+                error.value = ''
+                if (!action.value.id) {
+                  await createAction(route.params.id, action.value).then(
                     (id) => {
-                      return (this.action.id = id)
+                      return (action.value.id = id)
                     }
                   )
                 }
                 //save the transaction
-                let res = await this.$refs[`step-pettyCash`].save()
-                if (res.error) return (this.error = res.error)
-                else
-                  this.action.transactions[res] = { res, purpose: 'withdrawal' }
-                // mark step as done
-                this.action.done[2] = true
-                //update the action
-                updateAction(this.$route.params.id, this.action.id, {
-                  done: this.action.done,
-                  transactions: this.action.transactions,
-                })
-                // go to next step
-                this.currentStep = 'pettyCashFee'
+                ready.value = false
+                await refs[`step-pettyCash`].save(action.value.id)
               },
               color: 'secondary',
             },
@@ -208,63 +194,82 @@ export default {
           name: 'pettyCashFee',
           title: 'Log the Fee (Optional)',
           icon: 'mdi-cash-register',
-          done: this.action.done[3],
+          done: action.value.done[3],
           body: {
             component: defineAsyncComponent(() => import('./logFees.vue')),
-            props: { action: this.action },
+            props: { action: action.value },
+            events: {
+              onSubmit: (res) => {
+                if (!action.value.transactions[res.id])
+                  action.value.transactions[res.id] = {
+                    id: res.id,
+                    purpose: 'fee',
+                  }
+                // mark step as done
+                action.value.done[2] = true
+                //update the action
+                updateAction(route.params.id, action.value.id, {
+                  done: action.value.done,
+                  transactions: action.value.transactions,
+                  complete: true,
+                })
+                // close dialog
+                parentRef.value.$parent.$parent.$parent.$parent.hide()
+              },
+              onError: (error) => {
+                error.value = error
+              },
+            },
           },
           actions: [
             {
               label: 'Skip',
               click: async () => {
-                this.error = ''
-                //save the transaction
-                // let res = await this.$refs[`step-pettyCashFee`].save()
-                // if (res.error) return (this.error = res.error)
-                // else this.action.transactions[id] = { id, purpose: 'fee' }
-                // console.log(this.action.transactions, id)
-                // mark step as done
+                error.value = ''
+
                 //update the action
-                if (this.action.id)
-                  updateAction(this.$route.params.id, this.action.id, {
+                if (action.value.id)
+                  updateAction(route.params.id, action.value.id, {
                     complete: true,
                   })
                 // close dialog
-                this.$parent.$parent.$parent.hide()
+                parentRef.value.$parent.$parent.$parent.$parent.hide()
               },
               color: 'secondary',
             },
             {
               label: 'Save & Mark Complete',
               click: async () => {
-                this.error = ''
-                if (!this.action.id) {
-                  createAction(this.$route.params.id, this.action).then(
+                error.value = ''
+                if (!action.value.id) {
+                  await createAction(route.params.id, action.value).then(
                     (id) => {
-                      return (this.action.id = id)
+                      return (action.value.id = id)
                     }
                   )
                 }
                 //save the transaction
-                let res = await this.$refs[`step-pettyCashFee`].save()
-                if (res.error) return (this.error = res.error)
-                else this.action.transactions[res] = { res, purpose: 'fee' }
-
-                //update the action
-                updateAction(this.$route.params.id, this.action.id, {
-                  transactions: this.action.transactions,
-                  complete: true,
-                })
-
-                // close dialog
-                this.$parent.$parent.$parent.hide()
+                ready.value = true
+                await refs[`step-pettyCashFee`].save(action.value.id)
               },
               color: 'secondary',
             },
           ],
         },
       ]
-    },
+    })
+    for (let step of steps.value) {
+      if (step.done === false) {
+        currentStep.value = step.name
+        break
+      }
+    }
+    const generateRefs = (el, id) => {
+      if (el && id) {
+        refs[id] = el
+      }
+    }
+    return { steps, action, error, currentStep, generateRefs, parentRef }
   },
 }
 </script>

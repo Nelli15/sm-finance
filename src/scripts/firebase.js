@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, initializeAuth, browserSessionPersistence, browserPopupRedirectResolver, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, initializeFirestore, CACHE_SIZE_UNLIMITED, enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
+import { initializeAuth, browserSessionPersistence, browserPopupRedirectResolver, connectAuthEmulator } from 'firebase/auth';
+import { initializeFirestore, CACHE_SIZE_UNLIMITED, enableMultiTabIndexedDbPersistence, setLogLevel } from 'firebase/firestore';
 import { getStorage, initializeStorage, connectStorageEmulator } from 'firebase/storage'
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
@@ -25,7 +25,7 @@ const storageApp = getStorage(firebaseApp)
 
 if(location.hostname === 'localhost') {
   self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-  initializeAppCheck(firebaseApp, { provider: new ReCaptchaV3Provider(location.hostname === 'localhost' ? 'DDA53510-942D-473A-8575-012F37921DE5' : '6LejSkAdAAAAAEfqCCBf4ZLbERkaRKIIRHQF2sH5') });
+  initializeAppCheck(firebaseApp, { provider: new ReCaptchaV3Provider('66a9d0f0-13e1-4612-8ede-fefb54debcad') });
 } else {
 const appCheck = initializeAppCheck(firebaseApp, {
   provider: new ReCaptchaV3Provider('6LejSkAdAAAAAEfqCCBf4ZLbERkaRKIIRHQF2sH5'),
@@ -44,7 +44,6 @@ if (location.hostname === "localhost") {
   // useDatabaseEmulator(dbApp, "localhost", "9000")
   connectStorageEmulator(storageApp, 'localhost', 9199)
 }
-// firestoreSettings.experimentalAutoDetectLongPolling = true;
 // firestoreSettings.cacheSizeBytes = CACHE_SIZE_UNLIMITED;
 if (window.Cypress) {
   // Needed for Firestore support in Cypress (see https://github.com/cypress-io/cypress/issues/6350)
@@ -52,22 +51,23 @@ if (window.Cypress) {
 }
 
 const db = initializeFirestore(firebaseApp, firestoreSettings); // .settings(firestoreSettings)
+// setLogLevel('debug')
 const funcs = getFunctions();
 // if (process.env.PROD) {
-  enableMultiTabIndexedDbPersistence(db).catch(function(err) {
-    console.log(err);
-    if (err.code === "failed-precondition") {
-      // Multiple tabs open, persistence can only be enabled
-      // in one tab at a a time.
-      // ...
-      console.log(err);
-    } else if (err.code === "unimplemented") {
-      // The current browser does not support all of the
-      // features required to enable persistence
-      // ...
-      console.log(err);
-    }
-  });
+  // enableMultiTabIndexedDbPersistence(db).catch(function(err) {
+  //   console.log(err);
+  //   if (err.code === "failed-precondition") {
+  //     // Multiple tabs open, persistence can only be enabled
+  //     // in one tab at a a time.
+  //     // ...
+  //     console.log(err);
+  //   } else if (err.code === "unimplemented") {
+  //     // The current browser does not support all of the
+  //     // features required to enable persistence
+  //     // ...
+  //     console.log(err);
+  //   }
+  // });
 // }
 
 const authApp = initializeAuth(firebaseApp, {

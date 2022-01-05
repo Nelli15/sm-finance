@@ -91,7 +91,7 @@
                   label="Password"
                   lazy-rules
                   :type="isPwd ? 'password' : 'text'"
-                  :rules="[(val) => !!val || 'Password is missing']"
+                  :rules="[(val) => !!val || 'Password is missing', val => val.length >= 6 || 'Password must be at least 6 characters']"
                   :color="$q.dark.isActive ? 'white' : ''"
                   class="full-width"
                   data-cy="signin-password"
@@ -149,7 +149,7 @@
                   Sign in with Github
                 </q-btn>
                 <q-inner-loading :showing="loginPending">
-                  <q-spinner color="primary" size="3em" />
+                  <q-spinner-gears color="primary" size="3em" />
                 </q-inner-loading>
               </div>
             </q-form>

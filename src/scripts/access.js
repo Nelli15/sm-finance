@@ -43,6 +43,24 @@ import {
         invite
       )
     }
+    export const updateUser = ({projectId, uid, key, val}) => {
+      return updateDoc(
+        doc(
+          getFirestore(),
+          `/projects/${projectId}/contributors/${uid}`
+        ),
+        { [key]: val }
+      )
+    }
+    export const updateInvite = ({projectId, email, key, val}) => {
+      return updateDoc(
+        doc(
+          getFirestore(),
+          `/projects/${projectId}/invites/${email}`
+        ),
+        { [key]: val }
+      )
+    }
     export const removeUser = (projectId, uid) => {
       return deleteDoc(
         doc(
