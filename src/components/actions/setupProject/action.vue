@@ -30,7 +30,7 @@
           :is="step.body.component"
           v-bind="step.body.props"
           :ref="(el) => generateRefs(el, `step-${step.name}`)"
-           v-on="step.body.events && step.body.events"
+          v-on="step.body.events ? step.body.events : {}"
         />
 
         <q-stepper-navigation>
@@ -91,9 +91,11 @@ export default {
       },
     })
     const error = ref('')
-    const accounts = computed(() => store.getters['budgets/accounts'] )
-    const budgetCategories = computed(() => store.getters['budgets/budgetCategories'] )
-    const budgets = computed(() => store.getters['budgets/budgets'] )
+    const accounts = computed(() => store.getters['budgets/accounts'])
+    const budgetCategories = computed(
+      () => store.getters['budgets/budgetCategories']
+    )
+    const budgets = computed(() => store.getters['budgets/budgets'])
     // sync the action with firebase
     getDoc(
       doc(getFirestore(), `/projects/${route.params.id}/actions/setup`)
@@ -202,10 +204,7 @@ export default {
           {
             label: 'Continue',
             click: () => {
-              if (
-                Object.values(budgetCategories).length >
-                0
-              )
+              if (Object.values(budgetCategories).length > 0)
                 action.value.done[3] = true
               else action.value.done[3] = false
               updateAction(route.params.id, 'setup', {
@@ -237,8 +236,7 @@ export default {
           {
             label: 'Continue',
             click: () => {
-              if (Object.values(budgets).length > 0)
-                action.value.done[4] = true
+              if (Object.values(budgets).length > 0) action.value.done[4] = true
               else action.value.done[4] = false
               updateAction(route.params.id, 'setup', {
                 done: action.value.done,
@@ -289,19 +287,19 @@ export default {
           events: {
             onSubmit: (res) => {
               console.log('onSubmit')
-                error.value = ''
-                action.value.done[6] = true
-                updateAction(route.params.id, 'setup', {
-                  done: action.value.done,
-                })
-                currentStep.value = 'pettyCash'
+              error.value = ''
+              action.value.done[6] = true
+              updateAction(route.params.id, 'setup', {
+                done: action.value.done,
+              })
+              currentStep.value = 'pettyCash'
             },
             onError: (error) => {
               error.value = error
               action.value.done[6] = false
-                updateAction(route.params.id, 'setup', {
-                  done: action.value.done,
-                })
+              updateAction(route.params.id, 'setup', {
+                done: action.value.done,
+              })
             },
           },
         },

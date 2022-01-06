@@ -35,15 +35,19 @@ export default {
             getFirestore(),
             `/projects/${this.$route.params.id}/actions`
           ),
-          where('completed', '==', false)
+          where('complete', '==', false),
+          where('type', '!=', 'close')
         )
       )
-      if (docs.docs.length > 0) {
+      console.log('actions:', docs.size)
+      if (docs.size > 1) {
         return {
           error:
-            docs.docs.length > 1
-              ? `You have ${docs.docs.length} incompete Actions. Please complete or delete them before continuing.`
-              : `You have ${docs.docs.length} incompete Action. Please complete or delete it before continuing.`,
+            docs.docs.length > 2
+              ? `You have ${
+                  docs.docs.length - 1
+                } incompete Actions. Please complete or delete them before continuing.`
+              : `You have 1 incompete Action. Please complete or delete it before continuing.`,
         }
       }
       docs = await getDocs(
@@ -69,10 +73,11 @@ export default {
             getFirestore(),
             `/projects/${this.$route.params.id}/accounts`
           ),
-          where('balance', '>', 0.01),
+          where('balance', '>', 0),
           where('type', '==', 'budget')
         )
       )
+      console.log('budgets', docs)
       if (docs.docs.length > 0) {
         return {
           error:
@@ -81,6 +86,26 @@ export default {
               : `You have ${docs.docs.length} Budget with remaining cash. Please ensure you have received any outstanding cash and recorded all transactions.`,
         }
       }
+      docs = await getDocs(
+        query(
+          collection(
+            getFirestore(),
+            `/projects/${this.$route.params.id}/accounts`
+          ),
+          where('balance', '<', 0),
+          where('type', '==', 'budget')
+        )
+      )
+      console.log('budgets', docs)
+      if (docs.docs.length > 0) {
+        return {
+          error:
+            docs.docs.length > 1
+              ? `You have ${docs.docs.length} Budgets with unpaid Expenses. Please ensure all budgets have a cash in hand balance of $0`
+              : `You have 1 Budget with unpaid Expenses.  Please ensure all budgets have a cash in hand balance of $0`,
+        }
+      }
+      console.log('verified')
       return true
     },
   },

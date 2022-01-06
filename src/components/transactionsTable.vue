@@ -249,7 +249,9 @@
           :props="props"
           class="text-bold"
           :class="{
-            'bg-green-2': props.row.reviewed && !props.row.deleteRequested &&
+            'bg-green-2':
+              props.row.reviewed &&
+              !props.row.deleteRequested &&
               !props.row.deleted,
             'bg-red-2': props.row.deleted,
             'bg-orange-2':
@@ -293,12 +295,7 @@
                   >
                     <template v-slot:error>
                       <div
-                        class="
-                          absolute-full
-                          flex flex-center
-                          bg-negative
-                          text-white
-                        "
+                        class="absolute-full flex flex-center bg-negative text-white"
                       >
                         Cannot load image
                       </div>
@@ -341,7 +338,7 @@
           <q-td key="number" :props="props">
             {{ props.row.id }}
           </q-td>
-          <q-td key="icon" :props="props" class="cursor-pointer">
+          <q-td key="icon" :props="props">
             <!-- {{props.row.type}} -->
             <q-icon
               v-if="props.row.type === 'Cheque'"
@@ -371,7 +368,7 @@
             >
               <q-tooltip> Bank Card </q-tooltip>
             </q-icon>
-            <q-popup-edit v-model="props.row.type">
+            <!-- <q-popup-edit v-model="props.row.type">
               <q-select
                 :model-value="props.row.type"
                 dense
@@ -389,12 +386,9 @@
             >
               <q-icon name="edit" />
               Edit
-            </q-tooltip>
+            </q-tooltip> -->
           </q-td>
           <q-td key="category" :props="props">
-            <!-- {{props.row.category}} -->
-            <!-- {{budgets[props.row.category].category}} -->
-            <!-- {{ props.row.id }} -->
             <div v-if="props.row.category !== 'Journal'">
               {{
                 props.row.category !== 'Journal'
@@ -403,7 +397,7 @@
               }}
             </div>
           </q-td>
-          <q-td key="budget" :props="props" class="cursor-pointer">
+          <q-td key="budget" :props="props">
             <div v-if="props.row.category !== 'Journal'">
               {{
                 budgets[props.row.budget]
@@ -412,7 +406,7 @@
                   ? accounts[props.row.budget].label
                   : ''
               }}
-              <q-popup-edit v-model="props.row.budget" v-if="!props.row.action">
+              <!-- <q-popup-edit v-model="props.row.budget" v-if="!props.row.action">
                 <q-select
                   :model-value="
                     budgets[props.row.budget] > ''
@@ -436,9 +430,9 @@
               >
                 <q-icon name="edit" />
                 Edit
-              </q-tooltip>
+              </q-tooltip> -->
             </div>
-            <div v-if="props.row.category === 'Journal'" class="cursor-pointer">
+            <div v-if="props.row.category === 'Journal'">
               {{
                 accounts[props.row.from] ? accounts[props.row.from].label : ''
               }}
@@ -459,7 +453,7 @@
                   : ''
               }}
               {{ budgets[props.row.to] ? budgets[props.row.to].label : '' }}
-              <q-popup-edit v-model="props.row.from" v-if="!props.row.action">
+              <!-- <q-popup-edit v-model="props.row.from" v-if="!props.row.action">
                 <q-select
                   v-if="
                     accounts[props.row.from] ||
@@ -512,18 +506,12 @@
               >
                 <q-icon name="edit" />
                 Edit
-              </q-tooltip>
+              </q-tooltip> -->
             </div>
           </q-td>
-          <q-td key="date" :props="props" class="cursor-pointer">
+          <q-td key="date" :props="props">
             {{ props.row.date }}
-            <q-popup-edit v-model="props.row.date">
-              <!-- <q-date
-                v-model="props.row.date"
-                dense
-                minimal
-                label="Date"
-              /> -->
+            <!-- <q-popup-edit v-model="props.row.date">
               <q-date
                 :model-value="props.row.date"
                 @update:model-value="
@@ -539,7 +527,7 @@
             >
               <q-icon name="edit" />
               Edit
-            </q-tooltip>
+            </q-tooltip> -->
           </q-td>
           <q-td
             key="amount"
@@ -549,42 +537,24 @@
               'text-green-8': props.row.category === 'Income',
               'text-blue-8': props.row.category === 'Journal',
             }"
-            class="cursor-pointer"
           >
-            <!-- {{ getAmount(props.row.text) }} -->
-            <!-- {{props.row}} -->
             {{ props.row.amount.format() }}
-            <q-popup-edit v-model="props.row.amount.value">
+            <!-- <q-popup-edit v-model="props.row.amount.value">
               <q-input
                 :model-value="props.row.amount.value"
                 @update:model-value="
                   updateTransaction(
                     props.row.id,
                     'amount',
-                    props.row.type === 'Cash' ? currency(round5($event)).value : currency($event).value
+                    props.row.type === 'Cash'
+                      ? currency(round5($event)).value
+                      : currency($event).value
                   )
                 "
                 dense
                 autofocus
                 :label="'Amount (' + project.currency + ')'"
               />
-              <!-- <q-field
-                :model-value="props.row.amount.value"
-                @update:model-value="updateTransaction(
-                  props.row.id,
-                  'amount',
-                  props.row.type === 'Cash' ? currency(round5($event)).value : currency($event).value
-                )"
-                :label="'Amount (' + project.currency + ')'"
-                hint="$#,###.00"
-                dense
-                :rules="[(v) => !!v || 'Required value']"
-                autofocus
-              >
-                <template v-slot:control="{ id, floatingLabel, value, emitValue }">
-                  <input :id="id" class="q-field__input text-right" :model-value="value" @change="e => emitValue(e.target.value)" v-money="moneyFormatForDirective" v-show="floatingLabel">
-                </template>
-              </q-field> -->
             </q-popup-edit>
             <q-tooltip
               anchor="center right"
@@ -593,16 +563,11 @@
             >
               <q-icon name="edit" />
               Edit
-            </q-tooltip>
+            </q-tooltip> -->
           </q-td>
-          <q-td
-            key="GST"
-            :props="props"
-            :class="{ 'cursor-pointer': props.row.category !== 'Journal' }"
-          >
-            <!-- {{ getGST(props.row.text) }} -->
+          <q-td key="GST" :props="props">
             {{ (props.row.GST ? props.row.GST : currency(0)).format() }}
-            <q-popup-edit
+            <!-- <q-popup-edit
               v-model="props.row.GST.value"
               v-if="props.row.category !== 'Journal'"
             >
@@ -624,17 +589,12 @@
             >
               <q-icon name="edit" />
               Edit
-            </q-tooltip>
+            </q-tooltip> -->
           </q-td>
-          <q-td
-            key="payTo"
-            :props="props"
-            class="cursor-pointer"
-            style="white-space: normal"
-          >
+          <q-td key="payTo" :props="props" style="white-space: normal">
             <div v-if="props.row.category === 'Expense'">
               {{ props.row.payTo ? props.row.payTo : '' }}
-              <q-popup-edit v-model="props.row.payTo">
+              <!-- <q-popup-edit v-model="props.row.payTo">
                 <q-input
                   :model-value="props.row.payTo"
                   @update:model-value="
@@ -652,18 +612,23 @@
               >
                 <q-icon name="edit" />
                 Edit
-              </q-tooltip>
+              </q-tooltip> -->
             </div>
             <div v-else :props="props" />
           </q-td>
           <q-td
             key="desc"
             :props="props"
-            class="cursor-pointer"
             style="white-space: normal; min-width: 300px"
           >
             {{ props.row.desc }}
-            <q-popup-edit v-model="props.row.desc" v-if="props.row.desc !== 'petty cash out' && props.row.id !== 'pettyClose'">
+            <!-- <q-popup-edit
+              v-model="props.row.desc"
+              v-if="
+                props.row.desc !== 'petty cash out' &&
+                props.row.id !== 'pettyClose'
+              "
+            >
               <q-input
                 :model-value="props.row.desc"
                 @update:model-value="
@@ -681,7 +646,7 @@
             >
               <q-icon name="edit" />
               Edit
-            </q-tooltip>
+            </q-tooltip> -->
           </q-td>
           <q-td
             key="cheque"
@@ -689,7 +654,7 @@
             class="{ 'cursor-pointer': props.row.type === 'Cheque' }"
           >
             {{ props.row.cheque }}
-            <q-popup-edit
+            <!-- <q-popup-edit
               v-model="props.row.cheque"
               v-if="props.row.type === 'Cheque'"
             >
@@ -711,106 +676,35 @@
             >
               <q-icon name="edit" />
               Edit
-            </q-tooltip>
+            </q-tooltip> -->
           </q-td>
           <q-td key="linked-action" :props="props">
-            <div v-if="props.row.category === 'Expense'">
-              {{
-                actions[props.row.action] ? actions[props.row.action].desc : ''
-              }}
-
-              <q-popup-edit v-model="props.row.action">
-                <q-select
-                  :model-value="props.row.action"
-                  @update:model-value="
-                    updateAction(props.row.id, props.row.action, $event)
-                  "
-                  dense
-                  autofocus
-                  cover
-                  label="Action"
-                  :options="
-                    actionOptions.filter(
-                      (val) => val.budget === props.row.budget
-                    )
-                  "
-                  map-options
-                  emit-value
-                  option-label="desc"
-                  option-value="id"
-                />
-              </q-popup-edit>
-
-              <q-icon name="edit" size="sm">
-                <q-tooltip
-                  anchor="center right"
-                  self="center left"
-                  class="bg-accent text-black"
-                >
-                  <q-icon name="edit" />
-                  Edit
-                </q-tooltip>
-              </q-icon>
-            </div>
-            <div v-else>
+            <div>
               {{
                 actions[props.row.action] ? actions[props.row.action].desc : ''
               }}
             </div>
           </q-td>
           <q-td key="actions" :props="props" auto-width>
-            <q-btn
-              @click="openDialog(`action-${props.row.id}`)"
-              icon="mdi-cash-refund"
-              dense
-              class="q-mr-sm"
-              v-if="props.row.category === 'Expense' && !props.row.action > ''"
-            >
-              <q-tooltip
-                anchor="center right"
-                self="center left"
-                class="bg-accent text-black"
-              >
-                Reimburse
-              </q-tooltip>
-            </q-btn>
+            <create-action-from-expense
+              v-if="
+                props.row.category === 'Expense' &&
+                !props.row.action > '' &&
+                !accounts[props.row.budget]
+              "
+              :transaction="props.row"
+            />
             <sp-receipt
               :id="props.row.id"
               :label="props.row.id"
               :url="props.row.receiptURL"
-              v-if="props.row.category === 'Expense' || props.row.desc === 'petty cash out' || props.row.id === 'pettyClose'"
-              class="q-mr-sm"
-            />
-            
-            <!-- <q-icon
-              name="img:../icons/no-receipt.png"
-              style="height: 30px; width: 30px; padding: 3.99px"
-              v-else-if="
-                props.row.category === 'Expense' &&
-                (props.row.receiptURL > ''
-                  ? !props.row.receiptURL.startsWith('https://')
-                  : true)
+              v-if="
+                props.row.category === 'Expense' ||
+                props.row.id === 'pettyClose'
               "
               class="q-mr-sm"
             />
-            <q-spinner-gears
-              size="30px"
-              color="primary"
-              v-else-if="
-                props.row.category === 'Expense' &&
-                !props.row.receiptURL &&
-                props.row.receipt
-              "
-            >
-              <q-tooltip
-                anchor="center right"
-                self="center left"
-                class="bg-accent text-black"
-              >
-                Looking for receipt
-              </q-tooltip>
-            </q-spinner-gears> -->
-
+            <trans-edit-btn :transaction="props.row" class="q-mr-sm" />
             <q-btn
               icon="check"
               round
@@ -830,7 +724,7 @@
                 {{ props.row.reviewed ? 'Reviewed!' : 'Mark Reviewed' }}
               </q-tooltip>
             </q-btn>
-            
+
             <q-btn
               :model-value="props.row.deleted ? props.row.deleted : false"
               @click="
@@ -855,14 +749,6 @@
               @deleted="$emit('deleted', $event)"
             />
           </q-td>
-          <q-dialog
-            :ref="`action-${props.row.id}`"
-            maximised
-          >
-            <reimbursement
-              :transaction="props.row"
-            />
-          </q-dialog>
         </q-tr>
       </template>
     </q-table>
@@ -897,16 +783,16 @@ import { mapGetters } from 'vuex'
 import { defineAsyncComponent } from 'vue'
 import { doc, getFirestore, updateDoc, deleteField } from '@firebase/firestore'
 import currency from 'currency.js'
-import {VMoney} from 'v-money'
-
+import { VMoney } from 'v-money'
 
 var cc = require('currency-codes')
 
 export default {
   props: {
-    'columnsProp': Array,
-    'transactions': {},
-    'showReviewed':Boolean},
+    columnsProp: Array,
+    transactions: {},
+    showReviewed: Boolean,
+  },
   data() {
     return {
       columns: [
@@ -1077,10 +963,7 @@ export default {
     moveFab(ev) {
       this.draggingFab = ev.isFirst !== true && ev.isFinal !== true
 
-      this.fabPos = [
-        this.fabPos[0] - ev.delta.x,
-        this.fabPos[1] - ev.delta.y,
-      ]
+      this.fabPos = [this.fabPos[0] - ev.delta.x, this.fabPos[1] - ev.delta.y]
     },
     filterFn(val, update) {
       if (val === '') {
@@ -1132,7 +1015,7 @@ export default {
             getFirestore(),
             `/projects/${this.project.id}/actions/${oldAction}`
           ),
-          { [`transaction.${transId}`]: deleteField() }
+          { [`transactions.${transId}`]: deleteField() }
         )
       if (newAction > '')
         await updateDoc(
@@ -1220,14 +1103,16 @@ export default {
     },
   },
   computed: {
-    moneyFormatForDirective() { return {
-      decimal: '.',
-      thousands: ',',
-      prefix: '$ ',
-      suffix: '',
-      precision: 2,
-      masked: false /* doesn't work with directive */
-    }},
+    moneyFormatForDirective() {
+      return {
+        decimal: '.',
+        thousands: ',',
+        prefix: '$ ',
+        suffix: '',
+        precision: 2,
+        masked: false /* doesn't work with directive */,
+      }
+    },
     ...mapGetters('projects', ['project']),
     ...mapGetters('budgets', [
       'accounts',
@@ -1418,11 +1303,12 @@ export default {
     ),
     'sp-receipt': defineAsyncComponent(() => import('./sp-receipt.vue')),
     'sp-delete-btn': defineAsyncComponent(() => import('./sp-delete-btn.vue')),
-    reimbursement: defineAsyncComponent(() =>
-      import('./../components/actions/reimbursement/action.vue')
+    'trans-edit-btn': defineAsyncComponent(() => import('./transEditBtn.vue')),
+    'create-action-from-expense': defineAsyncComponent(() =>
+      import('./createActionFromExpense.vue')
     ),
   },
-  directives: {money: VMoney}
+  directives: { money: VMoney },
 }
 </script>
 

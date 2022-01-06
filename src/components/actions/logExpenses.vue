@@ -5,15 +5,7 @@
       <!-- </q-item> -->
       <transactions-table
         :transactions="transArray"
-        :columnsProp="[
-          'submittedBy',
-          'date',
-          'amount',
-          'GST',
-          'payTo',
-          'desc',
-          'actions',
-        ]"
+        :columnsProp="['submittedBy', 'date', 'amount', 'GST', 'payTo', 'desc']"
         @onTransUpdate="updateTrans"
         @deleted="emit('deleted', $event)"
         showReviewed
@@ -72,9 +64,14 @@ export default {
     )
     function updateTrans({ trans, key, val }) {
       console.log({ trans, key, val })
-      if (key === 'GST' && val > store.getters['transactions/transFromList'](
-        props.action.transactions
-      )[trans].amount * 0.1) {
+      if (
+        key === 'GST' &&
+        val >
+          store.getters['transactions/transFromList'](
+            props.action.transactions
+          )[trans].amount *
+            0.1
+      ) {
         q.notify({
           color: 'negative',
           textColor: 'white',

@@ -1,60 +1,59 @@
 <template>
-    <q-btn
-      :icon="
-        url > '' && url.startsWith('https://')
-          ? 'receipt'
-          : 'img:../icons/no-receipt.png'
-      "
-      @click="showDialog = !showDialog"
-      :loading="loading"
-      dense
-    >
+  <q-btn
+    :icon="
+      url > '' && url.startsWith('https://')
+        ? 'receipt'
+        : 'img:../icons/no-receipt.png'
+    "
+    @click="showDialog = !showDialog"
+    :loading="loading"
+    dense
+  >
     <template v-slot:loading>
-          <q-spinner-gears color="secordary" />
-        </template>
-      <q-tooltip
-        anchor="center right"
-        self="center left"
-        class="bg-accent text-black"
-      >
-        Receipt
-      </q-tooltip>
-      <q-dialog v-model="showDialog" style="max-width: 100vw">
-        <q-card style="max-width: 100%" dark class="bg-black">
-          <q-card-section class="row items-center q-pb-none">
-            <div class="text-h6">Transaction {{ label }} receipt</div>
-            <q-space />
-            <q-btn icon="close" flat round dense v-close-popup />
-          </q-card-section>
-          
-          <q-card-section class="no-scroll">
-            <fileUploader
-              :metadata="{
-                customMetadata: {
-                  projectId: project.id,
-                  transId: id,
-                  expiry: expiry(1),
-                },
-              }"
-              ref="transUpload"
-              @uploaded="onUploaded"
-              @failed="onFailed"
-              @added="onAdded"
-              @start="onStart"
-              :existingURL="url"
-              class="q-mx-auto"
-              :preventEdit="preventEdit"
-            />
-          </q-card-section>
-        </q-card>
-      </q-dialog>
-    </q-btn>
+      <q-spinner-gears color="secordary" />
+    </template>
+    <q-tooltip
+      anchor="center right"
+      self="center left"
+      class="bg-accent text-black"
+    >
+      Receipt
+    </q-tooltip>
+    <q-dialog v-model="showDialog" style="max-width: 100vw">
+      <q-card style="max-width: 100%">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Transaction {{ label }} receipt</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="no-scroll">
+          <fileUploader
+            :metadata="{
+              customMetadata: {
+                projectId: project.id,
+                transId: id,
+                expiry: expiry(1),
+              },
+            }"
+            ref="transUpload"
+            @uploaded="onUploaded"
+            @failed="onFailed"
+            @added="onAdded"
+            @start="onStart"
+            :existingURL="url"
+            class="q-mx-auto"
+            :preventEdit="preventEdit"
+          />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+  </q-btn>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import { defineAsyncComponent } from 'vue'
-
 
 export default {
   // props: ['id', 'label', 'loading', 'url', 'preventEdit'],
@@ -62,7 +61,7 @@ export default {
     id: String,
     label: String,
     url: String,
-    preventEdit: Boolean
+    preventEdit: Boolean,
   },
   data() {
     return {
@@ -115,9 +114,9 @@ export default {
   },
   computed: {
     ...mapGetters('projects', ['project']),
-    loading(){
+    loading() {
       return this.url === 'loading'
-    }
+    },
     // receiptUrl () {
     //   if (this.url > '') {
     //     return this.url

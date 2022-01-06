@@ -15,7 +15,7 @@ export interface ExpenseTrans {
   type: 'Cash' | 'Bank Card' | 'Internet Transfer' | 'Cheque'
   date: Date
   amount: currency
-  GST: currency | string
+  GST: currency
   cheque: string | null
   receipt: boolean
   receiptURL: string
@@ -119,13 +119,14 @@ export class Transaction {
     this.desc = _trans.desc || ''
     this.type = _trans.type || 'Cash'
     this.date = _trans.date || new Date()
-    this.amount = currency(_trans.amount) || currency(0)
+    this.amount = _trans.amount
+      ? currency(_trans.amount.value ? _trans.amount.value : _trans.amount)
+      : currency(0)
     this.budget = _trans.category !== 'Journal' ? _trans.budget : ''
     // console.log(_trans.GST, typeof _trans.GST)
-    this.GST =
-      currency(
-        typeof _trans.GST === 'string' ? parseFloat(_trans.GST) : _trans.GST
-      ) || currency(0)
+    this.GST = _trans.GST
+      ? currency(_trans.GST.value ? _trans.GST.value : _trans.GST)
+      : currency(0)
     // console.log(this.GST)
     this.cheque =
       _trans.category == 'Expense' ? (_trans.cheque ? _trans.cheque : '') : ''

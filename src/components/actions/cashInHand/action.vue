@@ -35,7 +35,7 @@
               if (el) refs[`step-${step.name}`] = el
             }
           "
-          v-on="step.body.events && step.body.events"
+          v-on="step.body.events ? step.body.events : {}"
         />
 
         <q-stepper-navigation>
@@ -116,21 +116,32 @@ export default {
         ? users.value[action.value.responsiblePerson]
         : {}
     })
-  const remainingBudgetText = ref('')
-  function computeCaption(){
-remainingBudgetText.value = `<q-item><q-item-label class="text-caption">Budget Remaining: ${ action.value.budget &&
-        store.state.budgets.budgets[action.value.budget]
-        ? currency(store.state.budgets.budgets[action.value.budget].budget.subtract(
-            store.state.budgets.budgets[action.value.budget].expenses
-          )).format()
-        : currency(0).format() }</q-item-label></q-item>`
-  }
-    watch(action,() => {
-      computeCaption()
-    }, {immediate: true})
-    watch(store.state.budgets.budgets, () => {
-     computeCaption()
-    }, { immediate: true})
+    const remainingBudgetText = ref('')
+    function computeCaption() {
+      remainingBudgetText.value = `<q-item><q-item-label class="text-caption">Budget Remaining: ${
+        action.value.budget && store.state.budgets.budgets[action.value.budget]
+          ? currency(
+              store.state.budgets.budgets[action.value.budget].budget.subtract(
+                store.state.budgets.budgets[action.value.budget].expenses
+              )
+            ).format()
+          : currency(0).format()
+      }</q-item-label></q-item>`
+    }
+    watch(
+      action,
+      () => {
+        computeCaption()
+      },
+      { immediate: true }
+    )
+    watch(
+      store.state.budgets.budgets,
+      () => {
+        computeCaption()
+      },
+      { immediate: true }
+    )
     const steps = computed(() => {
       return [
         {
@@ -225,7 +236,6 @@ remainingBudgetText.value = `<q-item><q-item-label class="text-caption">Budget R
               } and record the details below.`,
               caption: remainingBudgetText.value,
             },
-
           },
           actions: [
             {
@@ -256,7 +266,6 @@ remainingBudgetText.value = `<q-item><q-item-label class="text-caption">Budget R
             ),
             props: {
               action: action.value,
-              
             },
             events: {
               onSubmit: (res) => {
@@ -281,7 +290,7 @@ remainingBudgetText.value = `<q-item><q-item-label class="text-caption">Budget R
                 delete transactions.value[
                   docRef.split('/')[docRef.split('/').length - 1]
                 ]
-              }
+              },
             },
           },
           actions: [

@@ -31,7 +31,7 @@
           :is="step.body.component"
           v-bind="step.body.props"
           :ref="(el) => generateRefs(el, `step-${step.name}`)"
-          v-on="step.body.events && step.body.events"
+          v-on="step.body.events ? step.body.events : {}"
         />
 
         <q-stepper-navigation>
@@ -124,35 +124,35 @@ export default {
           body: {
             component: defineAsyncComponent(() => import('./logTrans.vue')),
             props: { action: action.value },
-             events: {
-            onSubmit: (res) => {
-              if (!action.value.transactions[res.id])
-                action.value.transactions[res.id] = {
-                  id: res.id,
-                  purpose: 'withdrawal',
+            events: {
+              onSubmit: (res) => {
+                if (!action.value.transactions[res.id])
+                  action.value.transactions[res.id] = {
+                    id: res.id,
+                    purpose: 'withdrawal',
+                  }
+                // mark step as done
+                action.value.done[2] = true
+                //update the action
+                updateAction(route.params.id, action.value.id, {
+                  done: action.value.done,
+                  transactions: action.value.transactions,
+                  complete: ready.value,
+                })
+                if (ready.value === true) {
+                  // close dialog
+                  parentRef.value.$parent.$parent.$parent.$parent.hide()
+                } else {
+                  // go to next step
+                  currentStep.value = 'pettyCashFee'
                 }
-              // mark step as done
-              action.value.done[2] = true
-              //update the action
-              updateAction(route.params.id, action.value.id, {
-                done: action.value.done,
-                transactions: action.value.transactions,
-                complete: ready.value,
-              })
-              if (ready.value === true) {
-                // close dialog
-                parentRef.value.$parent.$parent.$parent.$parent.hide()
-              } else {
-                // go to next step
-                currentStep.value = 'pettyCashFee'
-              }
-            },
-            onError: (error) => {
-              error.value = error
+              },
+              onError: (error) => {
+                error.value = error
+              },
             },
           },
-          },
-         
+
           actions: [
             {
               label: 'Mark Complete without fee',

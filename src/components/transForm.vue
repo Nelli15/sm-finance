@@ -1,11 +1,8 @@
 <template>
   <q-form @reset="onReset" @submit="onSubmit" ref="transForm">
-    <q-list
-      style="min-width: 100px"
-    >
+    <q-list style="min-width: 100px">
       <q-item class="text-h6 justify-center" v-if="!hideHeaders">
-        <!-- <q-item-section> -->
-        Add Transaction
+        Transaction
         <q-icon
           name="help_outline"
           style="cursor: pointer"
@@ -143,8 +140,10 @@
       <q-item
         v-show="
           (isAdmin ||
-          (project.contributorTransTypeOpts &&
-            project.contributorTransTypeOpts.length > 1)) && (fields.includes('category') || fields.includes('type'))"
+            (project.contributorTransTypeOpts &&
+              project.contributorTransTypeOpts.length > 1)) &&
+          (fields.includes('category') || fields.includes('type'))
+        "
       >
         <q-select
           v-if="isAdmin && fields.includes('category')"
@@ -155,16 +154,16 @@
           @update:model-value="newTrans.category = $event"
           style="width: 50%"
           :rules="[(v) => !!v || 'Required value']"
-          :disable="isContributor"
+          :disable="isContributor || !!transaction.id"
           hide-bottom-space
         >
         </q-select>
         <q-select
           v-show="
             (isAdmin ||
-            (project.contributorTransTypeOpts &&
-              project.contributorTransTypeOpts.length > 1))
-               && fields.includes('type')
+              (project.contributorTransTypeOpts &&
+                project.contributorTransTypeOpts.length > 1)) &&
+            fields.includes('type')
           "
           v-model="newTrans.type"
           dense
@@ -180,8 +179,11 @@
           hide-bottom-space
         />
       </q-item>
-      <q-item v-if="newTrans.category === 'Expense' && fields.includes('receipt')">
+      <q-item
+        v-if="newTrans.category === 'Expense' && fields.includes('receipt')"
+      >
         <fileUploader
+          :existingURL="newTrans.receiptURL"
           :metadata="metadata"
           color="secondary"
           flat
@@ -203,7 +205,7 @@
       </q-item>
       <q-item v-if="fields.includes('date')">
         <q-input
-        v-if="fields.includes('date')"
+          v-if="fields.includes('date')"
           v-model="newTrans.date"
           mask="##/##/####"
           label="Date"
@@ -234,17 +236,31 @@
         </q-input>
       </q-item>
 
-      <q-item v-if="newTrans.category !== 'Journal' && (fields.includes('budget') || fields.includes('payTo'))">
+      <q-item
+        v-if="
+          newTrans.category !== 'Journal' &&
+          (fields.includes('budget') || fields.includes('payTo'))
+        "
+      >
         <q-select
-        v-if="fields.includes('budget')"
+          v-if="fields.includes('budget')"
           :model-value="budgetFromId(newTrans.budget)"
           dense
           label="Budget"
           :options="budgetsFiltered"
           option-label="label"
           :option-value="(item) => (item === null ? null : item.id)"
-          @update:model-value="newTrans.budget = $event.id"
-          :style="(newTrans.category === 'Expense' && fields.includes('payTo')) ? 'width:50%' : 'width:100%'"
+          @update:model-value="
+            (e) => {
+              newTrans.budget = e.id
+              newTrans.action = null
+            }
+          "
+          :style="
+            newTrans.category === 'Expense' && fields.includes('payTo')
+              ? 'width:50%'
+              : 'width:100%'
+          "
           use-input
           @filter="filterBudgets"
           :rules="[
@@ -266,7 +282,9 @@
           :rules="[(v) => v > '' || 'Required']"
         />
       </q-item>
-      <q-item v-if="newTrans.category === 'Journal' && fields.includes('budget')">
+      <q-item
+        v-if="newTrans.category === 'Journal' && fields.includes('budget')"
+      >
         <q-select
           :model-value="budgetFromId(newTrans.from)"
           dense
@@ -291,10 +309,6 @@
             </q-item>
           </template>
         </q-select>
-        <!-- </q-popup-edit> -->
-        <!-- </q-item-section> -->
-        <!-- <q-item-section> -->
-        <!-- <q-popup-edit v-model="props.row.category"> -->
         <q-select
           :model-value="budgetFromId(newTrans.to)"
           dense
@@ -319,12 +333,8 @@
             </q-item>
           </template>
         </q-select>
-        <!-- </q-popup-edit> -->
-        <!-- </q-item-section> -->
       </q-item>
       <q-item v-if="newTrans.type === 'Cheque' && fields.includes('cheque')">
-        <!-- <q-item-section> -->
-        <!-- <q-popup-edit v-model="props.row.category"> -->
         <q-input
           v-model="newTrans.cheque"
           dense
@@ -332,64 +342,53 @@
           style="width: 100%"
           :rules="[(v) => !!v || 'Required value']"
         />
-        <!-- </q-popup-edit> -->
-        <!-- </q-item-section> -->
       </q-item>
       <q-item v-if="fields.includes('amount') || fields.includes('GST')">
-        <!-- <q-input
-        v-if="fields.includes('amount')"
-          :model-value="newTrans.amount.value"
-          @update:model-value="newTrans.amount = currency($event)"
-          dense
-          :label="'Amount (' + project.currency + ')'"
-          :rules="[(v) => !!v || 'Required value']"
-          :style="(newTrans.receipt && fields.includes('GST')) ? 'width:50%;' : 'width: 100%;'"
-          prefix="$"
-          mask="#.##"
-        /> -->
-        <q-field
+        <q-currency-input
           v-if="fields.includes('amount')"
-          :model-value="newTrans.amount.value"
-          @update:model-value="newTrans.amount = currency($event)"
           :label="'Amount (' + project.currency + ')'"
-          hint="$#,###.00"
-          dense
           :rules="[(v) => !!v || 'Required value']"
-          :style="(newTrans.receipt && fields.includes('GST')) ? 'width:50%;' : 'width: 100%;'"
-        >
-          <template v-slot:control="{ id, floatingLabel, value, emitValue }">
-            <input :id="id" class="q-field__input text-right" :model-value="value" @change="e => emitValue(e.target.value)" v-money="moneyFormatForDirective" v-show="floatingLabel">
-          </template>
-        </q-field>
-        <q-field
-          v-if="newTrans.category === 'Expense' && newTrans.receipt && fields.includes('GST')"
+          :style="
+            newTrans.receipt && fields.includes('GST')
+              ? 'width:50%;'
+              : 'width: 100%;'
+          "
+          :model-value="newTrans.amount.value"
+          @update:model-value="
+            (e) => {
+              newTrans.amount = currency(e)
+            }
+          "
+          :options="{
+            currency: 'AUD',
+            useGrouping: true,
+            currencyDisplay: 'hidden',
+          }"
+        />
+        <q-currency-input
+          v-if="
+            newTrans.category === 'Expense' &&
+            newTrans.receipt &&
+            fields.includes('GST')
+          "
+          :label="'GST (' + project.currency + ')'"
+          :rules="[
+            (v) => v <= newTrans.amount * 0.1 || 'GST must be <= 10% of amount',
+            (v) => !!v || 'Required value',
+          ]"
+          style="width: 50%"
           :model-value="newTrans.GST.value"
-          @update:model-value="newTrans.GST = currency($event)"
-          :label="'GST (' + project.currency + ')'"
-          hint="$#,###.00"
-          dense
-          :rules="[
-            (v) => v <= newTrans.amount * 0.1 || 'GST must be <= 10% of amount',
-            (v) => !!v || 'Required value',
-          ]"
-          style="width: 50%"
-        >
-          <template v-slot:control="{ id, floatingLabel, value, emitValue }">
-            <input :id="id" class="q-field__input text-right" :model-value="value" @change="e => emitValue(e.target.value)" v-money="moneyFormatForDirective" v-show="floatingLabel">
-          </template>
-        </q-field>
-        <!-- <q-input
-          v-if="newTrans.category === 'Expense' && newTrans.receipt && fields.includes('GST')"
-          v-model="newTrans.GST"
-          dense
-          :label="'GST (' + project.currency + ')'"
-          :rules="[
-            (v) => v <= newTrans.amount * 0.1 || 'GST must be <= 10% of amount',
-            (v) => !!v || 'Required value',
-          ]"
-          style="width: 50%"
-          prefix="$"
-        /> -->
+          @update:model-value="
+            (e) => {
+              newTrans.GST = currency(e)
+            }
+          "
+          :options="{
+            currency: 'AUD',
+            useGrouping: true,
+            currencyDisplay: 'hidden',
+          }"
+        />
       </q-item>
       <q-item v-if="fields.includes('desc')">
         <q-input
@@ -400,17 +399,77 @@
           :rules="[(v) => v > '' || 'Description Required']"
         />
       </q-item>
+      <q-item
+        v-if="
+          fields.includes('action') &&
+          newTrans.category == 'Expense' &&
+          !accounts[newTrans.budget]
+        "
+      >
+        <q-select
+          v-model="newTrans.action"
+          dense
+          autofocus
+          cover
+          label="Action"
+          :options="
+            actionOptions.filter(
+              (val) =>
+                !val.complete && val.budget && val.budget === newTrans.budget
+            )
+          "
+          style="width: 100%"
+          map-options
+          emit-value
+          option-label="desc"
+          option-value="id"
+          :display-value="
+            newTrans.action && actions[newTrans.action]
+              ? actions[newTrans.action].desc
+              : ''
+          "
+          clearable
+        >
+          <template v-slot:option="scope">
+            <q-item v-bind="scope.itemProps">
+              <q-item-section>
+                <q-item-label>{{ scope.opt.desc }}</q-item-label>
+                <q-item-label caption>{{
+                  scope.opt.responsiblePerson
+                    ? `(${users[scope.opt.responsiblePerson].name})`
+                    : ''
+                }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </template>
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-italic text-grey">
+                No uncompleted Actions are linked with this Budget
+              </q-item-section>
+            </q-item>
+          </template>
+          <template v-slot:after>
+            <create-action-from-expense
+              :transaction="newTrans"
+              v-if="!newTrans.action"
+            />
+          </template>
+        </q-select>
+      </q-item>
+
       <q-item v-if="error > '' && !hideErrors" class="text-red">
         {{ error }}
       </q-item>
       <q-item v-if="!hideBtns">
         <q-btn
-          label="Submit"
+          label="Save"
           type="submit"
           color="secondary"
           :disable="uploading"
         />
         <q-btn
+          v-if="!hideClear"
           label="Clear"
           type="reset"
           color="secondary"
@@ -428,13 +487,27 @@ import { useStore } from 'vuex'
 import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
 import { ref, computed, watch, defineAsyncComponent } from 'vue'
-import { getFirestore, setDoc, doc, collection } from 'firebase/firestore'
+import {
+  getFirestore,
+  setDoc,
+  doc,
+  collection,
+  getDoc,
+  updateDoc,
+  deleteField,
+} from 'firebase/firestore'
 import currency from 'currency.js'
 import { Transaction } from '/src/services/transaction'
-import {VMoney} from 'v-money'
-
 export default {
-  props: {actionId: String, transaction: {}, fields: Array, hideBtns: Boolean, hideHeaders: Boolean, hideErrors: Boolean },
+  props: {
+    actionId: String,
+    transaction: {},
+    fields: Array,
+    hideBtns: Boolean,
+    hideHeaders: Boolean,
+    hideErrors: Boolean,
+    hideClear: Boolean,
+  },
   emit: ['onSubmit', 'onError'],
   setup(props, { emit }) {
     //set standard imports
@@ -452,6 +525,10 @@ export default {
       () => store.getters['projects/isContributor']
     )
     const user = computed(() => store.getters['auth/user'])
+    const actionOptions = computed(() => store.getters['actions/actionOptions'])
+    const actions = computed(() => store.getters['actions/actions'])
+    const admins = computed(() => store.getters['auth/admins'])
+    const contributors = computed(() => store.getters['auth/contributors'])
 
     // define document variables
     const typeOptions = computed(() => {
@@ -463,22 +540,39 @@ export default {
           : ['Cash', 'Internet Transfer', 'Cheque', 'Bank Card']
       return options
     })
+    const users = computed(() => {
+      let arr = [...admins.value, ...contributors.value]
+      return arr.reduce(
+        (obj, item) => ({
+          ...obj,
+          [item['uid']]: item,
+        }),
+        {}
+      )
+    })
+    const oldAction = ref(null)
     const transRef = ref({})
-    const newTrans = ref()
-    const fields = computed(()=>{
-      return Array.isArray(props.fields) ? props.fields : ['category', 'type', 'receipt', 'date', 'budget', 'cheque', 'amount', 'GST', 'desc', 'payTo']
+    const newTrans = ref({})
+    const fields = computed(() => {
+      return Array.isArray(props.fields)
+        ? props.fields
+        : [
+            'category',
+            'type',
+            'receipt',
+            'date',
+            'budget',
+            'cheque',
+            'amount',
+            'GST',
+            'desc',
+            'payTo',
+            'action',
+          ]
     })
     const error = ref('')
     const readOnly = ref(false)
     const uploading = ref(false)
-    const moneyFormatForDirective = ref({
-      decimal: '.',
-      thousands: ',',
-      prefix: '$ ',
-      suffix: '',
-      precision: 2,
-      masked: false /* doesn't work with directive */
-    })
 
     // a function for rounding amount if cash
     function round5(x) {
@@ -493,15 +587,13 @@ export default {
 
     // saves the transaction
     async function onSubmit(actionId) {
-      // console.log('action',typeof actionId, typeof props.actionId)
-      if(!actionId || typeof actionId !== 'string') {
-        if(props.actionId) {
+      if (!actionId || typeof actionId !== 'string') {
+        if (props.actionId) {
           actionId = props.actionId
         } else {
           actionId = ''
         }
       }
-      
 
       // reset the error
       error.value = ''
@@ -520,12 +612,12 @@ export default {
       // check if the journal budget is valid
       if (
         (newTrans.value.category === 'Journal' &&
-          !(budgetFromId(newTrans.value.to).id &&
-          budgetFromId(newTrans.value.from).id
+          !(
+            budgetFromId(newTrans.value.to).id &&
+            budgetFromId(newTrans.value.from).id
           )) ||
         (newTrans.value.category !== 'Journal' &&
-          !budgetFromId(newTrans.value.budget).id
-          )
+          !budgetFromId(newTrans.value.budget).id)
       ) {
         error.value = 'Budget Missing'
         return
@@ -558,13 +650,81 @@ export default {
           ? round5(l_newTrans.amount)
           : l_newTrans.amount
       l_newTrans.submittedBy = user.value
-      // console.log('actionId', actionId)
-      l_newTrans.action = actionId ? actionId : ''
+      l_newTrans.action =
+        l_newTrans.action > ''
+          ? l_newTrans.action
+          : actionId > ''
+          ? actionId
+          : null
       l_newTrans = JSON.parse(JSON.stringify(l_newTrans))
-      l_newTrans.id = transRef.value.id
-      console.log(l_newTrans)
+      l_newTrans.id = transRef.value.id ? transRef.value.id : ''
       // Save the dec to the server
+      // console.log(transRef.value.id, l_newTrans)
       return setDoc(transRef.value, l_newTrans, { merge: true })
+        .then(async () => {
+          // update the action
+          console.log(
+            l_newTrans.action,
+            oldAction.value,
+            l_newTrans.action !== oldAction.value
+          )
+          if (l_newTrans.action !== oldAction.value) {
+            if (l_newTrans.action > '') {
+              let purpose = null
+              if (oldAction.value > '') {
+                // get old action value from transaction
+                const docSnap = await getDoc(
+                  doc(
+                    getFirestore(),
+                    `/projects/${project.value.id}/actions/${oldAction.value}`
+                  )
+                )
+                if (docSnap.exists()) {
+                  purpose = docSnap.get(`transaction.${l_newTrans.id}.purpose`)
+                }
+              }
+              //add the transaction to the action
+              console.log(
+                `update: /projects/${project.value.id}/actions/${
+                  l_newTrans.action
+                } with ${JSON.stringify({
+                  [`transactions.${l_newTrans.id}`]: {
+                    purpose: purpose ? purpose : 'expense',
+                    id: l_newTrans.id,
+                  },
+                })}`,
+                l_newTrans.action > ''
+              )
+              await updateDoc(
+                doc(
+                  getFirestore(),
+                  `/projects/${project.value.id}/actions/${l_newTrans.action}`
+                ),
+                {
+                  [`transactions.${l_newTrans.id}`]: {
+                    purpose: purpose ? purpose : 'expense',
+                    id: l_newTrans.id,
+                  },
+                }
+              )
+            }
+            if (oldAction.value > '') {
+              // remove the transaction fron action
+              console.log(
+                `update: /projects/${project.value.id}/actions/${oldAction.value} with {transactions.${l_newTrans.id}: deleteField()}`,
+                oldAction.value
+              )
+              await updateDoc(
+                doc(
+                  getFirestore(),
+                  `/projects/${project.value.id}/actions/${oldAction.value}`
+                ),
+                { [`transactions.${l_newTrans.id}`]: deleteField() }
+              )
+            }
+            oldAction.value = l_newTrans.action
+          }
+        })
         .then(() => {
           emit('onSubmit', l_newTrans)
           q.loading.hide()
@@ -617,7 +777,6 @@ export default {
       uploading.value = false
     }
     function onFailed() {
-      // console.log('file upload failed', event)
       q.notify({
         color: 'negative',
         textColor: 'white',
@@ -631,7 +790,7 @@ export default {
       date.setDate(date.getDate() + 1)
       return date
     }
-    const metadata = computed(()=> {
+    const metadata = computed(() => {
       return {
         customMetadata: {
           projectId: route.params.id,
@@ -648,9 +807,7 @@ export default {
     )
     const accounts = computed(() => store.getters['budgets/accounts'])
     const budgets = computed(() => store.getters['budgets/budgets'])
-    const budgetOptions = computed(
-      () => store.getters['budgets/budgetOptions']
-    )
+    const budgetOptions = computed(() => store.getters['budgets/budgetOptions'])
     function filterBudgets(val, update) {
       let budgets = isAdmin.value
         ? budgetOptions.value
@@ -670,62 +827,101 @@ export default {
       })
     }
     function budgetFromId(id) {
-      if (!(id > '' && store.state.budgets.budgets && store.state.budgets.accounts)) return { label: '' }
-      return store.state.budgets.budgets[id] || store.state.budgets.accounts[id] || { label: '' }
+      if (
+        !(
+          id > '' &&
+          store.state.budgets.budgets &&
+          store.state.budgets.accounts
+        )
+      )
+        return { label: '' }
+      return (
+        store.state.budgets.budgets[id] ||
+        store.state.budgets.accounts[id] || { label: '' }
+      )
     }
 
     //watch props to compute Firebase doc ref
-    watch(computed(() => props.transaction || null), (newVal, oldVal) => {
-      if((oldVal && oldVal.transaction && newVal && newVal.transaction && (oldVal.transaction.id !== newVal.transaction.id)) || !transRef.value.id || !oldVal ) {
-      if (newVal.transaction && newVal.transaction.id){
-        transRef.value = doc(
-          getFirestore(),
-          `/projects/${route.params.id}/transactions/${newVal.transaction.id}`
-        )
-        newTrans.value = new Transaction(props.transaction)
-      } else if(newVal && newVal.transaction) {
-        transRef.value = doc(
-          collection(
-            getFirestore(),
-            `/projects/${route.params.id}/transactions`
-          )
-        )
-        newTrans.value = new Transaction({id: transRef.value.id, ...props.transaction})
-      }
-      else {
-        transRef.value = doc(
-          collection(
-            getFirestore(),
-            `/projects/${route.params.id}/transactions`
-          )
-        )
-        newTrans.value = new Transaction({id: transRef.value.id, ...newTrans.value})
-      }
-      }
-    }, { immediate: true})
+    watch(
+      computed(() => props.transaction || null),
+      (newVal, oldVal) => {
+        console.log(newVal, newVal && oldVal && oldVal.action !== newVal.action)
+        if (
+          (newVal && oldVal && oldVal.id !== newVal.id) ||
+          !transRef.value ||
+          !oldVal
+        ) {
+          if (newVal && newVal.id) {
+            transRef.value = doc(
+              getFirestore(),
+              `/projects/${route.params.id}/transactions/${newVal.id}`
+            )
+            newTrans.value = new Transaction(props.transaction)
+          } else if (newVal) {
+            transRef.value = doc(
+              collection(
+                getFirestore(),
+                `/projects/${route.params.id}/transactions`
+              )
+            )
+            newTrans.value = new Transaction({
+              id: transRef.value.id,
+              ...props.transaction,
+            })
+          } else {
+            transRef.value = doc(
+              collection(
+                getFirestore(),
+                `/projects/${route.params.id}/transactions`
+              )
+            )
+            newTrans.value = new Transaction({
+              id: transRef.value.id,
+              ...newTrans.value,
+            })
+          }
+          if (newVal) oldAction.value = newVal.action
+        } else if (newVal && oldVal.action !== newVal.action) {
+          console.log('setAction', oldVal, newVal)
+          newTrans.value.action = newVal.action
+          console.log(newTrans.value)
+        }
+      },
+      { immediate: true }
+    )
 
-    watch(error, ()=>{
+    watch(error, () => {
       emit('onError', error.value)
     })
 
-    watch(newTrans.value, ()=> {
-      // console.log(newTrans.value.date)
-      if(newTrans.value.date <= '' || typeof newTrans.value.date !== 'string') {
-        let date = new Date()
-        newTrans.value.date = `${date.getDate().toString().padStart(2, '0')}/${(
-          date.getMonth() + 1
-        )
-          .toString()
-          .padStart(2, '0')}/${date.getFullYear()}`
-      }
-    }, { immediate: true, deep: true})
+    watch(
+      computed(() => newTrans.value && newTrans.value.date),
+      () => {
+        if (
+          newTrans.value &&
+          (newTrans.value.date <= '' || typeof newTrans.value.date !== 'string')
+        ) {
+          let date = new Date()
+          newTrans.value.date = `${date
+            .getDate()
+            .toString()
+            .padStart(2, '0')}/${(date.getMonth() + 1)
+            .toString()
+            .padStart(2, '0')}/${date.getFullYear()}`
+        }
+      },
+      { immediate: true }
+    )
 
     return {
       q,
       newTrans,
       error,
       typeOptions,
+      actions,
+      actionOptions,
       user,
+      users,
       onSubmit,
       currency,
       project,
@@ -744,15 +940,20 @@ export default {
       fields: props.fields,
       isAdmin,
       isContributor,
-      fields, transRef,
+      fields,
+      transRef,
       hideHeaders: props.hideHeaders,
       hideBtns: props.hideBtns,
-      moneyFormatForDirective
+      log: (val) => console.log(val),
+      oldAction,
     }
   },
   components: {
-    fileUploader: defineAsyncComponent(() => import('./fileUploader.vue'))
+    fileUploader: defineAsyncComponent(() => import('./fileUploader.vue')),
+    'q-currency-input': defineAsyncComponent(() => import('./QCurrencyInput')),
+    'create-action-from-expense': defineAsyncComponent(() =>
+      import('./createActionFromExpense.vue')
+    ),
   },
-  directives: {money: VMoney}
 }
 </script>

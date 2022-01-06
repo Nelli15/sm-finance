@@ -22,3 +22,5 @@ debug.log
 *.njsproj
 *.sln
 yarn.lock
+package-lock.json
+database-debug.log

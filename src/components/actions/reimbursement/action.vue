@@ -35,7 +35,7 @@
               if (el) refs[`step-${step.name}`] = el
             }
           "
-          v-on="step.body.events && step.body.events"
+          v-on="step.body.events ? step.body.events : {}"
         />
 
         <q-stepper-navigation>

@@ -30,7 +30,7 @@
           :is="step.body.component"
           v-bind="step.body.props"
           :ref="(el) => generateRefs(el, `step-${step.name}`)"
-          v-on="step.body.events && step.body.events"
+          v-on="step.body.events ? step.body.events : {}"
         />
 
         <q-stepper-navigation>
@@ -252,7 +252,10 @@ export default {
           component: defineAsyncComponent(() => import('./returnFinances.vue')),
           events: {
             onSubmit: (res) => {
-              action.transactions[res.id] = { id: res.id, purpose: 'returnToNSP' }
+              action.transactions[res.id] = {
+                id: res.id,
+                purpose: 'returnToNSP',
+              }
               // mark step as done
               action.done[3] = true
               //update the action
