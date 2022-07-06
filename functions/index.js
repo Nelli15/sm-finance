@@ -977,12 +977,18 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
   ]
   let index = 1
   transactions.forEach(transaction => {
+    // get the transactions data
     let transData = transaction.data()
     if (transData.category === 'Expense') {
+      // The transaction is an expense
+      // get the account or budget that the expense is linked to
       let account = accountDocs[transData.budget]
       if (account.type !== 'account') {
+        // The budget field contained a budget id not an account one.
+        // as the budget field contained a budget we need it's linked category.
         let categoryId = account.category
-        let categoryDoc = accountDocs[categoryId]
+        let categoryDoc = accountDocs[categoryId] ? accountDocs[categoryId] : { label: `Unable to find the Budget Label for ID: '${categoryId}'`}// if accountDocs[categoryId] doesn't exist, the budget is linked with a false category. Fill the field with an error message.
+        // populate the next row of the csv array
         transArray[index] = [
           project.get('number'),
           project.get('number') + transaction.id,
@@ -1004,8 +1010,10 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
           transData.deleted === true ? 1 : 0
         ]
+        // move to the next row in the array
         index++
       } else if (transData.desc = 'petty cash out - fee') {
+        // this transaction is related to a fee for getting cash out so it needs to be logged. 
         // Get the category label
         let categoryId
         let accountArr = Object.values(accountDocs)
@@ -1021,7 +1029,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
         } else {
           categoryId = Object.keys(accountDocs)[0]
         }
-        let categoryDoc = accountDocs[categoryId]
+        let categoryDoc = accountDocs[categoryId] ? accountDocs[categoryId] : { label: `Unable to find the Budget Label for ID: '${categoryId}'`}// if accountDocs[categoryId] doesn't exist, the budget is linked with a false category. Fill the field with an error message.
         transArray[index] = [
           project.get('number'),
           project.get('number') + transaction.id,
@@ -1050,11 +1058,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
       //   index++
       // }
     } else if (transData.category === 'Journal') {
-      // console.log(
-      //   transData,
-      //   accountDocs[transData.to].type,
-      //   accountDocs[transData.from].type
-      // )
+      // this transaction is a journal transaction
       if (
         accountDocs[transData.to].type === 'account' &&
         accountDocs[transData.from].type === 'account'
