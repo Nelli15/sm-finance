@@ -1,7 +1,7 @@
 // Configuration for your app
 // https://quasar.dev/quasar-cli/quasar-conf-js
 
-module.exports = function(ctx) {
+module.exports = function (ctx) {
   return {
     // https://quasar.dev/quasar-cli/supporting-ts
     supportTS: {
@@ -11,7 +11,7 @@ module.exports = function(ctx) {
           files: './src/**/*.{ts,tsx}',
           // files: './src/**/*.{ts,tsx,js,jsx,vue}',
         },
-      }
+      },
     },
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
@@ -34,7 +34,7 @@ module.exports = function(ctx) {
 
       'roboto-font', // optional, you are not bound to it
       'material-icons', // optional, you are not bound to it
-      'material-icons-outlined'
+      'material-icons-outlined',
     ],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-framework
@@ -109,19 +109,19 @@ module.exports = function(ctx) {
           positive: '#21BA45',
           negative: '#C10015',
           info: '#31CCEC',
-          warning: '#F2C037'
+          warning: '#F2C037',
         },
         cordova: {
           iosStatusBarPadding: true / false, // add the dynamic top padding on iOS mobile devices
-          backButtonExit: true / false // Quasar handles app exit on mobile phone back button
+          backButtonExit: true / false, // Quasar handles app exit on mobile phone back button
         },
         loading: {},
         notify: {
           timeout: 1000,
           textColor: 'white',
-          actions: [{ icon: 'close', color: 'white' }]
-        }
-      }
+          actions: [{ icon: 'close', color: 'white' }],
+        },
+      },
     },
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
@@ -145,16 +145,16 @@ module.exports = function(ctx) {
         //   }
         // })
       },
-      chainWebpack (chain, { isServer, isClient }) {
+      chainWebpack(chain, { isServer, isClient }) {
         chain.output.globalObject('self')
-      }
+      },
     },
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
     devServer: {
       // https: true,
       port: 5100,
-      open: true // opens browser window automatically
+      open: true, // opens browser window automatically
     },
 
     // animations: 'all', // --- includes all animations
@@ -163,7 +163,7 @@ module.exports = function(ctx) {
 
     // https://quasar.dev/quasar-cli/developing-ssr/configuring-ssr
     ssr: {
-      pwa: false
+      pwa: false,
     },
 
     // https://quasar.dev/quasar-cli/developing-pwa/configuring-pwa
@@ -204,7 +204,7 @@ module.exports = function(ctx) {
         name: 'Summer Project Finances',
         short_name: 'SP Finances',
         description:
-          'A finance keeping app for Power to Change Summer Projects',
+          'A finance keeping app for Power to Change Summer Missions',
         display: 'standalone',
         orientation: 'any',
         background_color: '#ffffff',
@@ -214,30 +214,30 @@ module.exports = function(ctx) {
           {
             src: 'icons/icon-128x128.png',
             sizes: '128x128',
-            type: 'image/png'
+            type: 'image/png',
           },
           {
             src: 'icons/icon-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
           },
           {
             src: 'icons/icon-256x256.png',
             sizes: '256x256',
-            type: 'image/png'
+            type: 'image/png',
           },
           {
             src: 'icons/icon-384x384.png',
             sizes: '384x384',
-            type: 'image/png'
+            type: 'image/png',
           },
           {
             src: 'icons/icon-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      }
+            type: 'image/png',
+          },
+        ],
+      },
     },
 
     // https://quasar.dev/quasar-cli/developing-cordova-apps/configuring-cordova
@@ -268,8 +268,8 @@ module.exports = function(ctx) {
 
       builder: {
         // https://www.electron.build/configuration/configuration
-        // appId: 'sp-finance'
-      }
-    }
+        // appId: 'ptc-sm-finance'
+      },
+    },
   }
 }

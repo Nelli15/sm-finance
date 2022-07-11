@@ -54,7 +54,7 @@
                 <q-card>
                   <q-card-section>
                     Income Actions record when a Project receives money from
-                    outside of the Project, usually from Summer Projects
+                    outside of the Project, usually from Summer Missions
                     National, and are recorded in green.
                   </q-card-section>
                 </q-card>
@@ -81,7 +81,7 @@
                   <q-card-section>
                     Expense Actions records money leaving the Project and are
                     recorded in red. eg. buying groceries, or returning money to
-                    Summer Projects National.
+                    Summer Missions National.
                   </q-card-section>
                 </q-card>
               </q-expansion-item>

@@ -245,7 +245,7 @@ export default {
       {
         name: 'returnFinances',
         title:
-          'Returning the remaining Project finances to National Summer Projects',
+          'Returning the remaining Project finances to National Summer Missions',
         icon: 'category',
         done: action.done[3],
         body: {
@@ -334,7 +334,7 @@ export default {
       },
       {
         name: 'emailNSP',
-        title: 'Email documents to National Summer Projects',
+        title: 'Email documents to National Summer Missions',
         icon: 'mdi-cash-register',
         done: action.complete,
         body: {

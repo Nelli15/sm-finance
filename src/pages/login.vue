@@ -8,7 +8,7 @@
     <!-- <template v-slot:media> -->
     <img
       class="orientation-landscape"
-      src="https://firebasestorage.googleapis.com/v0/b/sp-finance-longterm-assets/o/backgrounds%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=c2a47e65-594b-4c4c-8f58-0ea46dd0f34e"
+      src="https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance-longterm-assets/o/backgrounds%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=c2a47e65-594b-4c4c-8f58-0ea46dd0f34e"
       :srcset="login_image_srcset"
       sizes="(max-width: 400px) 400w,
             (min-width: 400px) and (max-width: 1050px) 1050w,
@@ -28,7 +28,7 @@
     />
     <img
       class="orientation-portrait"
-      src="https://firebasestorage.googleapis.com/v0/b/sp-finance-longterm-assets/o/backgrounds%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=c2a47e65-594b-4c4c-8f58-0ea46dd0f34e"
+      src="https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance-longterm-assets/o/backgrounds%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=c2a47e65-594b-4c4c-8f58-0ea46dd0f34e"
       :srcset="login_image_srcset_portrait"
       sizes="(max-width: 400px) 400w,
             (min-width: 400px) and (max-width: 1050px) 1050w,
@@ -63,7 +63,7 @@
         <q-card class="shadow-0" data-cy="login-card">
           <q-card-section>
             <h6 class="text-center q-my-sm" data-cy="login-welcome">
-              Welcome to the Summer Projects Finances App!
+              Welcome to the Summer Missions Finances App!
             </h6>
             <div class="text-center q-mb-lg" data-cy="instructions">
               Select one of the options below to sign in.
@@ -91,7 +91,12 @@
                   label="Password"
                   lazy-rules
                   :type="isPwd ? 'password' : 'text'"
-                  :rules="[(val) => !!val || 'Password is missing', val => val.length >= 6 || 'Password must be at least 6 characters']"
+                  :rules="[
+                    (val) => !!val || 'Password is missing',
+                    (val) =>
+                      val.length >= 6 ||
+                      'Password must be at least 6 characters',
+                  ]"
                   :color="$q.dark.isActive ? 'white' : ''"
                   class="full-width"
                   data-cy="signin-password"
@@ -229,21 +234,21 @@ export default {
     // console.log('getting remote-config')
     // let loginObject = firebase.remoteConfig().getValue('login_image_url')._value
     const loginObject = {
-      400: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Flogin-background-400.jpg?alt=media&token=d72065ae-7242-4e8e-84bb-f35980efaeb5',
-      1050: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Flogin-background-1050.jpg?alt=media&token=61b9fe48-25c2-47f0-aaaa-cffed9b754f7',
-      1300: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Flogin-background-1300.jpg?alt=media&token=cbfeb245-f556-4c3d-8a75-1208181887cb',
-      1400: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Flogin-background-1400.jpg?alt=media&token=a215e34f-fb12-44d2-82e9-4dcd19a640a6',
-      2000: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Flogin-background-2000.jpg?alt=media&token=2fb1726f-ff41-4e2b-a2eb-b17d49c6dfe0',
-      4000: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Flogin-background-4000.jpg?alt=media&token=2dfbe02e-89c2-4b16-9004-55beb3403acf',
+      400: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Flogin-background-400.jpg?alt=media&token=d72065ae-7242-4e8e-84bb-f35980efaeb5',
+      1050: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Flogin-background-1050.jpg?alt=media&token=61b9fe48-25c2-47f0-aaaa-cffed9b754f7',
+      1300: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Flogin-background-1300.jpg?alt=media&token=cbfeb245-f556-4c3d-8a75-1208181887cb',
+      1400: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Flogin-background-1400.jpg?alt=media&token=a215e34f-fb12-44d2-82e9-4dcd19a640a6',
+      2000: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Flogin-background-2000.jpg?alt=media&token=2fb1726f-ff41-4e2b-a2eb-b17d49c6dfe0',
+      4000: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Flogin-background-4000.jpg?alt=media&token=2dfbe02e-89c2-4b16-9004-55beb3403acf',
     }
     // let loginObjectPortrait = firebase.remoteConfig().getValue('login_image_url_portrait')._value
     const loginObjectPortrait = {
-      400: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-400_x_599.jpg?alt=media&token=0d17a3bb-7bf3-47f1-952f-fe104a8715d5',
-      1050: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-1050_x_1575.jpg?alt=media&token=5acfb1c4-5f16-4046-8e38-53d9abcf5830',
-      1300: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-1300_x_1949.jpg?alt=media&token=8da7f760-ab06-40d3-91ae-eedf9ceb2e0a',
-      1400: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-1400_x_2099.jpg?alt=media&token=7042b883-b804-4e89-ad01-038fdc68c125',
-      2000: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-2000_x_2999.jpg?alt=media&token=1ab11297-dade-443f-807b-264aa4519ac5',
-      4000: 'https://firebasestorage.googleapis.com/v0/b/tracking-tree.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-4000_x_5999.jpg?alt=media&token=fa277515-17a9-4a91-898b-40f341b4759c',
+      400: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-400_x_599.jpg?alt=media&token=0d17a3bb-7bf3-47f1-952f-fe104a8715d5',
+      1050: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-1050_x_1575.jpg?alt=media&token=5acfb1c4-5f16-4046-8e38-53d9abcf5830',
+      1300: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-1300_x_1949.jpg?alt=media&token=8da7f760-ab06-40d3-91ae-eedf9ceb2e0a',
+      1400: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-1400_x_2099.jpg?alt=media&token=7042b883-b804-4e89-ad01-038fdc68c125',
+      2000: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-2000_x_2999.jpg?alt=media&token=1ab11297-dade-443f-807b-264aa4519ac5',
+      4000: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/public%2Fbackgrounds%2Fportrait%201%2Ftyler-nix-KLLcTHE20bI-unsplash-4000_x_5999.jpg?alt=media&token=fa277515-17a9-4a91-898b-40f341b4759c',
     }
     if (loginObject) {
       // loginObject = JSON.parse(loginObject)

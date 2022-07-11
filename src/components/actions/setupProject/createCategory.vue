@@ -2,13 +2,17 @@
   <div>
     <q-item class="justify-center">
       Categories provide a method for grouping budgets together for reporting to
-      National Summer Projects. Only use the Categories provided by National
-      Summer Projects.
+      National Summer Missions. Only use the Categories provided by National
+      Summer Missions.
     </q-item>
     <categoriesTable flat />
     <q-list v-if="l_add">
       <q-item>
-        <q-input label="Category Label" v-model="l_accountLabel" class="full-width" />
+        <q-input
+          label="Category Label"
+          v-model="l_accountLabel"
+          class="full-width"
+        />
       </q-item>
       <q-item>
         <q-btn
@@ -32,18 +36,20 @@
 import { createAccount } from '../../../scripts/accounts.js'
 import { defineAsyncComponent, ref, computed } from 'vue'
 import { useQuasar } from 'quasar'
-import {useStore} from 'vuex'
-import {useRoute} from 'vue-router'
+import { useStore } from 'vuex'
+import { useRoute } from 'vue-router'
 
 export default {
   name: 'createCategory',
-  setup(){
+  setup() {
     const q = useQuasar()
     const store = useStore()
     const route = useRoute()
     const l_accountLabel = ref('')
     const l_add = ref(false)
-    const budgetCategories = computed(() => store.getters['budgets/budgetCategories'])
+    const budgetCategories = computed(
+      () => store.getters['budgets/budgetCategories']
+    )
     function l_createCategory() {
       createAccount(route.params.id, {
         label: l_accountLabel.value,
@@ -67,11 +73,14 @@ export default {
         })
     }
     return {
-      l_accountLabel, l_add, budgetCategories, l_createCategory
+      l_accountLabel,
+      l_add,
+      budgetCategories,
+      l_createCategory,
     }
   },
   components: {
-    'categoriesTable': defineAsyncComponent(() =>
+    categoriesTable: defineAsyncComponent(() =>
       import('../../categoriesTable.vue')
     ),
     'sp-category-import': defineAsyncComponent(() =>

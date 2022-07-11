@@ -10,7 +10,7 @@
       <li>Bank statement from the cash card</li>
       <li>
         Date that the remaining Project finances were transferred back to
-        National Summer Projects, include the reference used in the transaction.
+        National Summer Missions, include the reference used in the transaction.
       </li>
       <li>
         Date of postage, a photo of the postage receipt for reimbursement, your
@@ -169,9 +169,7 @@ export default {
             },
             (metadata) => {
               this.$q.loading.show({
-                message: `Zipping File: ${
-                  metadata.currentFile
-                } - ${metadata.percent}% `,
+                message: `Zipping File: ${metadata.currentFile} - ${metadata.percent}% `,
                 delay: 0,
               })
             }

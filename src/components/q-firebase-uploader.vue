@@ -50,7 +50,7 @@ export default createUploaderComponent({
         })
         const uploadTask = uploadBytesResumable(
           storageRef(
-            getStorage($firebase, 'gs://sp-finance-uploads'),
+            getStorage($firebase, 'gs://ptc-sm-finance-uploads'),
             'uploads/' + uid()
           ),
           file,
