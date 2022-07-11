@@ -25,7 +25,7 @@ import { mapGetters, mapActions } from 'vuex'
 import { createAccount } from '../../../scripts/accounts.js'
 import { defineAsyncComponent } from 'vue'
 import { saveAs } from 'file-saver'
-import JSZip from 'JSZip'
+import jszip from 'jszip'
 
 export default {
   name: 'emailNSP',
@@ -112,7 +112,7 @@ export default {
             message: 'Oops, Something went wrong!',
           })
         })
-        let zip = new JSZip()
+        let zip = new jszip()
         let counter = 0
         for (var link in links) {
           counter++

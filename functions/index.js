@@ -18,7 +18,7 @@ const recalcProjectAccounts = require('./src/modules/recalcAllAccounts.js')
 // const validator = require('validator');
 const nodemailer = require('nodemailer')
 const cors = require('cors')({ origin: true })
-const serviceAccount = require('./../adminServiceAccount.json')
+const serviceAccount = require('./adminServiceAccount.json')
 
 const spawn = require('child-process-promise').spawn
 const path = require('path')

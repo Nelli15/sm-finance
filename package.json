@@ -6,7 +6,6 @@
   "author": "Nick Ellis <ellis.nick96@gmail.com>",
   "private": true,
   "scripts": {
-    "ci": "",
     "build": "quasar build -m pwa",
     "dev": "quasar dev",
     "dev:pwa": "quasar dev -m pwa",
@@ -30,7 +29,9 @@
     "rxjs": "^7.5.5",
     "v-money": "^0.8.1",
     "vee-validate": "^4.5.11",
+    "vue": "3.2.37",
     "vue-currency-input": "^2.5.1",
+    "vue-router": "4.1.1",
     "vuex": "^4"
   },
   "devDependencies": {

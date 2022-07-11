@@ -1,7 +1,7 @@
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 const environment = require('./../environments/environment.js')
-const serviceAccount = require('./../../../adminServiceAccount.json')
+const serviceAccount = require('../../adminServiceAccount.json')
 process.env.GCLOUD_PROJECT = serviceAccount.project_id
 process.env.FIREBASE_CONFIG = {
   databaseURL: 'https://ptc-sm-finance.firebaseio.com',

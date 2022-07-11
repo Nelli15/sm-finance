@@ -22,5 +22,4 @@ debug.log
 *.njsproj
 *.sln
 database-debug.log
-firebaseConfig.json
 adminServiceAccount.json

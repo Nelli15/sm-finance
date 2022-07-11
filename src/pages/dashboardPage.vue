@@ -186,7 +186,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { saveAs } from 'file-saver'
-import JSZip from 'JSZip'
+import jszip from 'jszip'
 
 const columns = [
   { name: 'name', align: 'left', label: 'Project', field: 'name' },
@@ -269,7 +269,7 @@ export default {
         })
         // console.log(res.status, res)
         let links = await res.json()
-        let zip = new JSZip()
+        let zip = new jszip()
         let counter = 0
         for (var link in links) {
           counter++
