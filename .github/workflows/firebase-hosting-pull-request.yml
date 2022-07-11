@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci && npm run build
+      - run: npm ci && npm audit fix --force && npm run build
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
