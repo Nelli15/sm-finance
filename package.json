@@ -6,7 +6,7 @@
   "author": "Nick Ellis <ellis.nick96@gmail.com>",
   "private": true,
   "scripts": {
-    "build": "quasar build -m pwa --debug",
+    "build": "quasar build -m pwa",
     "dev": "quasar dev",
     "dev:pwa": "quasar dev -m pwa",
     "emultors:start": "firebase emulators:start",
