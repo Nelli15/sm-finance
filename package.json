@@ -30,7 +30,9 @@
     "v-money": "^0.8.1",
     "vee-validate": "^4.5.11",
     "vue-currency-input": "^2.5.1",
-    "vuex": "^4"
+    "vuex": "^4",
+    "vue": "3.2.37",
+    "vue-router": "4.1.1"
   },
   "devDependencies": {
     "@quasar/app": "^3.3.3",
