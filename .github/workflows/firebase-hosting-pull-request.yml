@@ -13,5 +13,5 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SP_FINANCE }}'
-          projectId: sp-finance
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PTC_SM_FINANCE }}'
+          projectId: ptc-sm-finance
