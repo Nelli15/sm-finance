@@ -126,6 +126,7 @@ module.exports = function (ctx) {
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
+      distPath: 'dist',
       scopeHoisting: true,
       vueRouterMode: 'history',
       // showProgress: false,

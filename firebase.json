@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "dist/pwa",
+    "public": "dist",
     "site": "missionsfinance",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
