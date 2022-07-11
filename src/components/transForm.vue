@@ -154,7 +154,7 @@
           @update:model-value="newTrans.category = $event"
           style="width: 50%"
           :rules="[(v) => !!v || 'Required value']"
-          :disable="isContributor || !!transaction.id"
+          :disable="isContributor || (transaction && !!transaction.id)"
           hide-bottom-space
         >
         </q-select>

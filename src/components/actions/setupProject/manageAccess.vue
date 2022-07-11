@@ -1,9 +1,12 @@
 <template>
   <div>
     <q-item class="justify-center">
-      Why do everything yourself when you can share the workload? Give others access to submit receipts as a Contributor or the entire Project as an Admin. In order to keep your Project secure allow as much access as is helpful while minimising access as much as possible.
+      Why do everything yourself when you can share the workload? Give others
+      access to submit receipts as a Contributor or the entire Project as an
+      Admin. In order to keep your Project secure allow as much access as is
+      helpful while minimising access as much as possible.
     </q-item>
-    <usersTable flat/>
+    <usersTable flat />
     <div v-if="add">
       <div class="text-subtitle2">
         Invite People
@@ -28,7 +31,7 @@
                     grant is to only provide the minimum level of access
                     required to the minimum amount of people who need it. Avoid
                     giving Admin access to anyone who isn't a Finance Officer,
-                    Project Director, or Summer Projects National.
+                    Project Director, or Summer Missions National.
                   </q-item-label>
                 </q-item-section>
               </q-item>
@@ -107,9 +110,7 @@
 <script>
 import { useStore } from 'vuex'
 import { useQuasar } from 'quasar'
-import {
-  addUser,
-} from '../../../scripts/access.js'
+import { addUser } from '../../../scripts/access.js'
 import { defineAsyncComponent, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -233,9 +234,7 @@ export default {
     }
   },
   components: {
-    'usersTable': defineAsyncComponent(() =>
-      import('../../usersTable.vue')
-    ),
+    usersTable: defineAsyncComponent(() => import('../../usersTable.vue')),
   },
 }
 </script>

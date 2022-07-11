@@ -279,7 +279,7 @@ export default {
       },
       {
         name: 'firstTrans',
-        title: 'Income from National Summer Projects',
+        title: 'Income from National Summer Missions',
         icon: 'mdi-bank-transfer',
         done: action.value.done[6],
         body: {

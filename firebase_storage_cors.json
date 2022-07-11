@@ -1,5 +1,10 @@
-[{
-  "origin": ["https://sp-finance.web.app/*", "https://beta-sp-finance.web.app/*"],
-  "method": ["GET"],
-  "maxAgeSeconds": 3600
-}]
+[
+  {
+    "origin": [
+      "https://ptc-sm-finance.web.app/*",
+      "https://beta-ptc-sm-finance.web.app/*"
+    ],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600
+  }
+]

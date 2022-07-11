@@ -1,4 +1,4 @@
-# Summer Project Finances (sp-finance)
+# Summer Missions Finances (ptc-sm-finance)
 
 A Quasar Framework app
 

@@ -30,7 +30,7 @@
                       grant is to only provide the minimum level of access
                       required to the minimum amount of people who need it.
                       Avoid giving Admin access to anyone who isn't a Finance
-                      Officer, Project Director, or Summer Projects National.
+                      Officer, Project Director, or Summer Missions National.
                     </q-item-label>
                   </q-item-section>
                 </q-item>
@@ -148,7 +148,7 @@
                       grant is to only provide the minimum level of access
                       required to the minimum amount of people who need it.
                       Avoid giving Admin access to anyone who isn't a Finance
-                      Officer, Project Director, or Summer Projects National.
+                      Officer, Project Director, or Summer Missions National.
                     </q-item-label>
                   </q-item-section>
                 </q-item>
@@ -196,7 +196,13 @@
               label="Budgets"
               style="min-width: 100px; max-width: 150px"
               v-model="newInvitation.budgets"
-              :display-value="`${budgetOptions && newInvitation.budget && budgetOptions.find(val => val.id === newInvitation.budget).label || ''}`"
+              :display-value="`${
+                (budgetOptions &&
+                  newInvitation.budget &&
+                  budgetOptions.find((val) => val.id === newInvitation.budget)
+                    .label) ||
+                ''
+              }`"
               emit-value
               map-options
               multiple
@@ -264,10 +270,12 @@
       rows-per-page-label="Users per page:"
       :pagination="invitesPagination"
       dense
-      @update:pagination="($event) => {
+      @update:pagination="
+        ($event) => {
           invitesPagination = $event
           $q.localStorage.set('invitesPagination', $event)
-        }"
+        }
+      "
     >
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
@@ -346,12 +354,7 @@
                   >
                     <template v-slot:error>
                       <div
-                        class="
-                          absolute-full
-                          flex flex-center
-                          bg-negative
-                          text-white
-                        "
+                        class="absolute-full flex flex-center bg-negative text-white"
                       >
                         Cannot load image
                       </div>
@@ -390,24 +393,35 @@
               @filter="budgetsFilterFn"
               input-debounce="0"
             >
-        <template v-slot:selected>
-          <q-chip
-            v-for="budget in props.row.budgets"
-            :key="budget"
-            dense
-            square
-            text-color="white"
-            color="primary"
-            class="q-my-none q-ml-xs q-mr-none"
-            removable
-              @remove="
-                removeInviteBudget(props.row.budgets, budget, props.row.email)
-              "
-          >
-            {{`${budgetOptions && budget && budgetOptions.find(val => val.id === budget).label || ''}`}}
-          </q-chip>
-        </template>
-      </q-select>
+              <template v-slot:selected>
+                <q-chip
+                  v-for="budget in props.row.budgets"
+                  :key="budget"
+                  dense
+                  square
+                  text-color="white"
+                  color="primary"
+                  class="q-my-none q-ml-xs q-mr-none"
+                  removable
+                  @remove="
+                    removeInviteBudget(
+                      props.row.budgets,
+                      budget,
+                      props.row.email
+                    )
+                  "
+                >
+                  {{
+                    `${
+                      (budgetOptions &&
+                        budget &&
+                        budgetOptions.find((val) => val.id === budget).label) ||
+                      ''
+                    }`
+                  }}
+                </q-chip>
+              </template>
+            </q-select>
             <!-- <q-chip
               color="primary"
               text-color="white"
@@ -457,10 +471,12 @@
       rows-per-page-label="Users per page:"
       :pagination="adminsPagination"
       dense
-      @update:pagination="($event) => {
+      @update:pagination="
+        ($event) => {
           adminsPagination = $event
           $q.localStorage.set('adminsPagination', $event)
-        }"
+        }
+      "
     >
       <template v-slot:top="props">
         <div class="col-4 q-table__title">
@@ -535,12 +551,7 @@
                   >
                     <template v-slot:error>
                       <div
-                        class="
-                          absolute-full
-                          flex flex-center
-                          bg-negative
-                          text-white
-                        "
+                        class="absolute-full flex flex-center bg-negative text-white"
                       >
                         Cannot load image
                       </div>
@@ -577,7 +588,8 @@
       rows-per-page-label="Users per page:"
       :pagination="contributorsPagination"
       dense
-      @update:pagination="($event) => {
+      @update:pagination="
+        ($event) => {
           contributorsPagination = $event
           $q.localStorage.set('contributorsPagination', $event)
         }
@@ -659,12 +671,7 @@
                   >
                     <template v-slot:error>
                       <div
-                        class="
-                          absolute-full
-                          flex flex-center
-                          bg-negative
-                          text-white
-                        "
+                        class="absolute-full flex flex-center bg-negative text-white"
                       >
                         Cannot load image
                       </div>
@@ -763,7 +770,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { defineAsyncComponent} from 'vue'
+import { defineAsyncComponent } from 'vue'
 import {
   addContributorBudget,
   removeContributorBudget,
@@ -877,7 +884,7 @@ export default {
       },
       budgetOptionsFiltered: [],
       fabPos: [18, 18],
-      draggingFab: false
+      draggingFab: false,
     }
   },
   preFetch({ store, currentRoute }) {
@@ -1199,7 +1206,7 @@ export default {
     actionsStickyFAB: defineAsyncComponent(() =>
       import('./../components/actionsStickyFAB.vue')
     ),
-    }
+  },
 }
 </script>
 

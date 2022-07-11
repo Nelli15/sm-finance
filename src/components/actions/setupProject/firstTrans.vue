@@ -2,7 +2,7 @@
   <div>
     <q-list>
       <q-item>
-        Before the Project starts, National Summer Projects will transfer your
+        Before the Project starts, National Summer Missions will transfer your
         total Project finances onto the cash card. You will receive an email
         letting you know how much was transferred and when. When you receive the
         transaction in your cash card, record the date (the date the money

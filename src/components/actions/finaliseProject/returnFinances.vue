@@ -3,20 +3,20 @@
     <q-item class="justify-center">
       Transfer the remaining finances, which should equal ${{
         remainingBalance
-      }}, to National Summer Projects bank account in one transaction.<br />Name:
-      Summer Projects<br />BSB: 064433<br />Account Number: 10577799<br />Reference:
+      }}, to National Summer Missions bank account in one transaction.<br />Name:
+      Summer Missions<br />BSB: 064433<br />Account Number: 10577799<br />Reference:
       {{ project.number ? project.number : '*Project Code*' }} Balance
     </q-item>
     <transForm
-        ref="transFormRef"
-        :fields="['date', 'amount', 'receipt']"
-        hideBtns
-        hideHeaders
-        hideErrors
-        :transaction="newTrans"
-        @onSubmit="emit('onSubmit', $event)"
-        @onError="emit('onError', $event)"
-      />
+      ref="transFormRef"
+      :fields="['date', 'amount', 'receipt']"
+      hideBtns
+      hideHeaders
+      hideErrors
+      :transaction="newTrans"
+      @onSubmit="emit('onSubmit', $event)"
+      @onError="emit('onError', $event)"
+    />
   </div>
 </template>
 
@@ -48,13 +48,13 @@ export default {
         desc: 'Project close',
         category: 'Expense',
         reviewed: true,
-        payTo: 'National Summer Projects',
+        payTo: 'National Summer Missions',
         date: `${date.getDate().toString().padStart(2, '0')}/${(
           date.getMonth() + 1
         )
           .toString()
           .padStart(2, '0')}/${date.getFullYear()}`,
-        amount: currency(0)
+        amount: currency(0),
       })
     )
     const project = computed(() => store.getters['projects/project'])

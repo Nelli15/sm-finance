@@ -1,4 +1,4 @@
-const  currency = require( 'currency.js')
+const currency = require('currency.js')
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 
@@ -6,7 +6,7 @@ const environment = require('./src/environments/environment.js')
 
 const context = {
   admin,
-  environment
+  environment,
 }
 
 //import functions
@@ -18,13 +18,14 @@ const recalcProjectAccounts = require('./src/modules/recalcAllAccounts.js')
 // const validator = require('validator');
 const nodemailer = require('nodemailer')
 const cors = require('cors')({ origin: true })
-const serviceAccount = require('./sp-finance-firebase-adminsdk-6mhpx-7ad8d7a061.json')
+const serviceAccount = require('./../adminServiceAccount.json')
 
 const spawn = require('child-process-promise').spawn
 const path = require('path')
 const os = require('os')
 // const fs = require('fs');
 const JPEG_EXTENSION = '.jpg'
+const PDF_EXTENSION = '.pdf'
 
 // Get a reference to the Cloud Vision API component
 const gm = require('gm').subClass({ imageMagick: true })
@@ -39,7 +40,7 @@ const Buffer = require('safe-buffer').Buffer
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: environment.firebase.databaseURL,
-  storageBucket: environment.firebase.storageBucket
+  storageBucket: environment.firebase.storageBucket,
 })
 
 var db = admin.firestore()
@@ -48,8 +49,8 @@ const mailTransport = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'ellis.nick96@gmail.com',
-    pass: 'usfofbxctrovaupz'
-  }
+    pass: 'usfofbxctrovaupz',
+  },
 })
 
 // Your company name to include in the emails
@@ -68,7 +69,7 @@ function deleteCollection(db, collectionPath, batchSize) {
 function deleteQueryBatch(db, query, batchSize, resolve, reject) {
   query
     .get()
-    .then(snapshot => {
+    .then((snapshot) => {
       // When there are no documents left, we are done
       if (snapshot.size === 0) {
         return 0
@@ -76,7 +77,7 @@ function deleteQueryBatch(db, query, batchSize, resolve, reject) {
 
       // Delete documents in a batch
       var batch = db.batch()
-      snapshot.docs.forEach(doc => {
+      snapshot.docs.forEach((doc) => {
         batch.delete(doc.ref)
       })
 
@@ -84,7 +85,7 @@ function deleteQueryBatch(db, query, batchSize, resolve, reject) {
         return snapshot.size
       })
     })
-    .then(numDeleted => {
+    .then((numDeleted) => {
       if (numDeleted === 0) {
         resolve()
         return
@@ -106,7 +107,7 @@ exports.sendInvite = functions.firestore
     function sendInviteEmail(email, displayName, project, from, permission) {
       const mailOptions = {
         from: `${APP_NAME} <noreply@firebase.com>`,
-        to: email
+        to: email,
       }
 
       // const emails = require('./html/emails.js')
@@ -115,11 +116,11 @@ exports.sendInvite = functions.firestore
       mailOptions.html = invite(from, project)
       return mailTransport
         .sendMail(mailOptions)
-        .then(res => {
+        .then((res) => {
           console.log('New invite email sent to:', email)
           return true
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
         })
     }
@@ -143,9 +144,9 @@ exports.sendInvite = functions.firestore
           name: user.name,
           permission: snap.data().permission,
           budgets: snap.data().budgets,
-          photoURL: user.photoURL
+          photoURL: user.photoURL,
         })
-        .then(res => {
+        .then((res) => {
           // delete the old invites
           snap.ref.delete()
         })
@@ -172,10 +173,10 @@ exports.sendInvite = functions.firestore
       // commit the batch and exit, the new doc will call this function again
       return batch
         .commit()
-        .then(res => {
+        .then((res) => {
           return true
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
         })
     }
@@ -201,7 +202,7 @@ exports.sendInvite = functions.firestore
       .collection('/users')
       .where('email', '==', snapData.email)
       .get()
-      .then(snap => {
+      .then((snap) => {
         if (!snap.empty) {
           // user exists
           // get the user's uid
@@ -222,28 +223,28 @@ exports.sendInvite = functions.firestore
                 budgets:
                   snapData.budgets.isArray() || snapData.budgets === 'all'
                     ? snapData.budgets
-                    : [snapData.budgets]
+                    : [snapData.budgets],
               }
             )
             batch.delete(snap.ref)
             return batch
               .commit()
-              .then(res => {
+              .then((res) => {
                 return true
               })
-              .catch(err => {
+              .catch((err) => {
                 console.log(err)
               })
           }
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err)
       })
   })
 
 // Listen for user sign in
-exports.onUserFirstSignIn = functions.auth.user().onCreate(user => {
+exports.onUserFirstSignIn = functions.auth.user().onCreate((user) => {
   // console.log(user.uid)/
   // sanitise user
   console.log(user)
@@ -255,7 +256,7 @@ exports.onUserFirstSignIn = functions.auth.user().onCreate(user => {
 
   // create a doc for the user
   var docRef = db.collection('/users').doc(user.uid)
-  return docRef.get().then(doc => {
+  return docRef.get().then((doc) => {
     // create a batch operation
     var batch = db.batch()
     // check the user doesn't exist
@@ -267,8 +268,8 @@ exports.onUserFirstSignIn = functions.auth.user().onCreate(user => {
         .collectionGroup('invites')
         .where('email', '==', userSanitized.email)
         .get()
-        .then(invitesSnap => {
-          invitesSnap.forEach(inviteSnap => {
+        .then((invitesSnap) => {
+          invitesSnap.forEach((inviteSnap) => {
             console.log(inviteSnap.data())
             // add the user to the projects they have been invited too
             batch.set(
@@ -281,7 +282,7 @@ exports.onUserFirstSignIn = functions.auth.user().onCreate(user => {
                 name: userSanitized.name,
                 permission: inviteSnap.data().permission,
                 budgets: inviteSnap.data().budgets,
-                photoURL: userSanitized.photoURL
+                photoURL: userSanitized.photoURL,
               }
             )
             // delete the old invites
@@ -290,10 +291,10 @@ exports.onUserFirstSignIn = functions.auth.user().onCreate(user => {
           // commit the batch and exit
           return batch
             .commit()
-            .then(res => {
+            .then((res) => {
               return true
             })
-            .catch(err => {
+            .catch((err) => {
               console.log(err)
             })
         })
@@ -316,32 +317,32 @@ exports.userUpdated = functions.firestore
       db.collectionGroup(`contributors`)
         .where('uid', '==', context.params.uid)
         .get()
-        .then(query => {
+        .then((query) => {
           // update each contributor
-          query.forEach(snap => {
+          query.forEach((snap) => {
             console.log('update contributors', {
               name: afterData.name,
-              photoURL: afterData.photoURL
+              photoURL: afterData.photoURL,
             })
             snap.ref.update({
               name: afterData.name,
-              photoURL: afterData.photoURL
+              photoURL: afterData.photoURL,
             })
           })
         })
       db.collectionGroup(`transactions`)
         .where('submittedBy.uid', '==', context.params.uid)
         .get()
-        .then(query => {
+        .then((query) => {
           // update each contributor
-          query.forEach(snap => {
+          query.forEach((snap) => {
             console.log('update transactions', {
               'submittedBy.displayName': afterData.name,
-              'submittedBy.photoURL': afterData.photoURL
+              'submittedBy.photoURL': afterData.photoURL,
             })
             snap.ref.update({
               'submittedBy.displayName': afterData.name,
-              'submittedBy.photoURL': afterData.photoURL
+              'submittedBy.photoURL': afterData.photoURL,
             })
           })
         })
@@ -407,7 +408,7 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
 
   db.doc(`/projects/${projectId}/contributors/${req.user.user_id}`)
     .get()
-    .then(async snap => {
+    .then(async (snap) => {
       if (snap.exists) {
         var id = req.query.id
         console.log(
@@ -415,8 +416,6 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
           'getting file',
           `/projects/${projectId}/receipts/${projectId}-${id}.jpg`
         )
-        //(bucket)gs://sp-finance.appspot.com/(file)projects/ZtJyQ7iBf3gsLtjfD3b6/receipts/ZtJyQ7iBf3gsLtjfD3b6-b4qZI7AUFJACAQyAKVpT.jpg
-        // console.log(fileName)
         var storage = admin.storage()
         var storageRef = storage.bucket()
         // console.log(await storageRef.exists())
@@ -426,7 +425,13 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
         )
 
         let exists = await file.exists()
-        console.log('File Exists?', exists[0])
+        // if (!exists[0]) {
+        // file = storageRef.file(
+        //   `projects/${projectId}/receipts/${projectId}-${id}.pdf`
+        // )
+        // exists = await file.exists()
+        // console.log('File Exists?', exists[0])
+        // }
         if (!exists[0]) {
           console.log(
             'file missing: ',
@@ -435,31 +440,37 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
           )
           file = null
           file = storage
-            .bucket('gs://sp-finance-uploads')
+            .bucket('gs://ptc-sm-finance-uploads')
             .file(`processed/${projectId}-${id}.jpg`)
           // console.log(file)
           let exists2 = await file.exists()
           console.log('File Exists in Processed?', exists2[0])
-
+          // if (!exists2[0]) {
+          //   file = storage
+          // .bucket('gs://ptc-sm-finance-uploads')
+          // .file(`processed/${projectId}-${id}.pdf`)
+          // exists2 = await file.exists()
+          // }
           if (!exists2[0]) {
             res.status(404).send("File doesn't exist")
             return false
           }
+          let fileExtension = file.name.split('.')[file.name.split('.').length]
           console.log(
             'file found',
             await file.exists(),
-            `moving to: /projects/${projectId}/receipts/${projectId}-${id}.jpg`
+            `moving to: /projects/${projectId}/receipts/${projectId}-${id}.${fileExtension}`
           )
           let result = await file
             .copy(
-              `gs://sp-finance.appspot.com/projects/${projectId}/receipts/${projectId}-${id}.jpg`
+              `gs://ptc-sm-finance.appspot.com/projects/${projectId}/receipts/${projectId}-${id}.${fileExtension}`
             )
-            .catch(err => {
+            .catch((err) => {
               console.error('Error #6', err)
               return err
             })
           console.log('File Copied', result)
-          await file.delete().catch(err => {
+          await file.delete().catch((err) => {
             console.error('Error #7', err)
             return err
           })
@@ -475,7 +486,7 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
         // await file.setMetadata(metadata)
         const config = {
           action: 'read',
-          expires: date
+          expires: date,
         }
         console.log('Getting URL', config)
         let url = await file.getSignedUrl(config)
@@ -492,11 +503,11 @@ exports.getReceipt = functions.https.onRequest(async (req, res) => {
       }
     })
 
-  // res.status(200).sendFile('https://firebasestorage.googleapis.com/v0/b/sp-finance.appspot.com/o/projects%2FprojectId%2Freceipts%2FCapture.PNG?alt=media&token=b3a900c6-5ace-4270-a6a3-1142666a4c58')
+  // res.status(200).sendFile('https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/projects%2FprojectId%2Freceipts%2FCapture.PNG?alt=media&token=b3a900c6-5ace-4270-a6a3-1142666a4c58')
 })
 
 exports.receiptUploaded = functions.storage
-  .bucket('sp-finance-uploads')
+  .bucket('ptc-sm-finance-uploads')
   .object()
   .onFinalize(async (object, context) => {
     const fileBucket = object.bucket // The Storage bucket that contains the file.
@@ -509,6 +520,8 @@ exports.receiptUploaded = functions.storage
       // console.log('file name: ', filePath, object.metadata)
       const fileName = filePath.replace(/^.*[\\\/]/, '')
       const contentType = object.contentType // File content type.
+      let fileExtension =
+        contentType === 'application/pdf' ? PDF_EXTENSION : JPEG_EXTENSION
       const metageneration = object.metageneration // Number of times metadata has been generated. New objects have a value of 1.
       let metadata = object.metadata ? object.metadata : {}
       // let metadata = object.metadata
@@ -521,19 +534,32 @@ exports.receiptUploaded = functions.storage
       }
       // console.log(context)
       let bucket = admin.storage().bucket(fileBucket)
-    //check the user has auth, if not delete file
-    let userAuth = await admin.firestore().doc(`/projects/${metadata.projectId}/contributors/${metadata.uid}`).get()
-    console.log(userAuth.data())
-      if(userAuth.get('permission') !== 'admin' && userAuth.get('permission') !== 'contributor') {
-        console.log('User Unauthorised:', metadata.uid, userAuth.get('permission'))
-        // delete the file and return 
+      //check the user has auth, if not delete file
+      let userAuth = await admin
+        .firestore()
+        .doc(`/projects/${metadata.projectId}/contributors/${metadata.uid}`)
+        .get()
+      console.log(userAuth.data())
+      if (
+        userAuth.get('permission') !== 'admin' &&
+        userAuth.get('permission') !== 'contributor'
+      ) {
+        console.log(
+          'User Unauthorised:',
+          metadata.uid,
+          userAuth.get('permission')
+        )
+        // delete the file and return
         // bucket.file(object.name).delete()
         return false
-      } 
-
+      }
 
       // Exit if this is triggered on a file that is not an image.
-      if (!contentType.startsWith('image/')) {
+      console.log('contentType: ', contentType)
+      if (
+        !contentType.startsWith('image/') &&
+        contentType !== 'application/pdf'
+      ) {
         return console.log('This is not an image.')
       }
 
@@ -547,7 +573,7 @@ exports.receiptUploaded = functions.storage
         path.format({
           dir: `processed`,
           name: `${metadata.projectId}-${metadata.transId}`,
-          ext: JPEG_EXTENSION
+          ext: fileExtension,
         })
       )
 
@@ -564,14 +590,17 @@ exports.receiptUploaded = functions.storage
       // let oldMetadata = await file.getMetadata()
       // metadata.user = {}
       console.log('Downloading file')
-      await file.download({ destination: tempLocalFile }).catch(err => {
+      await file.download({ destination: tempLocalFile }).catch((err) => {
         console.error('Error #1', err)
         return err
       })
       console.log('The file has been downloaded to', tempLocalFile)
 
       // --------------------------- Convert the image to jpg ---------------------------- //
-      if (!object.contentType.startsWith('image/jpeg')) {
+      if (
+        !object.contentType.startsWith('image/jpeg') &&
+        object.contentType !== 'application/pdf'
+      ) {
         // Convert the image to JPEG using ImageMagick.
         await spawn('convert', [tempLocalFile, tempLocalJPEGFile])
         console.log('JPEG image created at', tempLocalJPEGFile)
@@ -582,29 +611,38 @@ exports.receiptUploaded = functions.storage
 
       // -------------------------------- Uploading the JPEG image. -------------------------//
       // if the transaction doc already exists move the transaction to the project
-      let transRef = await admin.firestore().doc(`/projects/${metadata.projectId}/transactions/${metadata.transId}`).get()
+      let transRef = await admin
+        .firestore()
+        .doc(`/projects/${metadata.projectId}/transactions/${metadata.transId}`)
+        .get()
       console.log('doc exists:', transRef.exists)
-      if(transRef.exists) {
-        await admin.firestore().doc(`/projects/${metadata.projectId}/transactions/${metadata.transId}`).update({ receipt: true})
-        bucket = admin.storage().bucket('sp-finance.appspot.com')
+      if (transRef.exists) {
+        await admin
+          .firestore()
+          .doc(
+            `/projects/${metadata.projectId}/transactions/${metadata.transId}`
+          )
+          .update({ receipt: true })
+        bucket = admin.storage().bucket('ptc-sm-finance.appspot.com')
         JPEGFilePath = path.normalize(
-        path.format({
-          dir: `projects/${metadata.projectId}/receipts/`,
-          name: `${metadata.projectId}-${metadata.transId}`,
-          ext: JPEG_EXTENSION
-        })
-      )
-      } 
+          path.format({
+            dir: `projects/${metadata.projectId}/receipts/`,
+            name: `${metadata.projectId}-${metadata.transId}`,
+            ext: fileExtension,
+          })
+        )
+      }
       console.log('Upload Image')
-      metadata.contentType = 'image/jpeg'
+      metadata.contentType =
+        contentType === 'application/pdf' ? 'application/pdf' : 'image/jpeg'
       metadata.processed = true
       // console.log(metadata, { destination: JPEGFilePath, metadata: metadata })
       await bucket
         .upload(tempLocalJPEGFile, {
           destination: JPEGFilePath,
-          metadata: metadata
+          metadata: metadata,
         })
-        .then(async res => {
+        .then(async (res) => {
           console.log('File Uploaded', await res[0].exists(), res)
           // console.log('Creating Transaction Doc ', metadata)
           // doc.set(metadata)
@@ -615,7 +653,7 @@ exports.receiptUploaded = functions.storage
         })
 
         // await file.copy(admin.storage().bucket().file(`/projects/${metadata.projectId}/receipts/${doc.id}.jpg`))
-        .catch(err => {
+        .catch((err) => {
           console.error('Error #4', err)
           return err
         })
@@ -752,8 +790,13 @@ exports.onTransactionDelete = functions.firestore
     let projectId = context.params.projectId
     let transId = context.params.transId
 
-    if(snap.data().action > '') {
-      await admin.firestore().doc(`/projects/${projectId}/actions/${snap.data().action}`).update({ ['transactions.'+transId]: admin.firestore.FieldValue.delete()})
+    if (snap.data().action > '') {
+      await admin
+        .firestore()
+        .doc(`/projects/${projectId}/actions/${snap.data().action}`)
+        .update({
+          ['transactions.' + transId]: admin.firestore.FieldValue.delete(),
+        })
     }
 
     var bucket = admin.storage().bucket()
@@ -769,7 +812,7 @@ exports.onTransactionCreate = functions.firestore
 // TODO: make this use optimistic locking
 exports.onTransactionWrite = functions
   .runWith({
-    timeoutSeconds: 300
+    timeoutSeconds: 300,
   })
   .firestore.document('/projects/{projectId}/transactions/{transId}')
 
@@ -837,14 +880,14 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
 
   db.doc(`/projects/${projectId}/contributors/${req.user.user_id}`)
     .get()
-    .then(async snap => {
+    .then(async (snap) => {
       if (snap.exists) {
         let d = new Date()
         let date = d.setHours(d.getHours() + 1)
 
         const config = {
           action: 'read',
-          expires: date
+          expires: date,
         }
 
         // console.log(`projects/${req.query.projectId}/receipts/`)
@@ -853,9 +896,9 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
           .bucket()
           .getFiles({
             delimiter: '/',
-            prefix: `projects/${req.query.projectId}/receipts/` /// ${req.query.projectId}/receipts/`
+            prefix: `projects/${req.query.projectId}/receipts/`, /// ${req.query.projectId}/receipts/`
           })
-          .catch(err => {
+          .catch((err) => {
             console.error(err)
           })
         const receipts = {}
@@ -863,7 +906,7 @@ exports.downloadReceiptsZip = functions.https.onRequest(async (req, res) => {
         for (var fileId in files) {
           const file = files[fileId]
           // TODO: change file name to just reciept id
-          const data = await file.getSignedUrl(config).catch(err => {
+          const data = await file.getSignedUrl(config).catch((err) => {
             console.error(err)
           })
           // const metadata = await file.getMetadata().catch(err => {
@@ -934,25 +977,25 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
   let project = await db
     .doc(`/projects/${projectId}`)
     .get()
-    .catch(err => {
+    .catch((err) => {
       console.log(err)
     })
   // console.log(`/projects/${projectId}/accounts`)
   let accounts = await db
     .collection(`/projects/${projectId}/accounts`)
     .get()
-    .catch(err => {
+    .catch((err) => {
       console.log(err)
     })
   let accountDocs = {}
-  await accounts.forEach(account => {
+  await accounts.forEach((account) => {
     accountDocs[account.id] = account.data()
   })
   // console.log(`/projects/${projectId}/transactions`)
   let transactions = await db
     .collection(`/projects/${projectId}/transactions`)
     .get()
-    .catch(err => {
+    .catch((err) => {
       console.log(err)
     })
   // console.log(transactions)
@@ -972,23 +1015,17 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
       'trans_cheque',
       'trans_paid_to',
       'trans_description',
-      'trans_deleted?'
-    ]
+      'trans_deleted?',
+    ],
   ]
   let index = 1
-  transactions.forEach(transaction => {
-    // get the transactions data
+  transactions.forEach((transaction) => {
     let transData = transaction.data()
     if (transData.category === 'Expense') {
-      // The transaction is an expense
-      // get the account or budget that the expense is linked to
       let account = accountDocs[transData.budget]
       if (account.type !== 'account') {
-        // The budget field contained a budget id not an account one.
-        // as the budget field contained a budget we need it's linked category.
         let categoryId = account.category
-        let categoryDoc = accountDocs[categoryId] ? accountDocs[categoryId] : { label: `Unable to find the Budget Label for ID: '${categoryId}'`}// if accountDocs[categoryId] doesn't exist, the budget is linked with a false category. Fill the field with an error message.
-        // populate the next row of the csv array
+        let categoryDoc = accountDocs[categoryId]
         transArray[index] = [
           project.get('number'),
           project.get('number') + transaction.id,
@@ -1000,7 +1037,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           '', // equivalent amount in AUD
           transData.date,
           transData.type,
-          '"'+categoryDoc.label.replace(/(\r\n|\n|\r)/gm,"")+'"',
+          '"' + categoryDoc.label.replace(/(\r\n|\n|\r)/gm, '') + '"',
           transData.cheque,
           !transData.payTo
             ? ''
@@ -1008,28 +1045,28 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
             ? transData.payTo.replace(/,/g, '-')
             : transData.payTo,
           transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
-          transData.deleted === true ? 1 : 0
+          transData.deleted === true ? 1 : 0,
         ]
-        // move to the next row in the array
         index++
-      } else if (transData.desc = 'petty cash out - fee') {
-        // this transaction is related to a fee for getting cash out so it needs to be logged. 
+      } else if ((transData.desc = 'petty cash out - fee')) {
         // Get the category label
         let categoryId
         let accountArr = Object.values(accountDocs)
         function filterIt(arr, searchKey) {
-          return arr.filter(obj => Object.keys(obj).some(key => obj[key] === searchKey));
+          return arr.filter((obj) =>
+            Object.keys(obj).some((key) => obj[key] === searchKey)
+          )
         }
-        if (filterIt(accountArr,"Food/Household").length > 0) {
-          console.log(filterIt(accountArr,"Food/Household"))
-          categoryId = Object.keys(filterIt(accountArr,"Food/Household"))[0]
-        } else if (filterIt(accountArr,"Team Building").length > 0) {
-          console.log(filterIt(accountArr,"Team Building"))
-          categoryId = Object.keys(filterIt(accountArr,"Team Building"))[0]
+        if (filterIt(accountArr, 'Food/Household').length > 0) {
+          console.log(filterIt(accountArr, 'Food/Household'))
+          categoryId = Object.keys(filterIt(accountArr, 'Food/Household'))[0]
+        } else if (filterIt(accountArr, 'Team Building').length > 0) {
+          console.log(filterIt(accountArr, 'Team Building'))
+          categoryId = Object.keys(filterIt(accountArr, 'Team Building'))[0]
         } else {
           categoryId = Object.keys(accountDocs)[0]
         }
-        let categoryDoc = accountDocs[categoryId] ? accountDocs[categoryId] : { label: `Unable to find the Budget Label for ID: '${categoryId}'`}// if accountDocs[categoryId] doesn't exist, the budget is linked with a false category. Fill the field with an error message.
+        let categoryDoc = accountDocs[categoryId]
         transArray[index] = [
           project.get('number'),
           project.get('number') + transaction.id,
@@ -1041,7 +1078,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           '', // equivalent amount in AUD
           transData.date,
           transData.type,
-          '"'+categoryDoc.label.replace(/(\r\n|\n|\r)/gm,"")+'"',
+          '"' + categoryDoc.label.replace(/(\r\n|\n|\r)/gm, '') + '"',
           transData.cheque,
           !transData.payTo
             ? ''
@@ -1049,7 +1086,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
             ? transData.payTo.replace(/,/g, '-')
             : transData.payTo,
           transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
-          transData.deleted === true ? 1 : 0
+          transData.deleted === true ? 1 : 0,
         ]
         index++
       }
@@ -1058,7 +1095,11 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
       //   index++
       // }
     } else if (transData.category === 'Journal') {
-      // this transaction is a journal transaction
+      // console.log(
+      //   transData,
+      //   accountDocs[transData.to].type,
+      //   accountDocs[transData.from].type
+      // )
       if (
         accountDocs[transData.to].type === 'account' &&
         accountDocs[transData.from].type === 'account'
@@ -1068,7 +1109,7 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
           project.get('number') + transaction.id,
           0,
           transData.from === 'pettyCash'
-            ? -1 * (transData.amount)
+            ? -1 * transData.amount
             : transData.amount,
           transData.GST,
           '',
@@ -1084,21 +1125,18 @@ exports.downloadCSV = functions.https.onRequest(async (req, res) => {
             ? transData.payTo.replace(/,/g, '-')
             : transData.payTo,
           transData.desc > '' ? transData.desc.replace(/,/g, '-') : '',
-          transData.deleted === true ? 1 : 0
+          transData.deleted === true ? 1 : 0,
         ]
         index++
       }
     }
   })
   // console.log(transArray.map(e => e.join(',')).join('\n'))
-  res.status(200).send(transArray.map(e => e.join(',')).join('\n'))
+  res.status(200).send(transArray.map((e) => e.join(',')).join('\n'))
 })
 
 exports.createProject = functions.https.onCall(async (data, context) => {
-  let projectRef = admin
-    .firestore()
-    .collection(`/projects`)
-    .doc()
+  let projectRef = admin.firestore().collection(`/projects`).doc()
   await projectRef.set({
     name: 'Untitled Project',
     number: '',
@@ -1114,15 +1152,15 @@ exports.createProject = functions.https.onCall(async (data, context) => {
         tens: 0,
         fives: 0,
         twos: 0,
-        ones: 0
+        ones: 0,
       },
       cents: {
         fifties: 0,
         twenties: 0,
         tens: 0,
-        fives: 0
-      }
-    }
+        fives: 0,
+      },
+    },
   })
   projectRef
     .collection('/contributors')
@@ -1132,29 +1170,29 @@ exports.createProject = functions.https.onCall(async (data, context) => {
       name: context.auth.token.name ? context.auth.token.name : '',
       uid: context.auth.uid,
       permission: 'admin',
-      photoUrl: context.auth.token.picture ? context.auth.token.picture : ''
+      photoUrl: context.auth.token.picture ? context.auth.token.picture : '',
     })
   let accountsRef = projectRef.collection('/accounts')
   accountsRef.doc('debitCard').set({
     label: 'Debit Card',
     systemAccount: true,
     type: 'account',
-    inHeader: true
+    inHeader: true,
   })
   accountsRef.doc('pettyCash').set({
     label: 'Petty Cash',
     systemAccount: true,
     type: 'account',
-    inHeader: true
+    inHeader: true,
   })
 })
 
 function invite(from, project) {
-  return `<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><!-- NAME: SELL PRODUCTS --><!--[if gte mso 15]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><style type="text/css">p{margin:10px 0;padding:0;}table{border-collapse:collapse;}h1,h2,h3,h4,h5,h6{display:block;margin:0;padding:0;}img,a img{border:0;height:auto;outline:none;text-decoration:none;}body,#bodyTable,#bodyCell{height:100%;margin:0;padding:0;width:100%;}.mcnPreviewText{display:none !important;}#outlook a{padding:0;}img{-ms-interpolation-mode:bicubic;}table{mso-table-lspace:0pt;mso-table-rspace:0pt;}.ReadMsgBody{width:100%;}.ExternalClass{width:100%;}p,a,li,td,blockquote{mso-line-height-rule:exactly;}a[href^=tel],a[href^=sms]{color:inherit;cursor:default;text-decoration:none;}p,a,li,td,body,table,blockquote{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;}.ExternalClass,.ExternalClass p,.ExternalClass td,.ExternalClass div,.ExternalClass span,.ExternalClass font{line-height:100%;}a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !important;font-size:inherit !important;font-family:inherit !important;font-weight:inherit !important;line-height:inherit !important;}.templateContainer{max-width:600px !important;}a.mcnButton{display:block;}.mcnImage,.mcnRetinaImage{vertical-align:bottom;}.mcnTextContent{word-break:break-word;}.mcnTextContent img{height:auto !important;}.mcnDividerBlock{table-layout:fixed !important;}h1{color:#222222;font-family:Helvetica;font-size:40px;font-style:normal;font-weight:bold;line-height:150%;letter-spacing:normal;text-align:center;}h2{color:#222222;font-family:Helvetica;font-size:34px;font-style:normal;font-weight:bold;line-height:150%;letter-spacing:normal;text-align:left;}h3{color:#444444;font-family:Helvetica;font-size:22px;font-style:normal;font-weight:bold;line-height:150%;letter-spacing:normal;text-align:left;}h4{color:#949494;font-family:Georgia;font-size:20px;font-style:italic;font-weight:normal;line-height:125%;letter-spacing:normal;text-align:left;}#templateHeader{background-color:#F7F7F7;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:45px;padding-bottom:45px;}.headerContainer{background-color:transparent;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0;padding-bottom:0;}.headerContainer .mcnTextContent,.headerContainer .mcnTextContent p{color:#757575;font-family:Helvetica;font-size:16px;line-height:150%;text-align:left;}.headerContainer .mcnTextContent a,.headerContainer .mcnTextContent p a{color:#007C89;font-weight:normal;text-decoration:underline;}#templateBody{background-color:#FFFFFF;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:36px;padding-bottom:45px;}.bodyContainer{background-color:transparent;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0;padding-bottom:0;}.bodyContainer .mcnTextContent,.bodyContainer .mcnTextContent p{color:#757575;font-family:Helvetica;font-size:16px;line-height:150%;text-align:left;}.bodyContainer .mcnTextContent a,.bodyContainer .mcnTextContent p a{color:#007C89;font-weight:normal;text-decoration:underline;}#templateFooter{background-color:#333333;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0px;padding-bottom:0px;}.footerContainer{background-color:transparent;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0;padding-bottom:0;}.footerContainer .mcnTextContent,.footerContainer .mcnTextContent p{color:#FFFFFF;font-family:Helvetica;font-size:12px;line-height:150%;text-align:center;}.footerContainer .mcnTextContent a,.footerContainer .mcnTextContent p a{color:#FFFFFF;font-weight:normal;text-decoration:underline;}@media only screen and (min-width:768px){.templateContainer{width:600px !important;}}@media only screen and (max-width: 480px){body,table,td,p,a,li,blockquote{-webkit-text-size-adjust:none !important;}}@media only screen and (max-width: 480px){body{width:100% !important;min-width:100% !important;}}@media only screen and (max-width: 480px){.mcnRetinaImage{max-width:100% !important;}}@media only screen and (max-width: 480px){.mcnImage{width:100% !important;}}@media only screen and (max-width: 480px){.mcnCartContainer,.mcnCaptionTopContent,.mcnRecContentContainer,.mcnCaptionBottomContent,.mcnTextContentContainer,.mcnBoxedTextContentContainer,.mcnImageGroupContentContainer,.mcnCaptionLeftTextContentContainer,.mcnCaptionRightTextContentContainer,.mcnCaptionLeftImageContentContainer,.mcnCaptionRightImageContentContainer,.mcnImageCardLeftTextContentContainer,.mcnImageCardRightTextContentContainer,.mcnImageCardLeftImageContentContainer,.mcnImageCardRightImageContentContainer{max-width:100% !important;width:100% !important;}}@media only screen and (max-width: 480px){.mcnBoxedTextContentContainer{min-width:100% !important;}}@media only screen and (max-width: 480px){.mcnImageGroupContent{padding:9px !important;}}@media only screen and (max-width: 480px){.mcnCaptionLeftContentOuter .mcnTextContent,.mcnCaptionRightContentOuter .mcnTextContent{padding-top:9px !important;}}@media only screen and (max-width: 480px){.mcnImageCardTopImageContent,.mcnCaptionBottomContent:last-child .mcnCaptionBottomImageContent,.mcnCaptionBlockInner .mcnCaptionTopContent:last-child .mcnTextContent{padding-top:18px !important;}}@media only screen and (max-width: 480px){.mcnImageCardBottomImageContent{padding-bottom:9px !important;}}@media only screen and (max-width: 480px){.mcnImageGroupBlockInner{padding-top:0 !important;padding-bottom:0 !important;}}@media only screen and (max-width: 480px){.mcnImageGroupBlockOuter{padding-top:9px !important;padding-bottom:9px !important;}}@media only screen and (max-width: 480px){.mcnTextContent,.mcnBoxedTextContentColumn{padding-right:18px !important;padding-left:18px !important;}}@media only screen and (max-width: 480px){.mcnImageCardLeftImageContent,.mcnImageCardRightImageContent{padding-right:18px !important;padding-bottom:0 !important;padding-left:18px !important;}}@media only screen and (max-width: 480px){.mcpreview-image-uploader{display:none !important;width:100% !important;}}@media only screen and (max-width: 480px){h1{font-size:30px !important;line-height:125% !important;}}@media only screen and (max-width: 480px){h2{font-size:26px !important;line-height:125% !important;}}@media only screen and (max-width: 480px){h3{font-size:20px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){h4{font-size:18px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.mcnBoxedTextContentContainer .mcnTextContent,.mcnBoxedTextContentContainer .mcnTextContent p{font-size:14px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.headerContainer .mcnTextContent,.headerContainer .mcnTextContent p{font-size:16px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.bodyContainer .mcnTextContent,.bodyContainer .mcnTextContent p{font-size:16px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.footerContainer .mcnTextContent,.footerContainer .mcnTextContent p{font-size:14px !important;line-height:150% !important;}}</style></head><body style="height: 100%;margin: 0;padding: 0;width: 100%;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!----><center><table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;height: 100%;margin: 0;padding: 0;width: 100%;"><tbody><tr><td align="center" valign="top" id="bodyCell" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;height: 100%;margin: 0;padding: 0;width: 100%;"><!-- BEGIN TEMPLATE // --><table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td align="center" valign="top" id="templateHeader" data-template-container="" style="background:#F7F7F7 none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #000000;background-image: url('https://firebasestorage.googleapis.com/v0/b/sp-finance.appspot.com/o/assets%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&amp;token=34eac538-a272-4039-be17-c77a05c27da7');background-repeat: no-repeat;background-position: bottom;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 45px;padding-bottom: 45px;"><!--[if (gte mso 9)|(IE)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;"><tr><td align="center" valign="top" width="600" style="width:600px;"><![endif]--><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;max-width: 600px !important;"><tbody><tr><td valign="top" class="headerContainer" style="background:transparent none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: transparent;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0;padding-bottom: 0;"><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnImageBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnImageBlockOuter"><tr><td valign="top" style="padding: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" class="mcnImageBlockInner"><table align="left" width="100%" border="0" cellpadding="0" cellspacing="0" class="mcnImageContentContainer" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td class="mcnImageContent" valign="top" style="padding-right: 9px;padding-left: 9px;padding-top: 0;padding-bottom: 0;text-align: center;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"></td></tr></tbody></table></td></tr></tbody></table><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnTextBlockOuter"><tr><td valign="top" class="mcnTextBlockInner" style="padding-top: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!--[if mso]><table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;"><tr><![endif]--><!--[if mso]><td valign="top" width="600" style="width:600px;"><![endif]--><table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer"><tbody><tr><td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: left;"><h1 style="display: block;margin: 0;padding: 0;color: #222222;font-family: Helvetica;font-size: 40px;font-style: normal;font-weight: bold;line-height: 150%;letter-spacing: normal;text-align: center;">You have been invited to Summer Projects Finance</h1></td></tr></tbody></table><!--[if mso]></td><![endif]--><!--[if mso]></tr></table><![endif]--></td></tr></tbody></table></td></tr></tbody></table><!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]--></td></tr><tr><td align="center" valign="top" id="templateBody" data-template-container="" style="background:#FFFFFF none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #FFFFFF;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 36px;padding-bottom: 45px;"><!--[if (gte mso 9)|(IE)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;"><tr><td align="center" valign="top" width="600" style="width:600px;"><![endif]--><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;max-width: 600px !important;"><tbody><tr><td valign="top" class="bodyContainer" style="background:transparent none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: transparent;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0;padding-bottom: 0;"><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnTextBlockOuter"><tr><td valign="top" class="mcnTextBlockInner" style="padding-top: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!--[if mso]><table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;"><tr><![endif]--><!--[if mso]><td valign="top" width="600" style="width:600px;"><![endif]--><table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer"><tbody><tr><td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: left;"><h3 style="text-align: center;display: block;margin: 0;padding: 0;color: #444444;font-family: Helvetica;font-size: 22px;font-style: normal;font-weight: bold;line-height: 150%;letter-spacing: normal;">${from} has invited you to contribute to the ${project} project on the Summer Project Finance App.</h3></td></tr></tbody></table><!--[if mso]></td><![endif]--><!--[if mso]></tr></table><![endif]--></td></tr></tbody></table>
-<table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnButtonBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnButtonBlockOuter"><tr><td style="padding-top: 0;padding-right: 18px;padding-bottom: 18px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" valign="top" align="center" class="mcnButtonBlockInner"><table border="0" cellpadding="0" cellspacing="0" class="mcnButtonContentContainer" style="border-collapse: separate !important;border-radius: 3px;background-color: #26a69a;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td align="center" valign="middle" class="mcnButtonContent" style="font-family: Helvetica;font-size: 18px;padding: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><a class="mcnButton " title="Get Started" href="https://sp-finance.web.app" target="_blank" style="font-weight: bold;letter-spacing: -0.5px;line-height: 100%;text-align: center;text-decoration: none;color: #FFFFFF;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;display: block;">Get Started</a></td></tr></tbody></table></td></tr></tbody></table><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnTextBlockOuter"><tr><td valign="top" class="mcnTextBlockInner" style="padding-top: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!--[if mso]><table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;"><tr><![endif]--><!--[if mso]><td valign="top" width="600" style="width:600px;"><![endif]--><table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer"><tbody><tr><td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: left;"><h6 style="text-align: center;display: block;margin: 0;padding: 0;color: #444444;font-family: Helvetica;font-size: 16px;font-style: normal;font-weight: normal;line-height: 150%;letter-spacing: normal;">The Summer Projects Finance App is used to keep track of all of the receipts and transactions on a Power to Change Summer Project. 
+  return `<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><!-- NAME: SELL PRODUCTS --><!--[if gte mso 15]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><style type="text/css">p{margin:10px 0;padding:0;}table{border-collapse:collapse;}h1,h2,h3,h4,h5,h6{display:block;margin:0;padding:0;}img,a img{border:0;height:auto;outline:none;text-decoration:none;}body,#bodyTable,#bodyCell{height:100%;margin:0;padding:0;width:100%;}.mcnPreviewText{display:none !important;}#outlook a{padding:0;}img{-ms-interpolation-mode:bicubic;}table{mso-table-lspace:0pt;mso-table-rspace:0pt;}.ReadMsgBody{width:100%;}.ExternalClass{width:100%;}p,a,li,td,blockquote{mso-line-height-rule:exactly;}a[href^=tel],a[href^=sms]{color:inherit;cursor:default;text-decoration:none;}p,a,li,td,body,table,blockquote{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;}.ExternalClass,.ExternalClass p,.ExternalClass td,.ExternalClass div,.ExternalClass span,.ExternalClass font{line-height:100%;}a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !important;font-size:inherit !important;font-family:inherit !important;font-weight:inherit !important;line-height:inherit !important;}.templateContainer{max-width:600px !important;}a.mcnButton{display:block;}.mcnImage,.mcnRetinaImage{vertical-align:bottom;}.mcnTextContent{word-break:break-word;}.mcnTextContent img{height:auto !important;}.mcnDividerBlock{table-layout:fixed !important;}h1{color:#222222;font-family:Helvetica;font-size:40px;font-style:normal;font-weight:bold;line-height:150%;letter-spacing:normal;text-align:center;}h2{color:#222222;font-family:Helvetica;font-size:34px;font-style:normal;font-weight:bold;line-height:150%;letter-spacing:normal;text-align:left;}h3{color:#444444;font-family:Helvetica;font-size:22px;font-style:normal;font-weight:bold;line-height:150%;letter-spacing:normal;text-align:left;}h4{color:#949494;font-family:Georgia;font-size:20px;font-style:italic;font-weight:normal;line-height:125%;letter-spacing:normal;text-align:left;}#templateHeader{background-color:#F7F7F7;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:45px;padding-bottom:45px;}.headerContainer{background-color:transparent;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0;padding-bottom:0;}.headerContainer .mcnTextContent,.headerContainer .mcnTextContent p{color:#757575;font-family:Helvetica;font-size:16px;line-height:150%;text-align:left;}.headerContainer .mcnTextContent a,.headerContainer .mcnTextContent p a{color:#007C89;font-weight:normal;text-decoration:underline;}#templateBody{background-color:#FFFFFF;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:36px;padding-bottom:45px;}.bodyContainer{background-color:transparent;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0;padding-bottom:0;}.bodyContainer .mcnTextContent,.bodyContainer .mcnTextContent p{color:#757575;font-family:Helvetica;font-size:16px;line-height:150%;text-align:left;}.bodyContainer .mcnTextContent a,.bodyContainer .mcnTextContent p a{color:#007C89;font-weight:normal;text-decoration:underline;}#templateFooter{background-color:#333333;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0px;padding-bottom:0px;}.footerContainer{background-color:transparent;background-image:none;background-repeat:no-repeat;background-position:center;background-size:cover;border-top:0;border-bottom:0;padding-top:0;padding-bottom:0;}.footerContainer .mcnTextContent,.footerContainer .mcnTextContent p{color:#FFFFFF;font-family:Helvetica;font-size:12px;line-height:150%;text-align:center;}.footerContainer .mcnTextContent a,.footerContainer .mcnTextContent p a{color:#FFFFFF;font-weight:normal;text-decoration:underline;}@media only screen and (min-width:768px){.templateContainer{width:600px !important;}}@media only screen and (max-width: 480px){body,table,td,p,a,li,blockquote{-webkit-text-size-adjust:none !important;}}@media only screen and (max-width: 480px){body{width:100% !important;min-width:100% !important;}}@media only screen and (max-width: 480px){.mcnRetinaImage{max-width:100% !important;}}@media only screen and (max-width: 480px){.mcnImage{width:100% !important;}}@media only screen and (max-width: 480px){.mcnCartContainer,.mcnCaptionTopContent,.mcnRecContentContainer,.mcnCaptionBottomContent,.mcnTextContentContainer,.mcnBoxedTextContentContainer,.mcnImageGroupContentContainer,.mcnCaptionLeftTextContentContainer,.mcnCaptionRightTextContentContainer,.mcnCaptionLeftImageContentContainer,.mcnCaptionRightImageContentContainer,.mcnImageCardLeftTextContentContainer,.mcnImageCardRightTextContentContainer,.mcnImageCardLeftImageContentContainer,.mcnImageCardRightImageContentContainer{max-width:100% !important;width:100% !important;}}@media only screen and (max-width: 480px){.mcnBoxedTextContentContainer{min-width:100% !important;}}@media only screen and (max-width: 480px){.mcnImageGroupContent{padding:9px !important;}}@media only screen and (max-width: 480px){.mcnCaptionLeftContentOuter .mcnTextContent,.mcnCaptionRightContentOuter .mcnTextContent{padding-top:9px !important;}}@media only screen and (max-width: 480px){.mcnImageCardTopImageContent,.mcnCaptionBottomContent:last-child .mcnCaptionBottomImageContent,.mcnCaptionBlockInner .mcnCaptionTopContent:last-child .mcnTextContent{padding-top:18px !important;}}@media only screen and (max-width: 480px){.mcnImageCardBottomImageContent{padding-bottom:9px !important;}}@media only screen and (max-width: 480px){.mcnImageGroupBlockInner{padding-top:0 !important;padding-bottom:0 !important;}}@media only screen and (max-width: 480px){.mcnImageGroupBlockOuter{padding-top:9px !important;padding-bottom:9px !important;}}@media only screen and (max-width: 480px){.mcnTextContent,.mcnBoxedTextContentColumn{padding-right:18px !important;padding-left:18px !important;}}@media only screen and (max-width: 480px){.mcnImageCardLeftImageContent,.mcnImageCardRightImageContent{padding-right:18px !important;padding-bottom:0 !important;padding-left:18px !important;}}@media only screen and (max-width: 480px){.mcpreview-image-uploader{display:none !important;width:100% !important;}}@media only screen and (max-width: 480px){h1{font-size:30px !important;line-height:125% !important;}}@media only screen and (max-width: 480px){h2{font-size:26px !important;line-height:125% !important;}}@media only screen and (max-width: 480px){h3{font-size:20px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){h4{font-size:18px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.mcnBoxedTextContentContainer .mcnTextContent,.mcnBoxedTextContentContainer .mcnTextContent p{font-size:14px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.headerContainer .mcnTextContent,.headerContainer .mcnTextContent p{font-size:16px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.bodyContainer .mcnTextContent,.bodyContainer .mcnTextContent p{font-size:16px !important;line-height:150% !important;}}@media only screen and (max-width: 480px){.footerContainer .mcnTextContent,.footerContainer .mcnTextContent p{font-size:14px !important;line-height:150% !important;}}</style></head><body style="height: 100%;margin: 0;padding: 0;width: 100%;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!----><center><table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;height: 100%;margin: 0;padding: 0;width: 100%;"><tbody><tr><td align="center" valign="top" id="bodyCell" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;height: 100%;margin: 0;padding: 0;width: 100%;"><!-- BEGIN TEMPLATE // --><table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td align="center" valign="top" id="templateHeader" data-template-container="" style="background:#F7F7F7 none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #000000;background-image: url('https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/assets%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&amp;token=34eac538-a272-4039-be17-c77a05c27da7');background-repeat: no-repeat;background-position: bottom;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 45px;padding-bottom: 45px;"><!--[if (gte mso 9)|(IE)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;"><tr><td align="center" valign="top" width="600" style="width:600px;"><![endif]--><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;max-width: 600px !important;"><tbody><tr><td valign="top" class="headerContainer" style="background:transparent none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: transparent;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0;padding-bottom: 0;"><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnImageBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnImageBlockOuter"><tr><td valign="top" style="padding: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" class="mcnImageBlockInner"><table align="left" width="100%" border="0" cellpadding="0" cellspacing="0" class="mcnImageContentContainer" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td class="mcnImageContent" valign="top" style="padding-right: 9px;padding-left: 9px;padding-top: 0;padding-bottom: 0;text-align: center;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"></td></tr></tbody></table></td></tr></tbody></table><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnTextBlockOuter"><tr><td valign="top" class="mcnTextBlockInner" style="padding-top: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!--[if mso]><table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;"><tr><![endif]--><!--[if mso]><td valign="top" width="600" style="width:600px;"><![endif]--><table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer"><tbody><tr><td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: left;"><h1 style="display: block;margin: 0;padding: 0;color: #222222;font-family: Helvetica;font-size: 40px;font-style: normal;font-weight: bold;line-height: 150%;letter-spacing: normal;text-align: center;">You have been invited to Summer Missions Finance</h1></td></tr></tbody></table><!--[if mso]></td><![endif]--><!--[if mso]></tr></table><![endif]--></td></tr></tbody></table></td></tr></tbody></table><!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]--></td></tr><tr><td align="center" valign="top" id="templateBody" data-template-container="" style="background:#FFFFFF none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #FFFFFF;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 36px;padding-bottom: 45px;"><!--[if (gte mso 9)|(IE)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;"><tr><td align="center" valign="top" width="600" style="width:600px;"><![endif]--><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;max-width: 600px !important;"><tbody><tr><td valign="top" class="bodyContainer" style="background:transparent none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: transparent;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0;padding-bottom: 0;"><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnTextBlockOuter"><tr><td valign="top" class="mcnTextBlockInner" style="padding-top: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!--[if mso]><table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;"><tr><![endif]--><!--[if mso]><td valign="top" width="600" style="width:600px;"><![endif]--><table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer"><tbody><tr><td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: left;"><h3 style="text-align: center;display: block;margin: 0;padding: 0;color: #444444;font-family: Helvetica;font-size: 22px;font-style: normal;font-weight: bold;line-height: 150%;letter-spacing: normal;">${from} has invited you to contribute to the ${project} project on the Summer Project Finance App.</h3></td></tr></tbody></table><!--[if mso]></td><![endif]--><!--[if mso]></tr></table><![endif]--></td></tr></tbody></table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnButtonBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnButtonBlockOuter"><tr><td style="padding-top: 0;padding-right: 18px;padding-bottom: 18px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" valign="top" align="center" class="mcnButtonBlockInner"><table border="0" cellpadding="0" cellspacing="0" class="mcnButtonContentContainer" style="border-collapse: separate !important;border-radius: 3px;background-color: #26a69a;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td align="center" valign="middle" class="mcnButtonContent" style="font-family: Helvetica;font-size: 18px;padding: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><a class="mcnButton " title="Get Started" href="https://ptc-sm-finance.web.app" target="_blank" style="font-weight: bold;letter-spacing: -0.5px;line-height: 100%;text-align: center;text-decoration: none;color: #FFFFFF;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;display: block;">Get Started</a></td></tr></tbody></table></td></tr></tbody></table><table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody class="mcnTextBlockOuter"><tr><td valign="top" class="mcnTextBlockInner" style="padding-top: 9px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><!--[if mso]><table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;"><tr><![endif]--><!--[if mso]><td valign="top" width="600" style="width:600px;"><![endif]--><table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer"><tbody><tr><td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #757575;font-family: Helvetica;font-size: 16px;line-height: 150%;text-align: left;"><h6 style="text-align: center;display: block;margin: 0;padding: 0;color: #444444;font-family: Helvetica;font-size: 16px;font-style: normal;font-weight: normal;line-height: 150%;letter-spacing: normal;">The Summer Missions Finance App is used to keep track of all of the receipts and transactions on a Power to Change Summer Project. 
 If you are a student you will be provided with a form that will allow you to upload receipts and other transactions that you make. Please check with your finance person or project leaders if you have any questions.
 </h6></td></tr></tbody></table><!--[if mso]></td><![endif]--><!--[if mso]></tr></table><![endif]--></td></tr></tbody></table>
-<table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnDividerBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;table-layout: fixed !important;"><tbody class="mcnDividerBlockOuter"><tr><td class="mcnDividerBlockInner" style="min-width: 100%;padding: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><table class="mcnDividerContent" border="0" cellpadding="0" cellspacing="0" width="100%" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><span></span></td></tr></tbody></table><!--<td class="mcnDividerBlockInner" style="padding: 18px;"><hr class="mcnDividerContent" style="border-bottom-color:none; border-left-color:none; border-right-color:none; border-bottom-width:0; border-left-width:0; border-right-width:0; margin-top:0; margin-right:0; margin-bottom:0; margin-left:0;" />--></td></tr></tbody></table></td></tr></tbody></table><!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]--></td></tr><tr><td align="center" valign="top" id="templateFooter" data-template-container="" style="background:#333333 none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #333333;background-image: 'https://firebasestorage.googleapis.com/v0/b/sp-finance.appspot.com/o/assets%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&amp;token=34eac538-a272-4039-be17-c77a05c27da7';background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0px;padding-bottom: 0px;"><!--[if (gte mso 9)|(IE)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;"><tr><td align="center" valign="top" width="600" style="width:600px;"><![endif]--><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;max-width: 600px !important;"><tbody><tr><td valign="top" class="footerContainer" style="background:transparent none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: transparent;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0;padding-bottom: 0;"></td></tr></tbody></table><!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]--></td></tr></tbody></table><!-- // END TEMPLATE --></td></tr></tbody></table></center></body></html>` // email content in HTML
+<table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnDividerBlock" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;table-layout: fixed !important;"><tbody class="mcnDividerBlockOuter"><tr><td class="mcnDividerBlockInner" style="min-width: 100%;padding: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><table class="mcnDividerContent" border="0" cellpadding="0" cellspacing="0" width="100%" style="min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><tbody><tr><td style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><span></span></td></tr></tbody></table><!--<td class="mcnDividerBlockInner" style="padding: 18px;"><hr class="mcnDividerContent" style="border-bottom-color:none; border-left-color:none; border-right-color:none; border-bottom-width:0; border-left-width:0; border-right-width:0; margin-top:0; margin-right:0; margin-bottom:0; margin-left:0;" />--></td></tr></tbody></table></td></tr></tbody></table><!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]--></td></tr><tr><td align="center" valign="top" id="templateFooter" data-template-container="" style="background:#333333 none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #333333;background-image: 'https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance.appspot.com/o/assets%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&amp;token=34eac538-a272-4039-be17-c77a05c27da7';background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0px;padding-bottom: 0px;"><!--[if (gte mso 9)|(IE)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;"><tr><td align="center" valign="top" width="600" style="width:600px;"><![endif]--><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;max-width: 600px !important;"><tbody><tr><td valign="top" class="footerContainer" style="background:transparent none no-repeat center/cover;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: transparent;background-image: none;background-repeat: no-repeat;background-position: center;background-size: cover;border-top: 0;border-bottom: 0;padding-top: 0;padding-bottom: 0;"></td></tr></tbody></table><!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]--></td></tr></tbody></table><!-- // END TEMPLATE --></td></tr></tbody></table></center></body></html>` // email content in HTML
 }
 
 exports.recalcProjectAccounts = functions.firestore

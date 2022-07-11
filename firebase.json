@@ -1,8 +1,12 @@
 {
   "hosting": {
     "public": "dist/pwa",
-    "site": "sp-finance",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "site": "missionsfinance",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
       {
         "source": "/receipt",

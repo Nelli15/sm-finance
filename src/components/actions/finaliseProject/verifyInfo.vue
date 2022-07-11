@@ -1,7 +1,7 @@
 <template>
   <div>
     Before you can finalise the Project, we need to check that all the data is
-    ready to be sent to National Summer Projects. Click Verify to get
+    ready to be sent to National Summer Missions. Click Verify to get
     started.<br /><br />
   </div>
 </template>
