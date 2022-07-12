@@ -15,6 +15,7 @@ jobs:
           node-version: 16
           cache: 'npm'
       - run: cd functions
+      - run: npm ci
       - name: Deploy functions to Firebase
         uses: chrissank/deploy-firebase-functions@1.0.0
         env:
