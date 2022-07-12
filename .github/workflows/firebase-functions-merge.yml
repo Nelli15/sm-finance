@@ -16,5 +16,8 @@ jobs:
           cache: 'npm'
       - run: cd functions
       - run: npm ci
+      - uses: pocket-apps/action-setup-firebase@v2
+        with:
+          firebase-token: YOUR_TOKEN
       - name: Deploy functions to Firebase
         run: firebase deploy --only functions --token ${{ secrets.FIREBASE_TOKEN }}
