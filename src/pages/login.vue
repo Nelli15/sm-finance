@@ -8,7 +8,7 @@
     <!-- <template v-slot:media> -->
     <img
       class="orientation-landscape"
-      src="https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance-longterm-assets/o/backgrounds%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=c2a47e65-594b-4c4c-8f58-0ea46dd0f34e"
+      src="https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance-longterm-assests/o/backgrounds%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=8a7617ee-37c1-4ba1-b524-beac8a5ef0cb"
       :srcset="login_image_srcset"
       sizes="(max-width: 400px) 400w,
             (min-width: 400px) and (max-width: 1050px) 1050w,
@@ -28,7 +28,7 @@
     />
     <img
       class="orientation-portrait"
-      src="https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance-longterm-assets/o/backgrounds%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=c2a47e65-594b-4c4c-8f58-0ea46dd0f34e"
+      src="https://firebasestorage.googleapis.com/v0/b/ptc-sm-finance-longterm-assests/o/backgrounds%2Fherson-rodriguez-ueP3nDeqPLY-unsplash.jpg?alt=media&token=8a7617ee-37c1-4ba1-b524-beac8a5ef0cb"
       :srcset="login_image_srcset_portrait"
       sizes="(max-width: 400px) 400w,
             (min-width: 400px) and (max-width: 1050px) 1050w,
