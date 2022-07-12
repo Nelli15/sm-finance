@@ -17,4 +17,4 @@ jobs:
       - run: cd functions
       - run: npm ci
       - name: Deploy functions to Firebase
-        run: firebase deploy --only functions --token ${{ secrets.FIREBASE_TOKEN }}
+        run: firebase-tools deploy --only functions --token ${{ secrets.FIREBASE_TOKEN }}
