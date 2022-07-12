@@ -19,5 +19,6 @@ jobs:
       - uses: pocket-apps/action-setup-firebase@v2
         with:
           firebase-token: ${{ secrets.FIREBASE_TOKEN }}
+      - run: npm install -g firebase-tools
       - name: Deploy functions to Firebase
-        run: firebase-tools deploy --only functions --token ${{ secrets.FIREBASE_TOKEN }}
+        run: firebase deploy --only functions --token ${{ secrets.FIREBASE_TOKEN }}
