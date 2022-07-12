@@ -16,5 +16,8 @@ jobs:
           check-latest: true
       - run: cd functions
       - run: npm ci
+      - uses: pocket-apps/action-setup-firebase@v2
+        with:
+          firebase-token: ${{ secrets.FIREBASE_TOKEN }}
       - name: Deploy functions to Firebase
         run: firebase-tools deploy --only functions --token ${{ secrets.FIREBASE_TOKEN }}
