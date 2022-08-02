@@ -31,7 +31,7 @@
     "vee-validate": "^4.5.11",
     "vue": "3.2.37",
     "vue-currency-input": "^2.5.1",
-    "vue-router": "4.1.1",
+    "vue-router": "4.1.2",
     "vuex": "^4"
   },
   "devDependencies": {
