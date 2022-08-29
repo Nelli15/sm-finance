@@ -28,7 +28,7 @@
     "rxfire": "^6.0.3",
     "rxjs": "^7.5.6",
     "v-money": "^0.8.1",
-    "vee-validate": "^4.6.2",
+    "vee-validate": "^4.6.4",
     "vue": "3.2.37",
     "vue-currency-input": "^2.5.1",
     "vue-router": "4.1.2",
