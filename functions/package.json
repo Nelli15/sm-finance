@@ -18,7 +18,7 @@
     "currency.js": "^2.0.4",
     "firebase-admin": "^10.0.0",
     "firebase-functions": "^3.23.0",
-    "gm": "^1.24.0",
+    "gm": "^1.25.0",
     "nodemailer": "^6.7.8",
     "tslint": "^6.1.3"
   },
