@@ -22,7 +22,7 @@
     "currency-codes": "^2.1.0",
     "currency.js": "^2.0.4",
     "file-saver": "^2.0.2",
-    "firebase": "^9.11.0",
+    "firebase": "^9.13.0",
     "jszip": "^3.10.1",
     "quasar": "^2.9.2",
     "rxfire": "^6.0.3",
