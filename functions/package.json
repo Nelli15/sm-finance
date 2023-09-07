@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@google-cloud/vision": "^2.4.0",
-    "archiver": "^5.3.0",
+    "archiver": "^5.3.2",
     "child-process-promise": "^2.2.1",
     "currency.js": "^2.0.4",
     "firebase-admin": "^10.0.0",
